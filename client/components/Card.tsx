@@ -104,6 +104,8 @@ const styles = StyleSheet.create({
   card: {
     padding: Spacing.xl,
     borderRadius: BorderRadius["2xl"],
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   cardTitle: {
     marginBottom: Spacing.sm,

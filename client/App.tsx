@@ -13,17 +13,17 @@ import RootStackNavigator from "@/navigation/RootStackNavigator";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Colors } from "@/constants/theme";
 
-const DarkTheme = {
+const LightTheme = {
   ...DefaultTheme,
-  dark: true,
+  dark: false,
   colors: {
     ...DefaultTheme.colors,
-    primary: Colors.dark.accent,
-    background: Colors.dark.backgroundRoot,
-    card: Colors.dark.backgroundDefault,
-    text: Colors.dark.text,
-    border: Colors.dark.border,
-    notification: Colors.dark.accent,
+    primary: Colors.light.accent,
+    background: Colors.light.backgroundRoot,
+    card: Colors.light.backgroundRoot,
+    text: Colors.light.text,
+    border: Colors.light.border,
+    notification: Colors.light.accent,
   },
 };
 
@@ -34,10 +34,10 @@ export default function App() {
         <SafeAreaProvider>
           <GestureHandlerRootView style={styles.root}>
             <KeyboardProvider>
-              <NavigationContainer theme={DarkTheme}>
+              <NavigationContainer theme={LightTheme}>
                 <RootStackNavigator />
               </NavigationContainer>
-              <StatusBar style="light" />
+              <StatusBar style="dark" />
             </KeyboardProvider>
           </GestureHandlerRootView>
         </SafeAreaProvider>
@@ -49,6 +49,6 @@ export default function App() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: Colors.dark.backgroundRoot,
+    backgroundColor: Colors.light.backgroundRoot,
   },
 });

@@ -34,7 +34,7 @@ export function ThemedText({
     }
 
     if (secondary) {
-      return Colors.dark.textSecondary;
+      return theme.textSecondary;
     }
 
     return theme.text;

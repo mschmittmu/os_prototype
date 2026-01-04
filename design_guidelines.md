@@ -4,18 +4,18 @@
 **Core Identity**: "The Operator Sets The Standard. The AI Enforces It."
 - Military ops dashboard intensity meets Strava polish meets Discord community
 - Warrior mentality with supportive brotherhood
-- Patriotic buffalo symbol with stars - represents American strength, resilience, charging into storms
+- Patriotic buffalo symbol with 5 stars - represents American strength, resilience, charging into storms
 - Values: Discipline Over Emotion, Extreme Accountability, Physical Excellence, Zero Regression
 
 ## Color System
-- **Primary Background**: Deep navy (#0F172A) - tactical, patriotic depth
+- **Primary Background**: Clean white (#FFFFFF) - crisp, professional
+- **Surface Background**: Light gray (#F9FAFB) for cards
 - **Accent**: Bold patriotic red (#E31837) - wins, achievements, critical actions
-- **Navy Blue**: (#1E3A8A) - secondary accents, category badges
-- **Surfaces**: Slate gray (#1E293B) for cards and elevated elements
-- **Text**: Pure white (#FFFFFF) primary, slate gray (#94A3B8) secondary
+- **Navy Blue**: (#1E3A8A) - secondary accents, icons
+- **Text**: Dark charcoal (#1A1A1A) primary, medium gray (#6B7280) secondary
+- **Borders**: Light gray (#E5E7EB)
 - **Success**: Emerald green (#10B981)
 - **Warning**: Amber (#F59E0B)
-- **Stars**: White (#FFFFFF) - inspired by the 5 stars on the buffalo logo
 
 ## Typography
 - **Headlines**: Bold, condensed, UPPERCASE - military stencil/industrial sans-serif feel
@@ -23,14 +23,17 @@
 - **Numbers/Stats**: Monospace or tabular figures for tactical aesthetic
 
 ## Visual Style
-- Dark mode primary (light mode optional)
-- Subtle navy-to-dark gradients on cards
-- Red accent glows and highlights
-- Sharp corners default, slightly rounded on interactive cards
-- Subtle texture/noise overlay for depth
-- Progress rings and arc visualizations
+- Light mode primary with white background
+- Cards have subtle gray borders (#E5E7EB)
+- Red accent for active states and CTAs
+- Minimal shadows, clean lines
+- Progress rings and arc visualizations with red fill
 - Micro-animations on task completion (pulse, confetti burst)
-- Stars motif echoing the 5 stars from buffalo logo
+
+## Logo Usage
+- Patriotic buffalo with 5 stars displayed in header (top left)
+- Logo shown without text title - icon only
+- Used as app icon and splash screen
 
 ## Architecture
 
@@ -41,85 +44,54 @@
 
 ### Navigation
 **Bottom Tab Bar** (5 tabs):
-- Home | Execute | Media | Social | Crew
+- Home | Execution | Media | Social | Crews
 - Active state: Red icon with label
-- Inactive: Slate gray icon
+- Inactive: Gray icon
 - Always visible across main sections
 
 ### Screen Specifications
 
 **1. Home Dashboard**
-- Transparent header with buffalo logo
+- White header with buffalo logo (left) and action icons (right)
 - Scrollable content with safe area insets
-- Components: Greeting + streak, Power List hero card (progress ring), Challenge card, XP stats row, quick actions, Continue Watching carousel
-- FAB not needed (actions in main UI)
+- Today's Tasks card with completion status
+- Current Challenges section
+- XP Progress with stats cards
+- Continue Watching carousel
 
 **2. Execute (Power List)**
-- Header: Week calendar strip (completion dots), stats button top-right
-- Scrollable task list with checkbox cards
+- Task list with checkbox cards
 - Progress indicator at top
-- FAB: Red add task button (bottom-right, floating with shadow)
-- Full-screen celebration overlay when 5/5 complete
-- Swipe-left gesture for edit/delete
+- Full-screen celebration overlay when all tasks complete
 
-**3. Task Creation/Edit**
-- Native modal (full-screen)
-- Large text input, category selector, optional fields (goal link, reminder, recurring)
-- Save button at bottom
-- Cancel in header left
-
-**4. Media Player**
-- Stack navigation (pushed from library)
-- Video player at top
-- Controls below: play/pause, skip buttons, progress scrubber, speed, cast, download
-- Episode list below
-- Background audio indicator
-
-**5. Media Library**
+**3. Media Library**
 - Scrollable grid/list
 - Featured hero at top
 - Categories: Operator Standard | MFCEO Project | Shorts
 - Continue watching section
 
-**6. Social Feed**
+**4. Social Feed**
 - Tab bar within screen: General | Founders | Saved
 - Pull-to-refresh
-- Scrollable post cards (avatar, name, timestamp, tier badge, content, engagement)
+- Scrollable post cards
 - FAB: Red compose button
 
-**7. Post Composer**
-- Native modal
-- Text area, attachment buttons, character count
-- Post button disabled until content exists
-
-**8. Crew Screen**
-- Tab bar: Chat | Details | Other Crews
+**5. Crew Screen**
 - Chat feed with system cards and user messages
 - Message input at bottom
-- Leaderboard in Details tab
+- Leaderboard section
 
-**9. Challenges**
-- Scrollable grid of challenge cards
-- Active section at top
-- Challenge detail: stack navigation push
-
-**10. Arcane AI Coach**
-- Chat interface
-- Dark bubbles for AI, red accent for user
-- Quick action buttons at bottom
-- AI avatar (stylized, not cartoonish)
-
-**11. Stats/Insights**
+**6. Stats/Insights**
 - Period selector at top
 - Scrollable stats cards with charts
 - AI insights section
 
-**12. Core Values**
-- Full-screen swipeable cards OR dramatic presentation
+**7. Core Values**
+- Full-screen swipeable cards
 - Buffalo icon with each value
 - Final manifesto card
 
-**13. Profile/Settings**
+**8. Profile/Settings**
 - Header: Avatar, name, tier, member since
 - Scrollable sections
 - Subscription status visible
@@ -127,40 +99,20 @@
 ## Components & Interactions
 
 **Task Completion Flow**:
-1. Tap checkbox → fills with animation
+1. Tap checkbox - fills with red checkmark
 2. Task text strikes through
-3. XP +XX floats up
-4. Final task → "YOU WON THE DAY" celebration overlay with streak counter animation
-
-**Streak Visualization**:
-- Flame icon that intensifies with length
-- "X Day Streak" badge style throughout app
+3. XP floats up
+4. Final task - "YOU'VE WON THE DAY" celebration
 
 **Progress Elements**:
-- Circular progress rings for Power List
-- Linear progress bars for challenges/episodes
-- All progress uses red accent for completion
+- Red progress bars and rings
+- Light gray track backgrounds
+- Completion percentages displayed
 
 **Interactive Feedback**:
 - All touchable elements have press states
-- Floating buttons: subtle shadow (offset: {width: 0, height: 2}, opacity: 0.10, radius: 2)
-- Swipe gestures enabled where appropriate
+- Cards with subtle borders
 - Pull-to-refresh on feeds
-
-**Animations**:
-- Task completion: satisfying checkmark animation
-- Day won: celebration with confetti burst
-- Streak counter: number animates upward
-- XP gains: float-up animation
-
-## Design System Assets
-- System icons (Feather icons) for standard actions
-- Patriotic buffalo logo with 5 stars
-- Tier badges
-- Achievement badges
-- User avatars with tier indicators
-- Episode thumbnails
-- Challenge category icons
 
 ## Mobile-First Requirements
 - Safe area insets respected across all screens

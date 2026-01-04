@@ -1,14 +1,9 @@
 import React from "react";
 import { View, StyleSheet, Image } from "react-native";
 
-import { ThemedText } from "@/components/ThemedText";
-import { Spacing, Colors, BorderRadius } from "@/constants/theme";
+import { Spacing } from "@/constants/theme";
 
-interface HeaderTitleProps {
-  title?: string;
-}
-
-export function HeaderTitle({ title = "THE OPERATOR STANDARD" }: HeaderTitleProps) {
+export function HeaderTitle() {
   return (
     <View style={styles.container}>
       <Image
@@ -16,7 +11,6 @@ export function HeaderTitle({ title = "THE OPERATOR STANDARD" }: HeaderTitleProp
         style={styles.icon}
         resizeMode="contain"
       />
-      <ThemedText style={styles.title}>{title}</ThemedText>
     </View>
   );
 }
@@ -28,16 +22,8 @@ const styles = StyleSheet.create({
     justifyContent: "flex-start",
   },
   icon: {
-    width: 28,
-    height: 28,
-    marginRight: Spacing.sm,
-    borderRadius: BorderRadius.xs,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: 0.5,
-    color: Colors.dark.text,
-    textTransform: "uppercase",
+    width: 48,
+    height: 32,
+    marginLeft: -Spacing.sm,
   },
 });

@@ -1,0 +1,198 @@
+Build a modern mobile app prototype for "The Operator Standard" - a discipline and accountability lifestyle app. This should feel like the command center for people taking control of their lives. Think: the intensity of a military ops dashboard meets the polish of Strava meets the community of Discord.
+BRAND ESSENCE
+
+Philosophy: "The Operator Sets The Standard. The AI Enforces It."
+Core Values: Discipline Over Emotion, Extreme Accountability, Truth First Always, Physical Excellence, Mission Over Self, Strength Through Pain, Build What Lasts, Brotherhood Is A Weapon, Zero Regression, The Standard Owns You Now, Earned Respect
+Tone: Commanding, no-BS, warrior mentality, but supportive brotherhood
+The buffalo is the symbol (strength, resilience, charges into the storm)
+
+VISUAL DESIGN REQUIREMENTS
+Color Palette:
+
+Primary: Deep black (#0A0A0A) background - operators work in the dark
+Accent: Bold crimson red (#DC2626) - for wins, achievements, important actions
+Secondary: Steel gray (#1F2937) for cards and surfaces
+Text: Pure white (#FFFFFF) and muted gray (#9CA3AF)
+Success states: Emerald green (#10B981)
+Warning: Amber (#F59E0B)
+
+Typography:
+
+Headlines: Bold, condensed, uppercase - like military stencil or industrial sans-serif
+Body: Clean, readable sans-serif
+Numbers (XP, streaks, stats): Monospace or tabular figures for that tactical feel
+
+Visual Style:
+
+Dark mode primary (light mode secondary option)
+Subtle gradients on cards (black to dark gray)
+Red accent glows and highlights
+Sharp corners on most elements, slightly rounded on interactive cards
+Subtle texture or noise overlay for depth
+Progress rings and arc visualizations
+Micro-animations on task completion (pulse, confetti burst)
+
+SCREENS TO BUILD
+1. HOME DASHBOARD (Primary)
+Layout:
+- Top: Greeting with user's name + date + current streak badge
+- Main hero card: "TODAY'S POWER LIST" with task progress ring (X/5 complete)
+  - If incomplete: Show urgency with time remaining
+  - If complete: Triumphant "DAY WON" state with celebration animation
+- Current Challenge card with progress bar
+- XP stats row: This week | This month | Rank in tier
+- Quick actions: Create Task | Start Challenge | Talk to Arcane
+- Continue Watching: Horizontal scroll of episode thumbnails with progress bars
+- Bottom nav: Home | Execute | Media | Social | Crew
+2. EXECUTION SCREEN (Power List)
+Layout:
+- Week calendar strip at top showing completion dots (green = won, red = lost, gray = future)
+- Stats button in top right
+- Scrollable task list:
+  - Each task card shows: Icon | Task name | Category tag
+  - Checkbox transforms to bold checkmark with satisfying animation on complete
+  - Strikethrough text with subtle fade on completed tasks
+- Progress indicator: "4/5 COMPLETE" with filling progress bar
+- When all complete: Full-screen celebration moment
+  - "YOU WON THE DAY" in bold caps
+  - Streak counter animates up
+  - XP earned displays
+  - "Now go win another." tagline
+- FAB: Add task button (red, prominent)
+- Swipe left on task to edit/delete
+3. TASK CREATION/EDIT
+- Full screen modal, dark background
+- Large text input for task name
+- Category selector: Business | Health | Family | Self Development | Custom
+- Optional: Link to Goal
+- Optional: Set time/reminder
+- Optional: Make recurring
+- Save button prominent at bottom
+4. MEDIA PLAYER
+- Full episode screen with video player
+- Below video: Episode title, date, description
+- Playback controls:
+  - Large play/pause center
+  - 15-sec skip back / 30-sec skip forward buttons
+  - Progress scrubber
+  - Speed selector (1x, 1.25x, 1.5x, 2x)
+  - Chromecast/AirPlay button
+  - Download for offline
+- Episode list below current episode
+- Background audio support indicator
+5. MEDIA LIBRARY
+- Featured/Latest episode hero
+- Categories: Operator Standard | MFCEO Project | Shorts
+- Episode grid/list with thumbnails
+- Download indicator for offline content
+- Continue watching section
+6. SOCIAL FEED
+- Tab bar: General | Founders | Saved
+- Post cards:
+  - User avatar + name + timestamp + tier badge
+  - Post text (expandable for long posts)
+  - Photo/video attachment
+  - Engagement row: Like count | Comment count | Save button
+- Floating compose button (red +)
+- Pull to refresh
+7. POST COMPOSER
+- User avatar + name
+- Large text area: "What's New? Add a pic or video for impact."
+- Attachment buttons: Photo | Video | Challenge share
+- Character count (if limit exists)
+- Post button (disabled until content)
+8. CREW SCREEN
+- Header: Crew name + member count
+- Tab bar: Chat | Details | Other Crews
+- Chat feed:
+  - System cards: Achievement unlocked, Challenge completed (dark cards with icons)
+  - User messages
+- Message input at bottom
+- Crew leaderboard in Details tab
+9. CHALLENGES
+- Active challenges section with progress
+- Available challenges grid
+- Challenge card: Name | Duration | Difficulty | Progress
+- Challenge detail: Full description, requirements, rewards, start button
+10. ARCANE AI COACH
+- Chat interface with AI
+- Dark bubbles for AI, accent color for user
+- Quick action buttons: "Ask about my patterns" | "Morning briefing" | "Check my progress"
+- AI avatar (stylized, not cartoonish)
+11. STATS/INSIGHTS
+- Period selector: Week | Month | All Time
+- Stats cards:
+  - Days Won vs Lost (bar chart)
+  - Current Streak + Best Streak
+  - Task completion rate %
+  - XP earned trend
+  - Category breakdown (pie chart)
+- AI insights section with pattern observations
+12. CORE VALUES SCREEN
+- Make this feel like a manifesto, not a list
+- Full-screen cards you swipe through, or
+- Dramatic presentation with each value having visual weight
+- Buffalo icon with each value
+- Dark background, red accents, bold typography
+- The final card: "This is our mission. This is our code. This is who we are. OPERATORS."
+13. PROFILE/SETTINGS
+- Profile header: Avatar, name, member since, tier
+- Stats summary
+- Settings sections: Account, Notifications, Connected Apps, App Preferences
+- Subscription status
+- Support/Help
+INTERACTION DETAILS
+Task Completion:
+
+Tap checkbox → Checkbox fills with satisfying animation → Task text strikes through → XP +XX floats up
+Final task completion triggers celebration overlay
+
+Streak Visualization:
+
+Flame icon that grows/intensifies with streak length
+Show current streak prominently throughout app
+"🔥 23 Day Streak" badge style
+
+XP System:
+
+XP displayed like a game HUD
+Level/tier progression visible
+Leaderboard position shown
+
+Navigation:
+
+Bottom tab bar with 5 items
+Icons + labels
+Active state: Red icon, label visible
+Inactive: Gray icon
+
+COMPONENTS NEEDED
+
+Task card (incomplete/complete states)
+Episode card (with progress indicator)
+Post card (social feed)
+Stats card
+Challenge card
+Achievement badge
+User avatar with tier indicator
+Progress ring
+Button variants (primary red, secondary, ghost)
+Input fields
+Modal overlays
+Toast notifications
+Loading states
+
+MOBILE-FIRST
+
+Design for iOS/Android mobile
+Safe areas respected
+Thumb-friendly tap targets
+Swipe gestures where appropriate
+Pull-to-refresh on feeds
+
+PROTOTYPE INTERACTIONS
+
+Animate task completion
+Show navigation between screens
+Demonstrate the "Day Won" celebration
+Show media playback controls

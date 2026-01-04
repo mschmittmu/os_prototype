@@ -1,12 +1,13 @@
 import { Text, type TextProps } from "react-native";
 
 import { useTheme } from "@/hooks/useTheme";
-import { Typography } from "@/constants/theme";
+import { Typography, Colors } from "@/constants/theme";
 
 export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
-  type?: "h1" | "h2" | "h3" | "h4" | "body" | "small" | "link";
+  type?: "h1" | "h2" | "h3" | "h4" | "body" | "bodyBold" | "small" | "caption" | "stat" | "statSmall" | "link";
+  secondary?: boolean;
 };
 
 export function ThemedText({
@@ -14,6 +15,7 @@ export function ThemedText({
   lightColor,
   darkColor,
   type = "body",
+  secondary = false,
   ...rest
 }: ThemedTextProps) {
   const { theme, isDark } = useTheme();
@@ -31,6 +33,10 @@ export function ThemedText({
       return theme.link;
     }
 
+    if (secondary) {
+      return Colors.dark.textSecondary;
+    }
+
     return theme.text;
   };
 
@@ -46,10 +52,18 @@ export function ThemedText({
         return Typography.h4;
       case "body":
         return Typography.body;
+      case "bodyBold":
+        return Typography.bodyBold;
       case "small":
         return Typography.small;
+      case "caption":
+        return Typography.caption;
+      case "stat":
+        return Typography.stat;
+      case "statSmall":
+        return Typography.statSmall;
       case "link":
-        return Typography.link;
+        return Typography.body;
       default:
         return Typography.body;
     }

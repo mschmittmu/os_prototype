@@ -172,11 +172,12 @@ export default function CrewScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={[styles.container, { paddingTop: headerHeight }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={headerHeight}
+      pointerEvents="box-none"
     >
-      <View style={styles.tabBar}>
+      <View style={[styles.tabBar, { marginTop: Spacing.md }]} pointerEvents="box-none">
         {TABS.map((tab) => (
           <Pressable
             key={tab}
@@ -203,7 +204,7 @@ export default function CrewScreen() {
             style={styles.chatContainer}
             contentContainerStyle={[
               styles.chatContent,
-              { paddingTop: headerHeight + Spacing["4xl"] },
+              { paddingTop: Spacing.lg },
             ]}
           >
             {messages.map((message, index) => renderMessage(message, index))}

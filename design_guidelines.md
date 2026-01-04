@@ -4,16 +4,18 @@
 **Core Identity**: "The Operator Sets The Standard. The AI Enforces It."
 - Military ops dashboard intensity meets Strava polish meets Discord community
 - Warrior mentality with supportive brotherhood
-- Buffalo symbol represents strength, resilience, charging into storms
+- Patriotic buffalo symbol with stars - represents American strength, resilience, charging into storms
 - Values: Discipline Over Emotion, Extreme Accountability, Physical Excellence, Zero Regression
 
 ## Color System
-- **Primary Background**: Deep black (#0A0A0A) - operators work in the dark
-- **Accent**: Bold crimson red (#DC2626) - wins, achievements, critical actions
-- **Surfaces**: Steel gray (#1F2937) for cards and elevated elements
-- **Text**: Pure white (#FFFFFF) primary, muted gray (#9CA3AF) secondary
+- **Primary Background**: Deep navy (#0F172A) - tactical, patriotic depth
+- **Accent**: Bold patriotic red (#E31837) - wins, achievements, critical actions
+- **Navy Blue**: (#1E3A8A) - secondary accents, category badges
+- **Surfaces**: Slate gray (#1E293B) for cards and elevated elements
+- **Text**: Pure white (#FFFFFF) primary, slate gray (#94A3B8) secondary
 - **Success**: Emerald green (#10B981)
 - **Warning**: Amber (#F59E0B)
+- **Stars**: White (#FFFFFF) - inspired by the 5 stars on the buffalo logo
 
 ## Typography
 - **Headlines**: Bold, condensed, UPPERCASE - military stencil/industrial sans-serif feel
@@ -22,12 +24,13 @@
 
 ## Visual Style
 - Dark mode primary (light mode optional)
-- Subtle black-to-dark-gray gradients on cards
+- Subtle navy-to-dark gradients on cards
 - Red accent glows and highlights
 - Sharp corners default, slightly rounded on interactive cards
 - Subtle texture/noise overlay for depth
 - Progress rings and arc visualizations
 - Micro-animations on task completion (pulse, confetti burst)
+- Stars motif echoing the 5 stars from buffalo logo
 
 ## Architecture
 
@@ -40,13 +43,13 @@
 **Bottom Tab Bar** (5 tabs):
 - Home | Execute | Media | Social | Crew
 - Active state: Red icon with label
-- Inactive: Gray icon
+- Inactive: Slate gray icon
 - Always visible across main sections
 
 ### Screen Specifications
 
 **1. Home Dashboard**
-- Transparent header
+- Transparent header with buffalo logo
 - Scrollable content with safe area insets
 - Components: Greeting + streak, Power List hero card (progress ring), Challenge card, XP stats row, quick actions, Continue Watching carousel
 - FAB not needed (actions in main UI)
@@ -131,7 +134,7 @@
 
 **Streak Visualization**:
 - Flame icon that intensifies with length
-- "🔥 X Day Streak" badge style throughout app
+- "X Day Streak" badge style throughout app
 
 **Progress Elements**:
 - Circular progress rings for Power List
@@ -152,7 +155,7 @@
 
 ## Design System Assets
 - System icons (Feather icons) for standard actions
-- Buffalo logo/icon
+- Patriotic buffalo logo with 5 stars
 - Tier badges
 - Achievement badges
 - User avatars with tier indicators

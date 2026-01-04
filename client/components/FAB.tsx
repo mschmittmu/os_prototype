@@ -1,12 +1,13 @@
 import React from "react";
 import { StyleSheet, Pressable, ViewStyle } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { Colors, Spacing, Shadows } from "@/constants/theme";
+import { Colors, Shadows } from "@/constants/theme";
 
 interface FABProps {
   icon?: keyof typeof Feather.glyphMap;
@@ -24,21 +25,26 @@ export function FAB({ icon = "plus", onPress, style }: FABProps) {
   }));
 
   const handlePressIn = () => {
-    scale.value = withSpring(0.9, { damping: 15 });
+    scale.value = withSpring(0.9, { damping: 15, stiffness: 400 });
   };
 
   const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 15 });
+    scale.value = withSpring(1, { damping: 15, stiffness: 400 });
+  };
+
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onPress();
   };
 
   return (
     <AnimatedPressable
-      onPress={onPress}
+      onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       style={[styles.fab, Shadows.fab, animatedStyle, style]}
     >
-      <Feather name={icon} size={24} color={Colors.dark.text} />
+      <Feather name={icon} size={24} color="#FFFFFF" />
     </AnimatedPressable>
   );
 }
@@ -49,7 +55,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.dark.accent,
+    backgroundColor: Colors.light.accent,
     justifyContent: "center",
     alignItems: "center",
   },

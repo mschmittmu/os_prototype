@@ -1,6 +1,7 @@
 import React from "react";
 import { View, StyleSheet, Pressable, Image } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -39,17 +40,22 @@ export function EpisodeCard({
   }));
 
   const handlePressIn = () => {
-    scale.value = withSpring(0.98, { damping: 15 });
+    scale.value = withSpring(0.98, { damping: 15, stiffness: 400 });
   };
 
   const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 15 });
+    scale.value = withSpring(1, { damping: 15, stiffness: 400 });
+  };
+
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress(id);
   };
 
   if (horizontal) {
     return (
       <AnimatedPressable
-        onPress={() => onPress(id)}
+        onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         style={[styles.horizontalContainer, animatedStyle]}
@@ -59,7 +65,7 @@ export function EpisodeCard({
             <Image source={{ uri: thumbnail }} style={styles.thumbnailImage} />
           ) : (
             <View style={styles.thumbnailPlaceholder}>
-              <Feather name="play" size={24} color={Colors.dark.accent} />
+              <Feather name="play" size={24} color={Colors.light.accent} />
             </View>
           )}
           {progress > 0 ? (
@@ -77,7 +83,7 @@ export function EpisodeCard({
 
   return (
     <AnimatedPressable
-      onPress={() => onPress(id)}
+      onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       style={[styles.container, animatedStyle]}
@@ -87,7 +93,7 @@ export function EpisodeCard({
           <Image source={{ uri: thumbnail }} style={styles.thumbnailImage} />
         ) : (
           <View style={styles.thumbnailPlaceholder}>
-            <Feather name="play-circle" size={40} color={Colors.dark.accent} />
+            <Feather name="play-circle" size={40} color={Colors.light.accent} />
           </View>
         )}
         <View style={styles.durationBadge}>
@@ -115,24 +121,25 @@ export function EpisodeCard({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.dark.backgroundDefault,
-    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.light.backgroundRoot,
+    borderRadius: BorderRadius.xl,
     overflow: "hidden",
     marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
   horizontalContainer: {
     width: 160,
-    marginRight: Spacing.md,
   },
   thumbnail: {
     height: 160,
-    backgroundColor: Colors.dark.backgroundSecondary,
+    backgroundColor: Colors.light.backgroundSecondary,
     position: "relative",
   },
   horizontalThumbnail: {
     height: 90,
-    backgroundColor: Colors.dark.backgroundSecondary,
-    borderRadius: BorderRadius.md,
+    backgroundColor: Colors.light.accent,
+    borderRadius: BorderRadius.lg,
     overflow: "hidden",
     position: "relative",
   },
@@ -145,18 +152,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: Colors.light.backgroundSecondary,
   },
   durationBadge: {
     position: "absolute",
     bottom: Spacing.sm,
     right: Spacing.sm,
-    backgroundColor: "rgba(0,0,0,0.8)",
+    backgroundColor: "rgba(0,0,0,0.75)",
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.xs,
+    borderRadius: BorderRadius.sm,
   },
   durationText: {
-    color: Colors.dark.text,
+    color: "#FFFFFF",
   },
   progressBar: {
     position: "absolute",
@@ -164,11 +172,11 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: Colors.dark.backgroundSecondary,
+    backgroundColor: Colors.light.backgroundTertiary,
   },
   progressFill: {
     height: "100%",
-    backgroundColor: Colors.dark.accent,
+    backgroundColor: Colors.light.accent,
   },
   content: {
     padding: Spacing.md,

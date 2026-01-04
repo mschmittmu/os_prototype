@@ -8,14 +8,13 @@ import Animated, {
   withSequence,
   withDelay,
   withTiming,
-  Easing,
   runOnJS,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors, Spacing, BorderRadius } from "@/constants/theme";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 interface DayWonCelebrationProps {
   streak: number;
@@ -36,10 +35,10 @@ export function DayWonCelebration({
 
   useEffect(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    
+
     opacity.value = withTiming(1, { duration: 300 });
     scale.value = withSpring(1, { damping: 12, stiffness: 100 });
-    
+
     streakScale.value = withDelay(
       300,
       withSequence(
@@ -47,12 +46,9 @@ export function DayWonCelebration({
         withSpring(1, { damping: 15 })
       )
     );
-    
+
     xpOpacity.value = withDelay(500, withTiming(1, { duration: 400 }));
-    xpTranslateY.value = withDelay(
-      500,
-      withSpring(0, { damping: 15 })
-    );
+    xpTranslateY.value = withDelay(500, withSpring(0, { damping: 15 }));
   }, []);
 
   const containerStyle = useAnimatedStyle(() => ({
@@ -73,6 +69,7 @@ export function DayWonCelebration({
   }));
 
   const handleDismiss = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     opacity.value = withTiming(0, { duration: 200 }, (finished) => {
       if (finished) {
         runOnJS(onDismiss)();
@@ -86,15 +83,17 @@ export function DayWonCelebration({
       <Pressable style={styles.backdrop} onPress={handleDismiss} />
       <Animated.View style={[styles.card, cardStyle]}>
         <View style={styles.iconContainer}>
-          <Feather name="award" size={64} color={Colors.dark.accent} />
+          <View style={styles.iconCircle}>
+            <Feather name="award" size={48} color={Colors.light.accent} />
+          </View>
         </View>
-        
+
         <ThemedText type="h1" style={styles.title}>
-          YOU WON THE DAY
+          DAY WON
         </ThemedText>
-        
+
         <Animated.View style={[styles.streakContainer, streakStyle]}>
-          <Feather name="zap" size={32} color={Colors.dark.warning} />
+          <Feather name="zap" size={28} color={Colors.light.warning} />
           <ThemedText type="stat" style={styles.streakText}>
             {streak}
           </ThemedText>
@@ -102,17 +101,17 @@ export function DayWonCelebration({
             DAY STREAK
           </ThemedText>
         </Animated.View>
-        
+
         <Animated.View style={[styles.xpContainer, xpStyle]}>
           <ThemedText type="h3" style={styles.xpText}>
             +{xpEarned} XP
           </ThemedText>
         </Animated.View>
-        
+
         <ThemedText type="body" secondary style={styles.tagline}>
           Now go win another.
         </ThemedText>
-        
+
         <Pressable style={styles.dismissButton} onPress={handleDismiss}>
           <ThemedText type="bodyBold" style={styles.dismissText}>
             CONTINUE
@@ -132,22 +131,35 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.9)",
+    backgroundColor: "rgba(0,0,0,0.6)",
   },
   card: {
-    backgroundColor: Colors.dark.backgroundDefault,
+    backgroundColor: Colors.light.backgroundRoot,
     borderRadius: BorderRadius["2xl"],
     padding: Spacing["3xl"],
     alignItems: "center",
     width: width - Spacing["3xl"] * 2,
     maxWidth: 360,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 16,
   },
   iconContainer: {
     marginBottom: Spacing.xl,
   },
+  iconCircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: Colors.light.backgroundSecondary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   title: {
     textAlign: "center",
-    color: Colors.dark.accent,
+    color: Colors.light.accent,
     marginBottom: Spacing.xl,
   },
   streakContainer: {
@@ -157,30 +169,30 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   streakText: {
-    color: Colors.dark.text,
+    color: Colors.light.text,
     fontSize: 48,
   },
   xpContainer: {
-    backgroundColor: Colors.dark.success,
+    backgroundColor: Colors.light.success,
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.full,
     marginBottom: Spacing.xl,
   },
   xpText: {
-    color: Colors.dark.backgroundRoot,
+    color: "#FFFFFF",
   },
   tagline: {
     fontStyle: "italic",
     marginBottom: Spacing.xl,
   },
   dismissButton: {
-    backgroundColor: Colors.dark.accent,
+    backgroundColor: Colors.light.accent,
     paddingHorizontal: Spacing["3xl"],
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.full,
   },
   dismissText: {
-    color: Colors.dark.text,
+    color: "#FFFFFF",
   },
 });

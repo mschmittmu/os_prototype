@@ -31,10 +31,10 @@ interface PostCardProps {
 }
 
 const tierColors: Record<string, string> = {
-  Operator: Colors.dark.accent,
+  Operator: Colors.light.accent,
   Founder: "#FFD700",
   Elite: "#8B5CF6",
-  Member: Colors.dark.textSecondary,
+  Member: Colors.light.textSecondary,
 };
 
 export function PostCard({
@@ -68,7 +68,7 @@ export function PostCard({
   };
 
   const handleSave = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setIsSaved(!isSaved);
     onSave(id);
   };
@@ -77,7 +77,7 @@ export function PostCard({
     transform: [{ scale: heartScale.value }],
   }));
 
-  const tierColor = tierColors[author.tier] || Colors.dark.textSecondary;
+  const tierColor = tierColors[author.tier] || Colors.light.textSecondary;
 
   return (
     <View style={styles.container}>
@@ -87,7 +87,7 @@ export function PostCard({
             <Image source={{ uri: author.avatar }} style={styles.avatar} />
           ) : (
             <View style={styles.avatarPlaceholder}>
-              <ThemedText type="bodyBold">
+              <ThemedText type="bodyBold" style={styles.avatarText}>
                 {author.name.charAt(0).toUpperCase()}
               </ThemedText>
             </View>
@@ -106,8 +106,15 @@ export function PostCard({
             </ThemedText>
           </View>
         </View>
-        <Pressable style={styles.moreButton}>
-          <Feather name="more-horizontal" size={20} color={Colors.dark.textSecondary} />
+        <Pressable
+          style={styles.moreButton}
+          onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+        >
+          <Feather
+            name="more-horizontal"
+            size={20}
+            color={Colors.light.textSecondary}
+          />
         </Pressable>
       </View>
 
@@ -123,9 +130,9 @@ export function PostCard({
         <Pressable style={styles.actionButton} onPress={handleLike}>
           <Animated.View style={heartAnimatedStyle}>
             <Feather
-              name={isLiked ? "heart" : "heart"}
+              name="heart"
               size={20}
-              color={isLiked ? Colors.dark.accent : Colors.dark.textSecondary}
+              color={isLiked ? Colors.light.accent : Colors.light.textSecondary}
             />
           </Animated.View>
           <ThemedText type="small" secondary style={styles.actionText}>
@@ -133,8 +140,18 @@ export function PostCard({
           </ThemedText>
         </Pressable>
 
-        <Pressable style={styles.actionButton} onPress={() => onComment(id)}>
-          <Feather name="message-circle" size={20} color={Colors.dark.textSecondary} />
+        <Pressable
+          style={styles.actionButton}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            onComment(id);
+          }}
+        >
+          <Feather
+            name="message-circle"
+            size={20}
+            color={Colors.light.textSecondary}
+          />
           <ThemedText type="small" secondary style={styles.actionText}>
             {comments}
           </ThemedText>
@@ -142,9 +159,9 @@ export function PostCard({
 
         <Pressable style={styles.actionButton} onPress={handleSave}>
           <Feather
-            name={isSaved ? "bookmark" : "bookmark"}
+            name="bookmark"
             size={20}
-            color={isSaved ? Colors.dark.accent : Colors.dark.textSecondary}
+            color={isSaved ? Colors.light.accent : Colors.light.textSecondary}
           />
         </Pressable>
       </View>
@@ -154,10 +171,11 @@ export function PostCard({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.dark.backgroundDefault,
-    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.light.backgroundRoot,
+    borderRadius: BorderRadius.xl,
     padding: Spacing.lg,
-    marginBottom: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
   header: {
     flexDirection: "row",
@@ -176,9 +194,12 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: BorderRadius.full,
-    backgroundColor: Colors.dark.backgroundSecondary,
+    backgroundColor: Colors.light.backgroundSecondary,
     justifyContent: "center",
     alignItems: "center",
+  },
+  avatarText: {
+    color: Colors.light.text,
   },
   authorInfo: {
     flex: 1,
@@ -192,10 +213,10 @@ const styles = StyleSheet.create({
   tierBadge: {
     paddingHorizontal: Spacing.sm,
     paddingVertical: 2,
-    borderRadius: BorderRadius.xs,
+    borderRadius: BorderRadius.sm,
   },
   tierText: {
-    color: Colors.dark.backgroundRoot,
+    color: "#FFFFFF",
     fontWeight: "600",
   },
   moreButton: {
@@ -207,17 +228,21 @@ const styles = StyleSheet.create({
   postImage: {
     width: "100%",
     height: 200,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.lg,
     marginBottom: Spacing.md,
   },
   actions: {
     flexDirection: "row",
     gap: Spacing.xl,
+    paddingTop: Spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: Colors.light.border,
   },
   actionButton: {
     flexDirection: "row",
     alignItems: "center",
     gap: Spacing.xs,
+    paddingVertical: Spacing.xs,
   },
   actionText: {},
 });

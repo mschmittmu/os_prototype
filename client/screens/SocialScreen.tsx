@@ -4,6 +4,9 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useHeaderHeight } from "@react-navigation/elements";
+import * as Haptics from "expo-haptics";
+import Animated, { FadeInDown } from "react-native-reanimated";
+
 import { ThemedText } from "@/components/ThemedText";
 import { PostCard } from "@/components/PostCard";
 import { FAB } from "@/components/FAB";
@@ -25,11 +28,13 @@ export default function SocialScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setRefreshing(false);
   };
 
   const handleLike = (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setPosts((prev) =>
       prev.map((p) =>
         p.id === id
@@ -40,12 +45,19 @@ export default function SocialScreen() {
   };
 
   const handleComment = (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
   const handleSave = (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setPosts((prev) =>
       prev.map((p) => (p.id === id ? { ...p, saved: !p.saved } : p))
     );
+  };
+
+  const handleTabChange = (tab: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelectedTab(tab);
   };
 
   const filteredPosts =
@@ -61,22 +73,26 @@ export default function SocialScreen() {
         style={styles.scrollView}
         contentContainerStyle={[
           styles.contentContainer,
-          { paddingTop: headerHeight + Spacing.xl, paddingBottom: tabBarHeight + Spacing["4xl"] },
+          {
+            paddingTop: headerHeight + Spacing.xl,
+            paddingBottom: tabBarHeight + Spacing["4xl"],
+          },
         ]}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={Colors.dark.accent}
+            tintColor={Colors.light.accent}
           />
         }
       >
-        <View style={styles.tabBar}>
+        <Animated.View style={styles.tabBar} entering={FadeInDown.duration(400)}>
           {TABS.map((tab) => (
             <Pressable
               key={tab}
               style={[styles.tab, selectedTab === tab && styles.tabActive]}
-              onPress={() => setSelectedTab(tab)}
+              onPress={() => handleTabChange(tab)}
             >
               <ThemedText
                 type="bodyBold"
@@ -89,36 +105,41 @@ export default function SocialScreen() {
               </ThemedText>
             </Pressable>
           ))}
-        </View>
+        </Animated.View>
 
         <View style={styles.postList}>
-          {filteredPosts.map((post) => (
-            <PostCard
+          {filteredPosts.map((post, index) => (
+            <Animated.View
               key={post.id}
-              id={post.id}
-              author={post.author}
-              content={post.content}
-              image={post.image}
-              likes={post.likes}
-              comments={post.comments}
-              timestamp={post.timestamp}
-              liked={post.liked}
-              saved={post.saved}
-              onLike={handleLike}
-              onComment={handleComment}
-              onSave={handleSave}
-            />
+              entering={FadeInDown.duration(400).delay(100 + index * 50)}
+            >
+              <PostCard
+                id={post.id}
+                author={post.author}
+                content={post.content}
+                image={post.image}
+                likes={post.likes}
+                comments={post.comments}
+                timestamp={post.timestamp}
+                liked={post.liked}
+                saved={post.saved}
+                onLike={handleLike}
+                onComment={handleComment}
+                onSave={handleSave}
+              />
+            </Animated.View>
           ))}
         </View>
 
         {filteredPosts.length === 0 ? (
-          <View style={styles.emptyState}>
+          <Animated.View
+            style={styles.emptyState}
+            entering={FadeInDown.duration(400).delay(200)}
+          >
             <ThemedText type="body" secondary>
-              {selectedTab === "Saved"
-                ? "No saved posts yet"
-                : "No posts to show"}
+              {selectedTab === "Saved" ? "No saved posts yet" : "No posts to show"}
             </ThemedText>
-          </View>
+          </Animated.View>
         ) : null}
       </ScrollView>
 
@@ -134,7 +155,7 @@ export default function SocialScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.dark.backgroundRoot,
+    backgroundColor: Colors.light.backgroundRoot,
   },
   scrollView: {
     flex: 1,
@@ -145,24 +166,29 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: "row",
     marginBottom: Spacing.xl,
-    backgroundColor: Colors.dark.backgroundDefault,
-    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.light.backgroundSecondary,
+    borderRadius: BorderRadius.xl,
     padding: Spacing.xs,
   },
   tab: {
     flex: 1,
     paddingVertical: Spacing.md,
     alignItems: "center",
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.lg,
   },
   tabActive: {
-    backgroundColor: Colors.dark.accent,
+    backgroundColor: Colors.light.backgroundRoot,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 2,
   },
   tabText: {
-    color: Colors.dark.textSecondary,
+    color: Colors.light.textSecondary,
   },
   tabTextActive: {
-    color: Colors.dark.text,
+    color: Colors.light.text,
   },
   postList: {
     gap: Spacing.md,

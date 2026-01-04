@@ -24,8 +24,14 @@ export function StreakBadge({ streak, size = "medium" }: StreakBadgeProps) {
           {
             scale: withRepeat(
               withSequence(
-                withTiming(1.1, { duration: 500, easing: Easing.inOut(Easing.ease) }),
-                withTiming(1, { duration: 500, easing: Easing.inOut(Easing.ease) })
+                withTiming(1.15, {
+                  duration: 600,
+                  easing: Easing.inOut(Easing.ease),
+                }),
+                withTiming(1, {
+                  duration: 600,
+                  easing: Easing.inOut(Easing.ease),
+                })
               ),
               -1,
               true
@@ -39,8 +45,8 @@ export function StreakBadge({ streak, size = "medium" }: StreakBadgeProps) {
 
   const sizeStyles = {
     small: { iconSize: 14, fontSize: 12, padding: Spacing.xs },
-    medium: { iconSize: 18, fontSize: 16, padding: Spacing.sm },
-    large: { iconSize: 24, fontSize: 20, padding: Spacing.md },
+    medium: { iconSize: 16, fontSize: 14, padding: Spacing.sm },
+    large: { iconSize: 20, fontSize: 18, padding: Spacing.md },
   };
 
   const { iconSize, fontSize, padding } = sizeStyles[size];
@@ -49,11 +55,16 @@ export function StreakBadge({ streak, size = "medium" }: StreakBadgeProps) {
     if (streak >= 30) return "#FF4500";
     if (streak >= 14) return "#FF6B35";
     if (streak >= 7) return "#FF8C00";
-    return Colors.dark.warning;
+    return Colors.light.warning;
   };
 
   return (
-    <View style={[styles.container, { paddingHorizontal: padding * 1.5, paddingVertical: padding }]}>
+    <View
+      style={[
+        styles.container,
+        { paddingHorizontal: padding * 1.5, paddingVertical: padding },
+      ]}
+    >
       <Animated.View style={animatedStyle}>
         <Feather name="zap" size={iconSize} color={getFlameColor()} />
       </Animated.View>
@@ -71,11 +82,11 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.dark.backgroundDefault,
+    backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: BorderRadius.full,
     gap: Spacing.xs,
   },
   text: {
-    color: Colors.dark.text,
+    color: Colors.light.text,
   },
 });

@@ -9,7 +9,7 @@ import Animated, {
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
-import { Spacing, BorderRadius } from "@/constants/theme";
+import { Colors, Spacing, BorderRadius } from "@/constants/theme";
 
 interface CardProps {
   elevation?: number;
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
     borderRadius: BorderRadius["2xl"],
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: Colors.light.border,
   },
   cardTitle: {
     marginBottom: Spacing.sm,

@@ -4,8 +4,10 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import Animated, { FadeInDown } from "react-native-reanimated";
+
 import { ThemedText } from "@/components/ThemedText";
-import { Card } from "@/components/Card";
 import { StreakBadge } from "@/components/StreakBadge";
 import { Colors, Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
@@ -68,6 +70,10 @@ export default function ProfileScreen() {
     });
   };
 
+  const handleItemPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
   return (
     <ScrollView
       style={styles.container}
@@ -75,8 +81,12 @@ export default function ProfileScreen() {
         styles.contentContainer,
         { paddingTop: Spacing.xl, paddingBottom: insets.bottom + Spacing.xl },
       ]}
+      showsVerticalScrollIndicator={false}
     >
-      <View style={styles.profileHeader}>
+      <Animated.View
+        style={styles.profileHeader}
+        entering={FadeInDown.duration(400)}
+      >
         <View style={styles.avatarContainer}>
           <View style={styles.avatar}>
             <ThemedText type="h1" style={styles.avatarText}>
@@ -96,9 +106,12 @@ export default function ProfileScreen() {
           Member since {user ? formatDate(user.memberSince) : "---"}
         </ThemedText>
         <StreakBadge streak={streak?.current || 0} size="large" />
-      </View>
+      </Animated.View>
 
-      <View style={styles.statsRow}>
+      <Animated.View
+        style={styles.statsRow}
+        entering={FadeInDown.duration(400).delay(100)}
+      >
         <View style={styles.statCard}>
           <ThemedText type="statSmall" style={styles.statValue}>
             {user?.xp.toLocaleString() || 0}
@@ -123,37 +136,55 @@ export default function ProfileScreen() {
             Best Streak
           </ThemedText>
         </View>
-      </View>
+      </Animated.View>
 
-      <Pressable
-        style={styles.subscriptionCard}
-        onPress={() => {}}
-      >
-        <View style={styles.subscriptionIcon}>
-          <Feather name="zap" size={24} color={Colors.dark.warning} />
-        </View>
-        <View style={styles.subscriptionContent}>
-          <ThemedText type="bodyBold">Operator Pro</ThemedText>
-          <ThemedText type="small" secondary>
-            Active subscription
+      <Animated.View entering={FadeInDown.duration(400).delay(200)}>
+        <Pressable style={styles.subscriptionCard} onPress={handleItemPress}>
+          <View style={styles.subscriptionIcon}>
+            <Feather name="zap" size={24} color={Colors.light.warning} />
+          </View>
+          <View style={styles.subscriptionContent}>
+            <ThemedText type="bodyBold">Operator Pro</ThemedText>
+            <ThemedText type="small" secondary>
+              Active subscription
+            </ThemedText>
+          </View>
+          <Feather
+            name="chevron-right"
+            size={20}
+            color={Colors.light.textSecondary}
+          />
+        </Pressable>
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.duration(400).delay(250)}>
+        <Pressable
+          style={styles.valuesButton}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            navigation.navigate("CoreValues");
+          }}
+        >
+          <View style={styles.valuesIcon}>
+            <Feather name="book-open" size={20} color={Colors.light.accent} />
+          </View>
+          <ThemedText type="bodyBold" style={styles.valuesLabel}>
+            Core Values
           </ThemedText>
-        </View>
-        <Feather name="chevron-right" size={20} color={Colors.dark.textSecondary} />
-      </Pressable>
+          <Feather
+            name="chevron-right"
+            size={20}
+            color={Colors.light.textSecondary}
+          />
+        </Pressable>
+      </Animated.View>
 
-      <Pressable
-        style={styles.valuesButton}
-        onPress={() => navigation.navigate("CoreValues")}
-      >
-        <View style={styles.valuesIcon}>
-          <Feather name="book-open" size={20} color={Colors.dark.accent} />
-        </View>
-        <ThemedText type="bodyBold">Core Values</ThemedText>
-        <Feather name="chevron-right" size={20} color={Colors.dark.textSecondary} />
-      </Pressable>
-
-      {SETTINGS_SECTIONS.map((section) => (
-        <View key={section.title} style={styles.settingsSection}>
+      {SETTINGS_SECTIONS.map((section, sectionIndex) => (
+        <Animated.View
+          key={section.title}
+          style={styles.settingsSection}
+          entering={FadeInDown.duration(400).delay(300 + sectionIndex * 50)}
+        >
           <ThemedText type="caption" secondary style={styles.sectionTitle}>
             {section.title.toUpperCase()}
           </ThemedText>
@@ -165,24 +196,27 @@ export default function ProfileScreen() {
                   styles.settingsItem,
                   index < section.items.length - 1 && styles.settingsItemBorder,
                 ]}
+                onPress={handleItemPress}
               >
-                <Feather
-                  name={item.icon as any}
-                  size={20}
-                  color={Colors.dark.textSecondary}
-                />
+                <View style={styles.settingsIconContainer}>
+                  <Feather
+                    name={item.icon as any}
+                    size={18}
+                    color={Colors.light.textSecondary}
+                  />
+                </View>
                 <ThemedText type="body" style={styles.settingsLabel}>
                   {item.label}
                 </ThemedText>
                 <Feather
                   name="chevron-right"
-                  size={20}
-                  color={Colors.dark.textSecondary}
+                  size={18}
+                  color={Colors.light.textSecondary}
                 />
               </Pressable>
             ))}
           </View>
-        </View>
+        </Animated.View>
       ))}
 
       <ThemedText type="caption" secondary style={styles.version}>
@@ -195,7 +229,7 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.dark.backgroundRoot,
+    backgroundColor: Colors.light.backgroundRoot,
   },
   contentContainer: {
     paddingHorizontal: Spacing.lg,
@@ -213,26 +247,26 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: Colors.dark.backgroundDefault,
+    backgroundColor: Colors.light.backgroundSecondary,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 3,
-    borderColor: Colors.dark.accent,
+    borderColor: Colors.light.accent,
   },
   avatarText: {
-    color: Colors.dark.accent,
+    color: Colors.light.accent,
   },
   tierBadge: {
     position: "absolute",
     bottom: 0,
     right: 0,
-    backgroundColor: Colors.dark.accent,
+    backgroundColor: Colors.light.accent,
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.full,
   },
   tierText: {
-    color: Colors.dark.text,
+    color: "#FFFFFF",
     fontWeight: "600",
   },
   name: {
@@ -245,29 +279,33 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: Colors.dark.backgroundDefault,
+    backgroundColor: Colors.light.backgroundRoot,
     padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.xl,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
   statValue: {
-    color: Colors.dark.accent,
+    color: Colors.light.accent,
     marginBottom: Spacing.xs,
   },
   subscriptionCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.dark.backgroundDefault,
+    backgroundColor: Colors.light.backgroundRoot,
     padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.xl,
     marginBottom: Spacing.md,
     gap: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
   subscriptionIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.dark.backgroundSecondary,
+    backgroundColor: Colors.light.backgroundSecondary,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -277,19 +315,24 @@ const styles = StyleSheet.create({
   valuesButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.dark.backgroundDefault,
+    backgroundColor: Colors.light.backgroundRoot,
     padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.xl,
     marginBottom: Spacing.xl,
     gap: Spacing.md,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
   valuesIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.dark.backgroundSecondary,
+    backgroundColor: Colors.light.backgroundSecondary,
     justifyContent: "center",
     alignItems: "center",
+  },
+  valuesLabel: {
+    flex: 1,
   },
   settingsSection: {
     marginBottom: Spacing.xl,
@@ -299,9 +342,11 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.sm,
   },
   settingsCard: {
-    backgroundColor: Colors.dark.backgroundDefault,
-    borderRadius: BorderRadius.lg,
+    backgroundColor: Colors.light.backgroundRoot,
+    borderRadius: BorderRadius.xl,
     overflow: "hidden",
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
   settingsItem: {
     flexDirection: "row",
@@ -311,7 +356,15 @@ const styles = StyleSheet.create({
   },
   settingsItemBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: Colors.dark.border,
+    borderBottomColor: Colors.light.border,
+  },
+  settingsIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.light.backgroundSecondary,
+    alignItems: "center",
+    justifyContent: "center",
   },
   settingsLabel: {
     flex: 1,

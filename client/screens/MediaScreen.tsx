@@ -3,6 +3,9 @@ import { View, StyleSheet, ScrollView, Pressable } from "react-native";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import Animated, { FadeInDown } from "react-native-reanimated";
+
 import { ThemedText } from "@/components/ThemedText";
 import { EpisodeCard } from "@/components/EpisodeCard";
 import { Colors, Spacing, BorderRadius } from "@/constants/theme";
@@ -24,6 +27,12 @@ export default function MediaScreen() {
   const featuredEpisode = allEpisodes[0];
 
   const handleEpisodePress = (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const handleCategoryChange = (category: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelectedCategory(category);
   };
 
   return (
@@ -31,14 +40,21 @@ export default function MediaScreen() {
       style={styles.container}
       contentContainerStyle={[
         styles.contentContainer,
-        { paddingTop: headerHeight + Spacing.xl, paddingBottom: tabBarHeight + Spacing.xl },
+        {
+          paddingTop: headerHeight + Spacing.xl,
+          paddingBottom: tabBarHeight + Spacing.xl,
+        },
       ]}
+      showsVerticalScrollIndicator={false}
     >
-      <View style={styles.featuredCard}>
+      <Animated.View
+        style={styles.featuredCard}
+        entering={FadeInDown.duration(400)}
+      >
         <View style={styles.featuredContent}>
-          <View style={styles.liveBadge}>
-            <Feather name="play-circle" size={14} color={Colors.dark.text} />
-            <ThemedText type="caption" style={styles.liveBadgeText}>
+          <View style={styles.latestBadge}>
+            <Feather name="play-circle" size={14} color="#FFFFFF" />
+            <ThemedText type="caption" style={styles.latestBadgeText}>
               LATEST
             </ThemedText>
           </View>
@@ -50,43 +66,53 @@ export default function MediaScreen() {
           </ThemedText>
           <Pressable
             style={styles.playButton}
-            onPress={() => handleEpisodePress(featuredEpisode.id)}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              handleEpisodePress(featuredEpisode.id);
+            }}
           >
-            <Feather name="play" size={20} color={Colors.dark.text} />
-            <ThemedText type="bodyBold">Play Now</ThemedText>
-          </Pressable>
-        </View>
-      </View>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.categoriesContainer}
-      >
-        {CATEGORIES.map((category) => (
-          <Pressable
-            key={category}
-            style={[
-              styles.categoryPill,
-              selectedCategory === category && styles.categoryPillActive,
-            ]}
-            onPress={() => setSelectedCategory(category)}
-          >
-            <ThemedText
-              type="small"
-              style={[
-                styles.categoryText,
-                selectedCategory === category && styles.categoryTextActive,
-              ]}
-            >
-              {category}
+            <Feather name="play" size={18} color="#FFFFFF" />
+            <ThemedText type="bodyBold" style={styles.playButtonText}>
+              Play Now
             </ThemedText>
           </Pressable>
-        ))}
-      </ScrollView>
+        </View>
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.duration(400).delay(100)}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriesContainer}
+        >
+          {CATEGORIES.map((category) => (
+            <Pressable
+              key={category}
+              style={[
+                styles.categoryPill,
+                selectedCategory === category && styles.categoryPillActive,
+              ]}
+              onPress={() => handleCategoryChange(category)}
+            >
+              <ThemedText
+                type="small"
+                style={[
+                  styles.categoryText,
+                  selectedCategory === category && styles.categoryTextActive,
+                ]}
+              >
+                {category}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </ScrollView>
+      </Animated.View>
 
       {continueWatching.length > 0 && selectedCategory === "All" ? (
-        <View style={styles.section}>
+        <Animated.View
+          style={styles.section}
+          entering={FadeInDown.duration(400).delay(200)}
+        >
           <ThemedText type="h4" style={styles.sectionTitle}>
             CONTINUE WATCHING
           </ThemedText>
@@ -108,23 +134,31 @@ export default function MediaScreen() {
               />
             ))}
           </ScrollView>
-        </View>
+        </Animated.View>
       ) : null}
 
       <View style={styles.section}>
-        <ThemedText type="h4" style={styles.sectionTitle}>
-          {selectedCategory === "All" ? "ALL EPISODES" : selectedCategory.toUpperCase()}
-        </ThemedText>
-        {filteredEpisodes.map((episode) => (
-          <EpisodeCard
+        <Animated.View entering={FadeInDown.duration(400).delay(300)}>
+          <ThemedText type="h4" style={styles.sectionTitle}>
+            {selectedCategory === "All"
+              ? "ALL EPISODES"
+              : selectedCategory.toUpperCase()}
+          </ThemedText>
+        </Animated.View>
+        {filteredEpisodes.map((episode, index) => (
+          <Animated.View
             key={episode.id}
-            id={episode.id}
-            title={episode.title}
-            description={episode.description}
-            duration={episode.duration}
-            progress={episode.progress}
-            onPress={handleEpisodePress}
-          />
+            entering={FadeInDown.duration(400).delay(350 + index * 50)}
+          >
+            <EpisodeCard
+              id={episode.id}
+              title={episode.title}
+              description={episode.description}
+              duration={episode.duration}
+              progress={episode.progress}
+              onPress={handleEpisodePress}
+            />
+          </Animated.View>
         ))}
       </View>
     </ScrollView>
@@ -134,33 +168,35 @@ export default function MediaScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.dark.backgroundRoot,
+    backgroundColor: Colors.light.backgroundRoot,
   },
   contentContainer: {
     paddingHorizontal: Spacing.lg,
   },
   featuredCard: {
-    backgroundColor: Colors.dark.backgroundDefault,
+    backgroundColor: Colors.light.backgroundRoot,
     borderRadius: BorderRadius.xl,
     overflow: "hidden",
     marginBottom: Spacing.xl,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
   featuredContent: {
     padding: Spacing.xl,
   },
-  liveBadge: {
+  latestBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.dark.accent,
+    backgroundColor: Colors.light.accent,
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.xs,
+    borderRadius: BorderRadius.sm,
     alignSelf: "flex-start",
     gap: Spacing.xs,
     marginBottom: Spacing.md,
   },
-  liveBadgeText: {
-    color: Colors.dark.text,
+  latestBadgeText: {
+    color: "#FFFFFF",
     fontWeight: "600",
   },
   featuredTitle: {
@@ -169,13 +205,16 @@ const styles = StyleSheet.create({
   playButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.dark.accent,
+    backgroundColor: Colors.light.accent,
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.full,
     alignSelf: "flex-start",
     gap: Spacing.sm,
     marginTop: Spacing.lg,
+  },
+  playButtonText: {
+    color: "#FFFFFF",
   },
   categoriesContainer: {
     paddingVertical: Spacing.md,
@@ -184,18 +223,18 @@ const styles = StyleSheet.create({
   categoryPill: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.dark.backgroundDefault,
+    backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: BorderRadius.full,
     marginRight: Spacing.sm,
   },
   categoryPillActive: {
-    backgroundColor: Colors.dark.accent,
+    backgroundColor: Colors.light.text,
   },
   categoryText: {
-    color: Colors.dark.textSecondary,
+    color: Colors.light.textSecondary,
   },
   categoryTextActive: {
-    color: Colors.dark.text,
+    color: Colors.light.backgroundRoot,
     fontWeight: "600",
   },
   section: {
@@ -205,6 +244,6 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   horizontalList: {
-    paddingRight: Spacing.lg,
+    gap: Spacing.md,
   },
 });

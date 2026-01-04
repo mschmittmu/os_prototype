@@ -11,7 +11,9 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Feather } from "@expo/vector-icons";
-import Animated, { FadeIn } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
+import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+
 import { ThemedText } from "@/components/ThemedText";
 import { TaskCard } from "@/components/TaskCard";
 import { FAB } from "@/components/FAB";
@@ -37,7 +39,12 @@ export default function ExecuteScreen() {
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [streak, setStreak] = useState<StreakData>({ current: 0, best: 0, totalDaysWon: 0, totalDaysLost: 0 });
+  const [streak, setStreak] = useState<StreakData>({
+    current: 0,
+    best: 0,
+    totalDaysWon: 0,
+    totalDaysLost: 0,
+  });
   const [refreshing, setRefreshing] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
@@ -59,11 +66,13 @@ export default function ExecuteScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await loadData();
     setRefreshing(false);
   }, [loadData]);
 
   const handleToggleTask = async (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     const updatedTasks = tasks.map((t) =>
       t.id === id ? { ...t, completed: !t.completed } : t
     );
@@ -79,6 +88,7 @@ export default function ExecuteScreen() {
 
     const allComplete = updatedTasks.every((t) => t.completed);
     if (allComplete && updatedTasks.length >= 5) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const newStreak = await checkAndUpdateStreak(true);
       setStreak(newStreak);
       setShowCelebration(true);
@@ -86,6 +96,7 @@ export default function ExecuteScreen() {
   };
 
   const handleEditTask = (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     navigation.navigate("TaskCreate", { taskId: id });
   };
 
@@ -103,7 +114,8 @@ export default function ExecuteScreen() {
     const currentDay = today.getDay();
     return DAYS.map((day, index) => ({
       label: day,
-      status: index < currentDay ? "won" : index === currentDay ? "current" : "future",
+      status:
+        index < currentDay ? "won" : index === currentDay ? "current" : "future",
     }));
   };
 
@@ -115,17 +127,24 @@ export default function ExecuteScreen() {
         style={styles.scrollView}
         contentContainerStyle={[
           styles.contentContainer,
-          { paddingTop: headerHeight + Spacing.xl, paddingBottom: tabBarHeight + Spacing["4xl"] },
+          {
+            paddingTop: headerHeight + Spacing.xl,
+            paddingBottom: tabBarHeight + Spacing["4xl"],
+          },
         ]}
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={Colors.dark.accent}
+            tintColor={Colors.light.accent}
           />
         }
       >
-        <View style={styles.weekStrip}>
+        <Animated.View
+          style={styles.weekStrip}
+          entering={FadeInDown.duration(400)}
+        >
           {weekDays.map((day, index) => (
             <View
               key={index}
@@ -140,6 +159,7 @@ export default function ExecuteScreen() {
                 style={[
                   styles.dayLabel,
                   day.status === "won" && styles.dayLabelWon,
+                  day.status === "current" && styles.dayLabelCurrent,
                 ]}
               >
                 {day.label}
@@ -148,13 +168,23 @@ export default function ExecuteScreen() {
           ))}
           <Pressable
             style={styles.statsButton}
-            onPress={() => navigation.navigate("Stats")}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              navigation.navigate("Stats");
+            }}
           >
-            <Feather name="bar-chart-2" size={20} color={Colors.dark.textSecondary} />
+            <Feather
+              name="bar-chart-2"
+              size={20}
+              color={Colors.light.textSecondary}
+            />
           </Pressable>
-        </View>
+        </Animated.View>
 
-        <View style={styles.progressContainer}>
+        <Animated.View
+          style={styles.progressContainer}
+          entering={FadeInDown.duration(400).delay(100)}
+        >
           <View style={styles.progressHeader}>
             <ThemedText type="h4">POWER LIST</ThemedText>
             <ThemedText type="bodyBold" style={styles.progressText}>
@@ -167,35 +197,54 @@ export default function ExecuteScreen() {
               entering={FadeIn}
             />
           </View>
-        </View>
+        </Animated.View>
 
         <View style={styles.taskList}>
-          {tasks.map((task) => (
-            <TaskCard
+          {tasks.map((task, index) => (
+            <Animated.View
               key={task.id}
-              id={task.id}
-              title={task.title}
-              category={task.category}
-              completed={task.completed}
-              onToggle={handleToggleTask}
-              onEdit={handleEditTask}
-            />
+              entering={FadeInDown.duration(400).delay(150 + index * 50)}
+            >
+              <TaskCard
+                id={task.id}
+                title={task.title}
+                category={task.category}
+                completed={task.completed}
+                onToggle={handleToggleTask}
+                onEdit={handleEditTask}
+              />
+            </Animated.View>
           ))}
         </View>
 
         {tasks.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Feather name="check-square" size={48} color={Colors.dark.textSecondary} />
-            <ThemedText type="body" secondary style={styles.emptyText}>
-              No tasks yet. Add your first task to start winning.
+          <Animated.View
+            style={styles.emptyState}
+            entering={FadeInDown.duration(400).delay(200)}
+          >
+            <View style={styles.emptyIcon}>
+              <Feather
+                name="check-square"
+                size={40}
+                color={Colors.light.textSecondary}
+              />
+            </View>
+            <ThemedText type="h4" style={styles.emptyTitle}>
+              No tasks yet
             </ThemedText>
-          </View>
+            <ThemedText type="body" secondary style={styles.emptyText}>
+              Add your first task to start winning the day.
+            </ThemedText>
+          </Animated.View>
         ) : null}
       </ScrollView>
 
       <FAB
         icon="plus"
-        onPress={() => navigation.navigate("TaskCreate")}
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          navigation.navigate("TaskCreate");
+        }}
         style={{ bottom: tabBarHeight + Spacing.xl, right: Spacing.lg }}
       />
 
@@ -213,7 +262,7 @@ export default function ExecuteScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.dark.backgroundRoot,
+    backgroundColor: Colors.light.backgroundRoot,
   },
   scrollView: {
     flex: 1,
@@ -232,22 +281,25 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: Colors.dark.backgroundDefault,
+    backgroundColor: Colors.light.backgroundSecondary,
     justifyContent: "center",
     alignItems: "center",
   },
   dayWon: {
-    backgroundColor: Colors.dark.success,
+    backgroundColor: Colors.light.success,
   },
   dayCurrent: {
-    backgroundColor: Colors.dark.accent,
+    backgroundColor: Colors.light.accent,
   },
   dayLabel: {
-    color: Colors.dark.textSecondary,
+    color: Colors.light.textSecondary,
     fontWeight: "600",
   },
   dayLabelWon: {
-    color: Colors.dark.backgroundRoot,
+    color: Colors.light.backgroundRoot,
+  },
+  dayLabelCurrent: {
+    color: Colors.light.backgroundRoot,
   },
   statsButton: {
     padding: Spacing.sm,
@@ -262,17 +314,17 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   progressText: {
-    color: Colors.dark.accent,
+    color: Colors.light.accent,
   },
   progressBar: {
     height: 8,
-    backgroundColor: Colors.dark.backgroundDefault,
+    backgroundColor: Colors.light.backgroundTertiary,
     borderRadius: BorderRadius.full,
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    backgroundColor: Colors.dark.accent,
+    backgroundColor: Colors.light.accent,
     borderRadius: BorderRadius.full,
   },
   taskList: {
@@ -281,9 +333,22 @@ const styles = StyleSheet.create({
   emptyState: {
     alignItems: "center",
     paddingVertical: Spacing["4xl"],
-    gap: Spacing.lg,
+    gap: Spacing.md,
+  },
+  emptyIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.light.backgroundSecondary,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.sm,
+  },
+  emptyTitle: {
+    textAlign: "center",
   },
   emptyText: {
     textAlign: "center",
+    maxWidth: 280,
   },
 });

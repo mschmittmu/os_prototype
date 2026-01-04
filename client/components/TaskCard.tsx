@@ -6,7 +6,6 @@ import Animated, {
   useSharedValue,
   withSpring,
   withSequence,
-  runOnJS,
   FadeIn,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -54,13 +53,20 @@ export function TaskCard({
   const handlePress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     scale.value = withSequence(
-      withSpring(0.95, { damping: 15 }),
-      withSpring(1, { damping: 15 })
+      withSpring(0.98, { damping: 15, stiffness: 400 }),
+      withSpring(1, { damping: 15, stiffness: 400 })
     );
     if (!completed) {
-      checkScale.value = withSpring(1, { damping: 15 });
+      checkScale.value = withSpring(1, { damping: 12, stiffness: 200 });
+    } else {
+      checkScale.value = withSpring(0, { damping: 12, stiffness: 200 });
     }
     onToggle(id);
+  };
+
+  const handleLongPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    onEdit?.(id);
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -73,19 +79,19 @@ export function TaskCard({
   }));
 
   const icon = categoryIcons[category] || "star";
-  const color = categoryColors[category] || Colors.dark.accent;
+  const color = categoryColors[category] || Colors.light.accent;
 
   return (
     <AnimatedPressable
       onPress={handlePress}
-      onLongPress={() => onEdit?.(id)}
+      onLongPress={handleLongPress}
       style={[styles.container, animatedStyle]}
       entering={FadeIn.duration(300)}
     >
       <View style={styles.checkbox}>
         {completed ? (
           <Animated.View style={[styles.checkboxFilled, checkAnimatedStyle]}>
-            <Feather name="check" size={16} color={Colors.dark.backgroundRoot} />
+            <Feather name="check" size={16} color={Colors.light.backgroundRoot} />
           </Animated.View>
         ) : (
           <View style={styles.checkboxEmpty} />
@@ -94,21 +100,18 @@ export function TaskCard({
       <View style={styles.content}>
         <ThemedText
           type="bodyBold"
-          style={[
-            styles.title,
-            completed && styles.titleCompleted,
-          ]}
+          style={[styles.title, completed && styles.titleCompleted]}
         >
           {title}
         </ThemedText>
         <View style={styles.categoryContainer}>
-          <Feather name={icon} size={12} color={color} />
+          <View style={[styles.categoryDot, { backgroundColor: color }]} />
           <ThemedText type="caption" style={[styles.category, { color }]}>
             {category}
           </ThemedText>
         </View>
       </View>
-      <Feather name="chevron-right" size={20} color={Colors.dark.textSecondary} />
+      <Feather name="chevron-right" size={20} color={Colors.light.textSecondary} />
     </AnimatedPressable>
   );
 }
@@ -117,10 +120,11 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.dark.backgroundDefault,
+    backgroundColor: Colors.light.backgroundRoot,
     padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.sm,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
   checkbox: {
     marginRight: Spacing.md,
@@ -128,15 +132,15 @@ const styles = StyleSheet.create({
   checkboxEmpty: {
     width: 24,
     height: 24,
-    borderRadius: BorderRadius.xs,
+    borderRadius: 12,
     borderWidth: 2,
-    borderColor: Colors.dark.border,
+    borderColor: Colors.light.border,
   },
   checkboxFilled: {
     width: 24,
     height: 24,
-    borderRadius: BorderRadius.xs,
-    backgroundColor: Colors.dark.accent,
+    borderRadius: 12,
+    backgroundColor: Colors.light.accent,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -155,8 +159,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: Spacing.xs,
   },
+  categoryDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
   category: {
     textTransform: "uppercase",
     letterSpacing: 0.5,
+    fontSize: 11,
   },
 });

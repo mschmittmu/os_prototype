@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   StyleSheet,
@@ -11,6 +11,14 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Feather } from "@expo/vector-icons";
+import * as Haptics from "expo-haptics";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  FadeInDown,
+} from "react-native-reanimated";
+
 import { ThemedText } from "@/components/ThemedText";
 import { Card } from "@/components/Card";
 import { ProgressRing } from "@/components/ProgressRing";
@@ -30,12 +38,88 @@ import { episodes, challenges } from "@/lib/mockData";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+function QuickActionButton({
+  icon,
+  label,
+  onPress,
+  delay = 0,
+}: {
+  icon: keyof typeof Feather.glyphMap;
+  label: string;
+  onPress: () => void;
+  delay?: number;
+}) {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.95, { damping: 15, stiffness: 400 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 15, stiffness: 400 });
+  };
+
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    onPress();
+  };
+
+  return (
+    <AnimatedPressable
+      style={[styles.quickAction, animatedStyle]}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      onPress={handlePress}
+    >
+      <View style={styles.quickActionIcon}>
+        <Feather name={icon} size={20} color={Colors.light.accent} />
+      </View>
+      <ThemedText type="small">{label}</ThemedText>
+    </AnimatedPressable>
+  );
+}
+
+function StatCard({
+  value,
+  label,
+  accent = false,
+}: {
+  value: string | number;
+  label: string;
+  accent?: boolean;
+}) {
+  return (
+    <View style={styles.statCard}>
+      <ThemedText
+        type="statSmall"
+        style={[styles.statValue, accent && { color: Colors.light.accent }]}
+      >
+        {value}
+      </ThemedText>
+      <ThemedText type="caption" secondary>
+        {label}
+      </ThemedText>
+    </View>
+  );
+}
+
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [streak, setStreak] = useState<StreakData>({ current: 0, best: 0, totalDaysWon: 0, totalDaysLost: 0 });
+  const [streak, setStreak] = useState<StreakData>({
+    current: 0,
+    best: 0,
+    totalDaysWon: 0,
+    totalDaysLost: 0,
+  });
   const [user, setUser] = useState<UserData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -58,6 +142,7 @@ export default function HomeScreen() {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await loadData();
     setRefreshing(false);
   }, [loadData]);
@@ -67,23 +152,6 @@ export default function HomeScreen() {
   const progress = totalTasks > 0 ? completedTasks / totalTasks : 0;
   const allComplete = completedTasks === totalTasks && totalTasks > 0;
 
-  const getTimeRemaining = () => {
-    const now = new Date();
-    const endOfDay = new Date(now);
-    endOfDay.setHours(23, 59, 59, 999);
-    const diff = endOfDay.getTime() - now.getTime();
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    return `${hours}h ${minutes}m`;
-  };
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
-  };
-
   const continueWatching = episodes.filter((e) => e.progress > 0);
   const activeChallenge = challenges.find((c) => c.active);
 
@@ -92,82 +160,93 @@ export default function HomeScreen() {
       style={styles.container}
       contentContainerStyle={[
         styles.contentContainer,
-        { paddingTop: headerHeight + Spacing.xl, paddingBottom: tabBarHeight + Spacing.xl },
+        {
+          paddingTop: headerHeight + Spacing.xl,
+          paddingBottom: tabBarHeight + Spacing.xl,
+        },
       ]}
+      showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={Colors.dark.accent}
+          tintColor={Colors.light.accent}
         />
       }
     >
-      <View style={styles.header}>
-        <View>
-          <ThemedText type="body" secondary>
-            {getGreeting()},
-          </ThemedText>
-          <ThemedText type="h2">{user?.name || "Operator"}</ThemedText>
-        </View>
-        <StreakBadge streak={streak.current} size="medium" />
-      </View>
-
-      <Card
-        elevation={1}
-        style={styles.powerListCard}
-        onPress={() => navigation.getParent()?.navigate("ExecuteTab")}
-      >
-        <View style={styles.powerListHeader}>
-          <ThemedText type="h3">TODAY'S POWER LIST</ThemedText>
-          {!allComplete ? (
-            <View style={styles.urgency}>
-              <Feather name="clock" size={14} color={Colors.dark.warning} />
-              <ThemedText type="caption" style={styles.urgencyText}>
-                {getTimeRemaining()} left
+      <Animated.View entering={FadeInDown.duration(400).delay(0)}>
+        <Card
+          elevation={1}
+          style={styles.todayCard}
+          onPress={() => navigation.getParent()?.navigate("ExecuteTab")}
+        >
+          <View style={styles.todayHeader}>
+            <ThemedText type="h2">TODAY'S TASKS</ThemedText>
+            <View style={styles.viewButton}>
+              <ThemedText type="small">View Task List</ThemedText>
+            </View>
+          </View>
+          {allComplete ? (
+            <View style={styles.dayWonContainer}>
+              <ThemedText type="h3" style={styles.dayWonText}>
+                YOU'VE WON THE DAY AND
+              </ThemedText>
+              <ThemedText type="h3" style={styles.dayWonText}>
+                COMPLETED ALL YOUR TASKS.
               </ThemedText>
             </View>
-          ) : null}
-        </View>
-        <View style={styles.powerListContent}>
-          <ProgressRing
-            progress={progress}
-            size={100}
-            strokeWidth={8}
-            showLabel={false}
-          />
-          <View style={styles.powerListStats}>
-            {allComplete ? (
-              <>
-                <ThemedText type="h2" style={styles.dayWonText}>
-                  DAY WON
+          ) : (
+            <View style={styles.powerListContent}>
+              <ProgressRing
+                progress={progress}
+                size={80}
+                strokeWidth={6}
+                showLabel={false}
+              />
+              <View style={styles.powerListStats}>
+                <ThemedText type="stat">
+                  {completedTasks}/{totalTasks}
                 </ThemedText>
-                <ThemedText type="small" secondary>
-                  All tasks complete
-                </ThemedText>
-              </>
-            ) : (
-              <>
-                <ThemedText type="stat">{completedTasks}/{totalTasks}</ThemedText>
                 <ThemedText type="small" secondary>
                   tasks complete
                 </ThemedText>
-              </>
-            )}
-          </View>
-        </View>
-      </Card>
+              </View>
+            </View>
+          )}
+        </Card>
+      </Animated.View>
 
       {activeChallenge ? (
-        <Card elevation={1} style={styles.challengeCard}>
-          <View style={styles.challengeHeader}>
-            <ThemedText type="h4">{activeChallenge.name}</ThemedText>
-            <View style={[styles.difficultyBadge, { backgroundColor: Colors.dark.accent }]}>
-              <ThemedText type="caption" style={styles.difficultyText}>
-                {activeChallenge.difficulty}
-              </ThemedText>
-            </View>
+        <Animated.View entering={FadeInDown.duration(400).delay(100)}>
+          <View style={styles.sectionHeader}>
+            <ThemedText type="h2">CURRENT CHALLENGES</ThemedText>
+            <Pressable
+              onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+            >
+              <View style={styles.viewLink}>
+                <ThemedText type="small" secondary>
+                  View Challenges
+                </ThemedText>
+                <Feather
+                  name="arrow-right"
+                  size={14}
+                  color={Colors.light.textSecondary}
+                />
+              </View>
+            </Pressable>
           </View>
-          <View style={styles.challengeProgress}>
+          <Card elevation={1} style={styles.challengeCard}>
+            <View style={styles.challengeRow}>
+              <View style={styles.challengeInfo}>
+                <ThemedText type="h4">{activeChallenge.name}</ThemedText>
+                <ThemedText type="small" secondary>
+                  {Math.round(activeChallenge.progress * 0.03)}/3 days completed
+                </ThemedText>
+              </View>
+              <View style={styles.checkCircle}>
+                <Feather name="check" size={18} color={Colors.light.text} />
+              </View>
+            </View>
             <View style={styles.progressBar}>
               <View
                 style={[
@@ -176,69 +255,73 @@ export default function HomeScreen() {
                 ]}
               />
             </View>
-            <ThemedText type="small" secondary>
-              Day {Math.round(activeChallenge.progress * 0.75)} of 75
-            </ThemedText>
-          </View>
-        </Card>
+          </Card>
+        </Animated.View>
       ) : null}
 
-      <View style={styles.xpRow}>
-        <View style={styles.xpCard}>
-          <ThemedText type="statSmall" style={styles.xpValue}>
-            {user?.xp || 0}
-          </ThemedText>
-          <ThemedText type="caption" secondary>
-            Total XP
-          </ThemedText>
+      <Animated.View entering={FadeInDown.duration(400).delay(200)}>
+        <View style={styles.sectionHeader}>
+          <ThemedText type="h2">XP PROGRESS</ThemedText>
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              navigation.navigate("Stats");
+            }}
+          >
+            <View style={styles.viewLink}>
+              <ThemedText type="small" secondary>
+                View Leaderboards
+              </ThemedText>
+              <Feather
+                name="arrow-right"
+                size={14}
+                color={Colors.light.textSecondary}
+              />
+            </View>
+          </Pressable>
         </View>
-        <View style={styles.xpCard}>
-          <ThemedText type="statSmall" style={styles.xpValue}>
-            {streak.totalDaysWon}
-          </ThemedText>
-          <ThemedText type="caption" secondary>
-            Days Won
-          </ThemedText>
+        <View style={styles.statsRow}>
+          <Card elevation={1} style={styles.statCardWrapper}>
+            <ThemedText type="h3" style={styles.statValueLarge}>
+              +{user?.xp || 7560} XP
+            </ThemedText>
+            <ThemedText type="small" secondary>
+              This Month
+            </ThemedText>
+          </Card>
+          <Card elevation={1} style={styles.statCardWrapper}>
+            <ThemedText type="h3" style={styles.statValueLarge}>
+              #{Math.floor(Math.random() * 5) + 1}
+            </ThemedText>
+            <ThemedText type="small" secondary>
+              Position In Iron Tier
+            </ThemedText>
+          </Card>
         </View>
-        <View style={styles.xpCard}>
-          <ThemedText type="statSmall" style={styles.xpValue}>
-            #{Math.floor(Math.random() * 100) + 1}
-          </ThemedText>
-          <ThemedText type="caption" secondary>
-            Rank
-          </ThemedText>
-        </View>
-      </View>
-
-      <View style={styles.quickActions}>
-        <Pressable
-          style={styles.quickAction}
-          onPress={() => navigation.navigate("TaskCreate")}
-        >
-          <Feather name="plus-circle" size={24} color={Colors.dark.accent} />
-          <ThemedText type="small">Create Task</ThemedText>
-        </Pressable>
-        <Pressable
-          style={styles.quickAction}
-          onPress={() => navigation.navigate("CoreValues")}
-        >
-          <Feather name="target" size={24} color={Colors.dark.accent} />
-          <ThemedText type="small">Core Values</ThemedText>
-        </Pressable>
-        <Pressable
-          style={styles.quickAction}
-          onPress={() => navigation.navigate("Stats")}
-        >
-          <Feather name="bar-chart-2" size={24} color={Colors.dark.accent} />
-          <ThemedText type="small">Stats</ThemedText>
-        </Pressable>
-      </View>
+      </Animated.View>
 
       {continueWatching.length > 0 ? (
-        <View style={styles.section}>
-          <ThemedText type="h4" style={styles.sectionTitle}>
-            CONTINUE WATCHING
-          </ThemedText>
+        <Animated.View entering={FadeInDown.duration(400).delay(300)}>
+          <View style={styles.sectionHeader}>
+            <ThemedText type="h2">CONTINUE WATCHING</ThemedText>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                navigation.getParent()?.navigate("MediaTab");
+              }}
+            >
+              <View style={styles.viewLink}>
+                <ThemedText type="small" secondary>
+                  View All Episodes
+                </ThemedText>
+                <Feather
+                  name="arrow-right"
+                  size={14}
+                  color={Colors.light.textSecondary}
+                />
+              </View>
+            </Pressable>
+          </View>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -257,7 +340,7 @@ export default function HomeScreen() {
               />
             ))}
           </ScrollView>
-        </View>
+        </Animated.View>
       ) : null}
     </ScrollView>
   );
@@ -266,33 +349,36 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.dark.backgroundRoot,
+    backgroundColor: Colors.light.backgroundRoot,
   },
   contentContainer: {
     paddingHorizontal: Spacing.lg,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  todayCard: {
     marginBottom: Spacing.xl,
   },
-  powerListCard: {
-    marginBottom: Spacing.lg,
-  },
-  powerListHeader: {
+  todayHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: Spacing.lg,
   },
-  urgency: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: Spacing.xs,
+  viewButton: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
-  urgencyText: {
-    color: Colors.dark.warning,
+  dayWonContainer: {
+    alignItems: "center",
+    paddingVertical: Spacing.lg,
+  },
+  dayWonText: {
+    color: Colors.light.textSecondary,
+    textAlign: "center",
+    textTransform: "uppercase",
+    letterSpacing: 1,
   },
   powerListContent: {
     flexDirection: "row",
@@ -302,55 +388,72 @@ const styles = StyleSheet.create({
   powerListStats: {
     flex: 1,
   },
-  dayWonText: {
-    color: Colors.dark.success,
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: Spacing.md,
+    marginTop: Spacing.sm,
+  },
+  viewLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.xs,
   },
   challengeCard: {
     marginBottom: Spacing.lg,
   },
-  challengeHeader: {
+  challengeRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: Spacing.md,
   },
-  difficultyBadge: {
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.xs,
+  challengeInfo: {
+    flex: 1,
+    gap: Spacing.xs,
   },
-  difficultyText: {
-    color: Colors.dark.text,
-    fontWeight: "600",
-  },
-  challengeProgress: {
-    gap: Spacing.sm,
+  checkCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Colors.light.accent,
+    alignItems: "center",
+    justifyContent: "center",
   },
   progressBar: {
-    height: 8,
-    backgroundColor: Colors.dark.backgroundSecondary,
+    height: 6,
+    backgroundColor: Colors.light.backgroundTertiary,
     borderRadius: BorderRadius.full,
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    backgroundColor: Colors.dark.accent,
+    backgroundColor: Colors.light.accent,
     borderRadius: BorderRadius.full,
   },
-  xpRow: {
+  statsRow: {
     flexDirection: "row",
     gap: Spacing.md,
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
-  xpCard: {
+  statCardWrapper: {
     flex: 1,
-    backgroundColor: Colors.dark.backgroundDefault,
+    alignItems: "flex-start",
+  },
+  statValueLarge: {
+    marginBottom: Spacing.xs,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: Colors.light.backgroundDefault,
     padding: Spacing.md,
     borderRadius: BorderRadius.lg,
     alignItems: "center",
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
-  xpValue: {
-    color: Colors.dark.accent,
+  statValue: {
     marginBottom: Spacing.xs,
   },
   quickActions: {
@@ -360,19 +463,24 @@ const styles = StyleSheet.create({
   },
   quickAction: {
     flex: 1,
-    backgroundColor: Colors.dark.backgroundDefault,
+    backgroundColor: Colors.light.backgroundDefault,
     padding: Spacing.lg,
     borderRadius: BorderRadius.lg,
     alignItems: "center",
     gap: Spacing.sm,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
-  section: {
-    marginBottom: Spacing.xl,
-  },
-  sectionTitle: {
-    marginBottom: Spacing.md,
+  quickActionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: Colors.light.backgroundSecondary,
+    alignItems: "center",
+    justifyContent: "center",
   },
   episodesContainer: {
     paddingRight: Spacing.lg,
+    gap: Spacing.md,
   },
 });

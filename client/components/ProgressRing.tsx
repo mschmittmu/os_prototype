@@ -50,7 +50,7 @@ export function ProgressRing({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={Colors.dark.backgroundSecondary}
+          stroke={Colors.light.backgroundTertiary}
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -58,7 +58,7 @@ export function ProgressRing({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={Colors.dark.accent}
+          stroke={Colors.light.accent}
           strokeWidth={strokeWidth}
           fill="none"
           strokeDasharray={circumference}
@@ -96,6 +96,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   percentage: {
-    color: Colors.dark.text,
+    color: Colors.light.text,
   },
 });

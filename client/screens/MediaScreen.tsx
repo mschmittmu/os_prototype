@@ -43,7 +43,7 @@ export default function MediaScreen() {
       contentContainerStyle={[
         styles.contentContainer,
         {
-          paddingTop: headerHeight + Spacing.sm,
+          paddingTop: headerHeight,
           paddingBottom: tabBarHeight + Spacing.xl,
         },
       ]}

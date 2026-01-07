@@ -76,7 +76,7 @@ export default function SocialScreen() {
         contentContainerStyle={[
           styles.contentContainer,
           {
-            paddingTop: headerHeight + Spacing.sm,
+            paddingTop: headerHeight,
             paddingBottom: tabBarHeight + Spacing["4xl"],
           },
         ]}

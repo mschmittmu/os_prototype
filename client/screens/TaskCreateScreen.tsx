@@ -14,7 +14,9 @@ import * as Haptics from "expo-haptics";
 import { ThemedText } from "@/components/ThemedText";
 import { Button } from "@/components/Button";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
-import { Colors, Spacing, BorderRadius } from "@/constants/theme";
+import { VoiceInputButton } from "@/components/VoiceInputButton";
+import { useTheme } from "@/hooks/useTheme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { getTasks, saveTasks, generateId, Task } from "@/lib/storage";
 
@@ -33,10 +35,15 @@ export default function TaskCreateScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProps>();
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Business");
   const [isEditing, setIsEditing] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  const handleVoiceTranscription = (text: string) => {
+    setTitle(text);
+  };
 
   useEffect(() => {
     const loadTask = async () => {
@@ -96,20 +103,32 @@ export default function TaskCreateScreen() {
 
   return (
     <KeyboardAwareScrollViewCompat
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
       contentContainerStyle={[
         styles.contentContainer,
         { paddingBottom: insets.bottom + Spacing.xl },
       ]}
     >
       <View style={styles.inputContainer}>
-        <ThemedText type="caption" secondary style={styles.label}>
-          TASK NAME
-        </ThemedText>
+        <View style={styles.inputHeader}>
+          <ThemedText type="caption" secondary style={styles.label}>
+            TASK NAME
+          </ThemedText>
+          <VoiceInputButton
+            onTranscription={handleVoiceTranscription}
+            disabled={isEditing}
+          />
+        </View>
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            {
+              backgroundColor: theme.backgroundDefault,
+              color: theme.text,
+            },
+          ]}
           placeholder="What needs to be done?"
-          placeholderTextColor={Colors.dark.textSecondary}
+          placeholderTextColor={theme.textSecondary}
           value={title}
           onChangeText={setTitle}
           autoFocus
@@ -127,8 +146,11 @@ export default function TaskCreateScreen() {
               key={cat.id}
               style={[
                 styles.categoryButton,
-                category === cat.id && styles.categoryButtonActive,
-                category === cat.id && { borderColor: cat.color },
+                { backgroundColor: theme.backgroundDefault },
+                category === cat.id && {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: cat.color,
+                },
               ]}
               onPress={() => {
                 Haptics.selectionAsync();
@@ -138,12 +160,12 @@ export default function TaskCreateScreen() {
               <Feather
                 name={cat.icon as any}
                 size={20}
-                color={category === cat.id ? cat.color : Colors.dark.textSecondary}
+                color={category === cat.id ? cat.color : theme.textSecondary}
               />
               <ThemedText
                 type="small"
                 style={[
-                  styles.categoryLabel,
+                  { color: theme.textSecondary },
                   category === cat.id && { color: cat.color },
                 ]}
               >
@@ -161,8 +183,8 @@ export default function TaskCreateScreen() {
 
         {isEditing ? (
           <Pressable style={styles.deleteButton} onPress={handleDelete}>
-            <Feather name="trash-2" size={20} color={Colors.dark.error} />
-            <ThemedText type="body" style={styles.deleteText}>
+            <Feather name="trash-2" size={20} color={theme.error} />
+            <ThemedText type="body" style={{ color: theme.error }}>
               Delete Task
             </ThemedText>
           </Pressable>
@@ -175,7 +197,6 @@ export default function TaskCreateScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.dark.backgroundRoot,
   },
   contentContainer: {
     padding: Spacing.lg,
@@ -184,14 +205,17 @@ const styles = StyleSheet.create({
   inputContainer: {
     gap: Spacing.sm,
   },
+  inputHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
   label: {
     marginLeft: Spacing.sm,
   },
   input: {
-    backgroundColor: Colors.dark.backgroundDefault,
     borderRadius: BorderRadius.lg,
     padding: Spacing.lg,
-    color: Colors.dark.text,
     fontSize: 18,
     minHeight: 80,
     textAlignVertical: "top",
@@ -207,19 +231,12 @@ const styles = StyleSheet.create({
   categoryButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.dark.backgroundDefault,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.lg,
     gap: Spacing.sm,
     borderWidth: 2,
     borderColor: "transparent",
-  },
-  categoryButtonActive: {
-    backgroundColor: Colors.dark.backgroundSecondary,
-  },
-  categoryLabel: {
-    color: Colors.dark.textSecondary,
   },
   actions: {
     marginTop: Spacing.xl,
@@ -231,8 +248,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: Spacing.sm,
     padding: Spacing.lg,
-  },
-  deleteText: {
-    color: Colors.dark.error,
   },
 });

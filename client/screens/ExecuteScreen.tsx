@@ -130,7 +130,7 @@ export default function ExecuteScreen() {
         contentContainerStyle={[
           styles.contentContainer,
           {
-            paddingTop: headerHeight + Spacing.xl,
+            paddingTop: headerHeight + Spacing.sm,
             paddingBottom: tabBarHeight + Spacing["4xl"],
           },
         ]}

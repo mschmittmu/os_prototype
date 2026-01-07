@@ -13,7 +13,8 @@ import * as Haptics from "expo-haptics";
 import { ThemedText } from "@/components/ThemedText";
 import { Button } from "@/components/Button";
 import { KeyboardAwareScrollViewCompat } from "@/components/KeyboardAwareScrollViewCompat";
-import { Colors, Spacing, BorderRadius } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, "PostCompose">;
@@ -23,6 +24,7 @@ const MAX_CHARACTERS = 500;
 export default function PostComposeScreen() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
+  const { theme } = useTheme();
   const [content, setContent] = useState("");
 
   const handlePost = () => {
@@ -37,17 +39,17 @@ export default function PostComposeScreen() {
 
   return (
     <KeyboardAwareScrollViewCompat
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
       contentContainerStyle={[
         styles.contentContainer,
         { paddingBottom: insets.bottom + Spacing.xl },
       ]}
     >
       <View style={styles.header}>
-        <View style={styles.avatar}>
-          <ThemedText type="bodyBold">O</ThemedText>
+        <View style={[styles.avatar, { backgroundColor: theme.accent }]}>
+          <ThemedText type="bodyBold" style={{ color: "#FFFFFF" }}>O</ThemedText>
         </View>
-        <View>
+        <View style={styles.headerText}>
           <ThemedText type="bodyBold">Operator</ThemedText>
           <ThemedText type="caption" secondary>
             Posting to General
@@ -55,35 +57,50 @@ export default function PostComposeScreen() {
         </View>
       </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="What's new? Add a pic or video for impact."
-        placeholderTextColor={Colors.dark.textSecondary}
-        value={content}
-        onChangeText={setContent}
-        multiline
-        autoFocus
-        maxLength={MAX_CHARACTERS + 50}
-      />
+      <View style={[styles.inputContainer, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}>
+        <TextInput
+          style={[styles.input, { color: theme.text }]}
+          placeholder="Share your wins, lessons, or rally the crew..."
+          placeholderTextColor={theme.textSecondary}
+          value={content}
+          onChangeText={setContent}
+          multiline
+          autoFocus
+          maxLength={MAX_CHARACTERS + 50}
+        />
+      </View>
+
+      <ThemedText type="caption" secondary style={styles.sectionLabel}>
+        ADD MEDIA
+      </ThemedText>
 
       <View style={styles.attachments}>
-        <Pressable style={styles.attachButton}>
-          <Feather name="image" size={24} color={Colors.dark.textSecondary} />
-          <ThemedText type="small" secondary>
-            Photo
-          </ThemedText>
+        <Pressable 
+          style={[styles.attachButton, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}
+          onPress={() => Haptics.selectionAsync()}
+        >
+          <View style={[styles.iconContainer, { backgroundColor: theme.accent + "15" }]}>
+            <Feather name="image" size={20} color={theme.accent} />
+          </View>
+          <ThemedText type="small">Photo</ThemedText>
         </Pressable>
-        <Pressable style={styles.attachButton}>
-          <Feather name="video" size={24} color={Colors.dark.textSecondary} />
-          <ThemedText type="small" secondary>
-            Video
-          </ThemedText>
+        <Pressable 
+          style={[styles.attachButton, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}
+          onPress={() => Haptics.selectionAsync()}
+        >
+          <View style={[styles.iconContainer, { backgroundColor: theme.navy + "15" }]}>
+            <Feather name="video" size={20} color={theme.navy} />
+          </View>
+          <ThemedText type="small">Video</ThemedText>
         </Pressable>
-        <Pressable style={styles.attachButton}>
-          <Feather name="target" size={24} color={Colors.dark.textSecondary} />
-          <ThemedText type="small" secondary>
-            Challenge
-          </ThemedText>
+        <Pressable 
+          style={[styles.attachButton, { backgroundColor: theme.backgroundDefault, borderColor: theme.border }]}
+          onPress={() => Haptics.selectionAsync()}
+        >
+          <View style={[styles.iconContainer, { backgroundColor: theme.success + "15" }]}>
+            <Feather name="target" size={20} color={theme.success} />
+          </View>
+          <ThemedText type="small">Challenge</ThemedText>
         </Pressable>
       </View>
 
@@ -91,9 +108,9 @@ export default function PostComposeScreen() {
         <ThemedText
           type="caption"
           style={[
-            styles.charCount,
-            isOverLimit && styles.charCountOver,
-            remainingChars <= 50 && remainingChars > 0 && styles.charCountWarning,
+            { color: theme.textSecondary },
+            isOverLimit && { color: theme.error },
+            remainingChars <= 50 && remainingChars > 0 && { color: theme.warning },
           ]}
         >
           {remainingChars}
@@ -113,7 +130,6 @@ export default function PostComposeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.dark.backgroundRoot,
   },
   contentContainer: {
     padding: Spacing.lg,
@@ -125,52 +141,59 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
     marginBottom: Spacing.xl,
   },
+  headerText: {
+    flex: 1,
+  },
   avatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.dark.backgroundDefault,
     justifyContent: "center",
     alignItems: "center",
   },
+  inputContainer: {
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    padding: Spacing.lg,
+    marginBottom: Spacing.xl,
+  },
   input: {
-    flex: 1,
-    color: Colors.dark.text,
-    fontSize: 18,
+    fontSize: 16,
     textAlignVertical: "top",
-    minHeight: 150,
+    minHeight: 120,
+    lineHeight: 24,
+  },
+  sectionLabel: {
+    marginBottom: Spacing.sm,
+    marginLeft: Spacing.xs,
+    letterSpacing: 1,
   },
   attachments: {
     flexDirection: "row",
-    gap: Spacing.md,
-    paddingVertical: Spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: Colors.dark.border,
+    gap: Spacing.sm,
   },
   attachButton: {
-    flexDirection: "row",
+    flex: 1,
     alignItems: "center",
-    backgroundColor: Colors.dark.backgroundDefault,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
+    paddingVertical: Spacing.md,
     borderRadius: BorderRadius.lg,
-    gap: Spacing.sm,
+    borderWidth: 1,
+    gap: Spacing.xs,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: "center",
+    alignItems: "center",
   },
   footer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
     gap: Spacing.lg,
-    paddingTop: Spacing.lg,
-  },
-  charCount: {
-    color: Colors.dark.textSecondary,
-  },
-  charCountWarning: {
-    color: Colors.dark.warning,
-  },
-  charCountOver: {
-    color: Colors.dark.error,
+    marginTop: "auto",
+    paddingTop: Spacing.xl,
   },
   postButton: {
     paddingHorizontal: Spacing["3xl"],

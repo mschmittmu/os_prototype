@@ -4,6 +4,7 @@ import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import * as WebBrowser from "expo-web-browser";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
@@ -11,6 +12,8 @@ import { EpisodeCard } from "@/components/EpisodeCard";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { episodes as allEpisodes } from "@/lib/mockData";
+
+const FEATURED_VIDEO_URL = "https://www.youtube.com/watch?v=FEPeOtUi8gk";
 
 const CATEGORIES = ["All", "Operator Standard", "MFCEO Project", "Shorts"];
 
@@ -30,6 +33,11 @@ export default function MediaScreen() {
 
   const handleEpisodePress = (id: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  const handlePlayFeaturedVideo = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    await WebBrowser.openBrowserAsync(FEATURED_VIDEO_URL);
   };
 
   const handleCategoryChange = (category: string) => {
@@ -68,10 +76,7 @@ export default function MediaScreen() {
           </ThemedText>
           <Pressable
             style={[styles.playButton, { backgroundColor: theme.accent }]}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-              handleEpisodePress(featuredEpisode.id);
-            }}
+            onPress={handlePlayFeaturedVideo}
           >
             <Feather name="play" size={18} color="#FFFFFF" />
             <ThemedText type="bodyBold" style={styles.playButtonText}>

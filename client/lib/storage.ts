@@ -5,6 +5,7 @@ const KEYS = {
   USER: "@operator_user",
   STREAK: "@operator_streak",
   LAST_COMPLETED_DATE: "@operator_last_completed",
+  BIOMETRIC_ENABLED: "@operator_biometric_enabled",
 };
 
 export interface Task {
@@ -182,4 +183,22 @@ export async function addXP(amount: number): Promise<number> {
 
 export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+export async function getBiometricEnabled(): Promise<boolean> {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.BIOMETRIC_ENABLED);
+    return data === "true";
+  } catch (error) {
+    console.error("Error getting biometric setting:", error);
+    return false;
+  }
+}
+
+export async function setBiometricEnabled(enabled: boolean): Promise<void> {
+  try {
+    await AsyncStorage.setItem(KEYS.BIOMETRIC_ENABLED, enabled ? "true" : "false");
+  } catch (error) {
+    console.error("Error saving biometric setting:", error);
+  }
 }

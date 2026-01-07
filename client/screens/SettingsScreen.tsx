@@ -1,14 +1,16 @@
-import React from "react";
-import { View, StyleSheet, Pressable, ScrollView, Switch } from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, StyleSheet, Pressable, ScrollView, Switch, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
+import * as LocalAuthentication from "expo-local-authentication";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Colors, Spacing, BorderRadius, ThemeMode } from "@/constants/theme";
+import { getBiometricEnabled, setBiometricEnabled } from "@/lib/storage";
 
 const THEME_OPTIONS: { label: string; value: ThemeMode; icon: string }[] = [
   { label: "Light", value: "light", icon: "sun" },
@@ -20,6 +22,45 @@ export default function SettingsScreen() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { theme, themeMode, setThemeMode, isDark } = useTheme();
+  const [biometricEnabled, setBiometricEnabledState] = useState(false);
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricType, setBiometricType] = useState<string>("Biometric");
+
+  useEffect(() => {
+    checkBiometricAvailability();
+    loadBiometricSetting();
+  }, []);
+
+  const checkBiometricAvailability = async () => {
+    if (Platform.OS === "web") {
+      setBiometricAvailable(false);
+      return;
+    }
+    
+    const compatible = await LocalAuthentication.hasHardwareAsync();
+    const enrolled = await LocalAuthentication.isEnrolledAsync();
+    setBiometricAvailable(compatible && enrolled);
+    
+    if (compatible && enrolled) {
+      const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
+      if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
+        setBiometricType("Face ID");
+      } else if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+        setBiometricType("Touch ID");
+      }
+    }
+  };
+
+  const loadBiometricSetting = async () => {
+    const enabled = await getBiometricEnabled();
+    setBiometricEnabledState(enabled);
+  };
+
+  const handleBiometricToggle = async (value: boolean) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setBiometricEnabledState(value);
+    await setBiometricEnabled(value);
+  };
 
   const handleThemeSelect = (mode: ThemeMode) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -182,7 +223,52 @@ export default function SettingsScreen() {
         </View>
       </Animated.View>
 
-      <Animated.View entering={FadeInDown.duration(400).delay(200)}>
+      {biometricAvailable ? (
+        <Animated.View entering={FadeInDown.duration(400).delay(200)}>
+          <ThemedText type="caption" secondary style={styles.sectionTitle}>
+            SECURITY
+          </ThemedText>
+          <View
+            style={[
+              styles.settingsCard,
+              {
+                backgroundColor: theme.backgroundRoot,
+                borderColor: theme.border,
+              },
+            ]}
+          >
+            <View style={styles.settingsRow}>
+              <View style={styles.settingsRowContent}>
+                <View
+                  style={[
+                    styles.settingsIcon,
+                    { backgroundColor: theme.backgroundSecondary },
+                  ]}
+                >
+                  <Feather name="lock" size={18} color={theme.textSecondary} />
+                </View>
+                <View>
+                  <ThemedText type="body">{biometricType}</ThemedText>
+                  <ThemedText type="small" secondary>
+                    Require {biometricType} to unlock app
+                  </ThemedText>
+                </View>
+              </View>
+              <Switch
+                value={biometricEnabled}
+                onValueChange={handleBiometricToggle}
+                trackColor={{
+                  false: theme.backgroundTertiary,
+                  true: theme.accent,
+                }}
+                thumbColor="#FFFFFF"
+              />
+            </View>
+          </View>
+        </Animated.View>
+      ) : null}
+
+      <Animated.View entering={FadeInDown.duration(400).delay(biometricAvailable ? 300 : 200)}>
         <ThemedText type="caption" secondary style={styles.sectionTitle}>
           NOTIFICATIONS
         </ThemedText>

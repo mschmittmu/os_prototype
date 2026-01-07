@@ -15,12 +15,14 @@ import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
-import { Colors, Spacing, BorderRadius } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 import { crewMessages as initialMessages } from "@/lib/mockData";
 
 const TABS = ["Chat", "Details", "Other Crews"];
 
 export default function CrewScreen() {
+  const { theme } = useTheme();
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
   const scrollViewRef = useRef<ScrollView>(null);
@@ -58,17 +60,17 @@ export default function CrewScreen() {
       return (
         <Animated.View
           key={message.id}
-          style={styles.systemCard}
+          style={[styles.systemCard, { backgroundColor: theme.backgroundRoot, borderColor: theme.border }]}
           entering={FadeInDown.delay(index * 50)}
         >
-          <View style={styles.systemIconContainer}>
+          <View style={[styles.systemIconContainer, { backgroundColor: theme.backgroundSecondary }]}>
             <Feather
               name={(message.icon as any) || "award"}
               size={20}
               color={
                 message.type === "achievement"
-                  ? Colors.light.success
-                  : Colors.light.accent
+                  ? theme.success
+                  : theme.accent
               }
             />
           </View>
@@ -91,15 +93,19 @@ export default function CrewScreen() {
         entering={FadeInDown.delay(index * 50)}
       >
         {!isMe ? (
-          <View style={styles.avatar}>
-            <ThemedText type="bodyBold" style={styles.avatarText}>
+          <View style={[styles.avatar, { backgroundColor: theme.backgroundSecondary }]}>
+            <ThemedText type="bodyBold">
               {message.author?.name.charAt(0).toUpperCase()}
             </ThemedText>
           </View>
         ) : null}
-        <View style={[styles.messageBubble, isMe && styles.messageBubbleMe]}>
+        <View style={[
+          styles.messageBubble,
+          { backgroundColor: theme.backgroundSecondary },
+          isMe && { backgroundColor: theme.accent },
+        ]}>
           {!isMe ? (
-            <ThemedText type="caption" style={styles.authorName}>
+            <ThemedText type="caption" style={[styles.authorName, { color: theme.accent }]}>
               {message.author?.name}
             </ThemedText>
           ) : null}
@@ -124,8 +130,8 @@ export default function CrewScreen() {
   const renderDetails = () => (
     <View style={styles.detailsContainer}>
       <View style={styles.crewHeader}>
-        <View style={styles.crewIcon}>
-          <Feather name="shield" size={32} color={Colors.light.accent} />
+        <View style={[styles.crewIcon, { backgroundColor: theme.backgroundSecondary }]}>
+          <Feather name="shield" size={32} color={theme.accent} />
         </View>
         <ThemedText type="h2">ALPHA CREW</ThemedText>
         <ThemedText type="body" secondary>
@@ -147,10 +153,11 @@ export default function CrewScreen() {
           key={member.name}
           entering={FadeInDown.duration(400).delay(index * 50)}
         >
-          <View style={styles.leaderboardItem}>
+          <View style={[styles.leaderboardItem, { backgroundColor: theme.backgroundRoot, borderColor: theme.border }]}>
             <View
               style={[
                 styles.rankBadge,
+                { backgroundColor: theme.accent },
                 member.rank <= 3 && {
                   backgroundColor:
                     member.rank === 1
@@ -168,7 +175,7 @@ export default function CrewScreen() {
             <ThemedText type="body" style={styles.memberName}>
               {member.name}
             </ThemedText>
-            <ThemedText type="statSmall" style={styles.memberXp}>
+            <ThemedText type="statSmall" style={{ color: theme.accent }}>
               {member.xp.toLocaleString()}
             </ThemedText>
           </View>
@@ -204,13 +211,13 @@ export default function CrewScreen() {
           entering={FadeInDown.duration(400).delay(index * 50)}
         >
           <Pressable
-            style={styles.crewCard}
+            style={[styles.crewCard, { backgroundColor: theme.backgroundRoot, borderColor: theme.border }]}
             onPress={() =>
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
             }
           >
-            <View style={styles.crewCardIcon}>
-              <Feather name="users" size={24} color={Colors.light.accent} />
+            <View style={[styles.crewCardIcon, { backgroundColor: theme.backgroundSecondary }]}>
+              <Feather name="users" size={24} color={theme.accent} />
             </View>
             <View style={styles.crewCardContent}>
               <ThemedText type="bodyBold">{crew.name}</ThemedText>
@@ -224,7 +231,7 @@ export default function CrewScreen() {
             <Feather
               name="chevron-right"
               size={20}
-              color={Colors.light.textSecondary}
+              color={theme.textSecondary}
             />
           </Pressable>
         </Animated.View>
@@ -234,7 +241,7 @@ export default function CrewScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { paddingTop: headerHeight }]}
+      style={[styles.container, { backgroundColor: theme.backgroundRoot, paddingTop: headerHeight }]}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={headerHeight}
       pointerEvents="box-none"
@@ -246,13 +253,17 @@ export default function CrewScreen() {
         {TABS.map((tab) => (
           <Pressable
             key={tab}
-            style={[styles.tab, selectedTab === tab && styles.tabActive]}
+            style={[
+              styles.tab,
+              { backgroundColor: theme.backgroundSecondary },
+              selectedTab === tab && { backgroundColor: theme.accent },
+            ]}
             onPress={() => handleTabChange(tab)}
           >
             <ThemedText
               type="small"
               style={[
-                styles.tabText,
+                { color: theme.textSecondary },
                 selectedTab === tab && styles.tabTextActive,
               ]}
             >
@@ -279,13 +290,13 @@ export default function CrewScreen() {
           <View
             style={[
               styles.inputContainer,
-              { paddingBottom: tabBarHeight + Spacing.sm },
+              { paddingBottom: tabBarHeight + Spacing.sm, backgroundColor: theme.backgroundRoot, borderTopColor: theme.border },
             ]}
           >
             <TextInput
-              style={styles.input}
+              style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text }]}
               placeholder="Type a message..."
-              placeholderTextColor={Colors.light.textSecondary}
+              placeholderTextColor={theme.textSecondary}
               value={inputText}
               onChangeText={setInputText}
               multiline
@@ -293,6 +304,7 @@ export default function CrewScreen() {
             <Pressable
               style={[
                 styles.sendButton,
+                { backgroundColor: theme.accent },
                 !inputText.trim() && styles.sendButtonDisabled,
               ]}
               onPress={handleSend}
@@ -321,7 +333,6 @@ export default function CrewScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.backgroundRoot,
   },
   tabBar: {
     flexDirection: "row",
@@ -334,13 +345,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     alignItems: "center",
     borderRadius: BorderRadius.lg,
-    backgroundColor: Colors.light.backgroundSecondary,
-  },
-  tabActive: {
-    backgroundColor: Colors.light.accent,
-  },
-  tabText: {
-    color: Colors.light.textSecondary,
   },
   tabTextActive: {
     color: "#FFFFFF",
@@ -355,20 +359,17 @@ const styles = StyleSheet.create({
   },
   systemCard: {
     flexDirection: "row",
-    backgroundColor: Colors.light.backgroundRoot,
     borderRadius: BorderRadius.xl,
     padding: Spacing.md,
     marginBottom: Spacing.md,
     alignItems: "center",
     gap: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   systemIconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.light.backgroundSecondary,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -387,27 +388,18 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: Colors.light.backgroundSecondary,
     justifyContent: "center",
     alignItems: "center",
   },
-  avatarText: {
-    color: Colors.light.text,
-  },
   messageBubble: {
     maxWidth: "75%",
-    backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: BorderRadius.xl,
     padding: Spacing.md,
-  },
-  messageBubbleMe: {
-    backgroundColor: Colors.light.accent,
   },
   messageTextMe: {
     color: "#FFFFFF",
   },
   authorName: {
-    color: Colors.light.accent,
     marginBottom: Spacing.xs,
   },
   timestamp: {
@@ -422,24 +414,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingTop: Spacing.md,
     gap: Spacing.sm,
-    backgroundColor: Colors.light.backgroundRoot,
     borderTopWidth: 1,
-    borderTopColor: Colors.light.border,
   },
   input: {
     flex: 1,
-    backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: BorderRadius.xl,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
-    color: Colors.light.text,
     maxHeight: 100,
   },
   sendButton: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.light.accent,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -464,7 +451,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: Colors.light.backgroundSecondary,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: Spacing.md,
@@ -476,18 +462,15 @@ const styles = StyleSheet.create({
   leaderboardItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.light.backgroundRoot,
     borderRadius: BorderRadius.xl,
     padding: Spacing.md,
     marginBottom: Spacing.sm,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   rankBadge: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.light.accent,
     justifyContent: "center",
     alignItems: "center",
     marginRight: Spacing.md,
@@ -499,27 +482,21 @@ const styles = StyleSheet.create({
   memberName: {
     flex: 1,
   },
-  memberXp: {
-    color: Colors.light.accent,
-  },
   otherCrewsContainer: {
     gap: Spacing.md,
   },
   crewCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.light.backgroundRoot,
     borderRadius: BorderRadius.xl,
     padding: Spacing.lg,
     gap: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   crewCardIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: Colors.light.backgroundSecondary,
     justifyContent: "center",
     alignItems: "center",
   },

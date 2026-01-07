@@ -9,7 +9,8 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { ThemedText } from "@/components/ThemedText";
-import { Colors, Spacing, BorderRadius } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 
 interface StreakBadgeProps {
   streak: number;
@@ -17,6 +18,8 @@ interface StreakBadgeProps {
 }
 
 export function StreakBadge({ streak, size = "medium" }: StreakBadgeProps) {
+  const { theme } = useTheme();
+
   const animatedStyle = useAnimatedStyle(() => {
     if (streak >= 7) {
       return {
@@ -55,14 +58,18 @@ export function StreakBadge({ streak, size = "medium" }: StreakBadgeProps) {
     if (streak >= 30) return "#FF4500";
     if (streak >= 14) return "#FF6B35";
     if (streak >= 7) return "#FF8C00";
-    return Colors.light.warning;
+    return theme.warning;
   };
 
   return (
     <View
       style={[
         styles.container,
-        { paddingHorizontal: padding * 1.5, paddingVertical: padding },
+        {
+          paddingHorizontal: padding * 1.5,
+          paddingVertical: padding,
+          backgroundColor: theme.backgroundSecondary,
+        },
       ]}
     >
       <Animated.View style={animatedStyle}>
@@ -82,11 +89,8 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: BorderRadius.full,
     gap: Spacing.xs,
   },
-  text: {
-    color: Colors.light.text,
-  },
+  text: {},
 });

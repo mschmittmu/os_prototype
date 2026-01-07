@@ -1,0 +1,24 @@
+Create a React Native mobile app using Expo that updates and enhances 'The Operator Standard' by Andy Frisella, a productivity and motivational app focused on building mindset, discipline, and confidence. The app is a subscription-based lifestyle operating system with features like daily tasks, challenges, AI coaching, social community, crews (group chats), media (podcasts), XP progress, and leaderboards. It targets driven users seeking real guidance in life, business, and relationships.
+Tech Stack: Use React Native with Expo for cross-platform (iOS and Android) compatibility. Include necessary libraries like @expo/vector-icons for icons, react-native-paper for UI components, @react-navigation/native for navigation, expo-av for audio playback, expo-speech for voice features, and react-native-dark-mode or similar for theme support. Set up a bottom tab navigator for main sections: Home, Execution (tasks/challenges/journal), Media, Social, Crews. Use Redux or Context API for state management, especially for user progress and AI suggestions. Simulate backend with mock data or Firebase if needed for community features.
+Current App Structure Based on Screenshots and Description:
+
+Top header: Bison logo (red/white/blue), icons for favorites, chat, notifications, menu.
+Home Screen: 'Today's Tasks' with 'View Task List' button; motivational message like 'YOU'VE WON THE DAY AND COMPLETED ALL YOUR TASKS'; current challenges with progress bars (e.g., 'The 3-Day Iron Will Workout' at 1/3 days); XP progress cards (+7560 XP this month, #1 position); 'Continue Watching' for podcasts.
+Tasks Tab: Sub-tabs for Tasks, Challenges, Journal; calendar view (e.g., Jan 2026 with days highlighted); categorized task list (e.g., Family & Relationships with checkmarks, icons like people or dumbbells); bottom motivational message 'YOU WON THE DAY!' with 'Create New List' button.
+Social Tab: Sub-tabs General, Founders, Saved; feed of user posts with profiles, timestamps, likes, comments (e.g., text posts about goals).
+Crews Tab: Chat view with achievement unlocks (e.g., 'XP Legend'), challenge completions; message input at bottom.
+Media Tab: 'Continue Watching' with podcast thumbnails (red background, episode numbers like EP 006); latest episodes list; referral card 'Share The Standard' with invite button.
+Posting Screen: Modal with 'What's New?' text area, add pic/video icons, Cancel/Post buttons.
+Overall Style: Clean, minimalist with white background, black/gray text, blue checkmarks, red accents (e.g., on Execution tab). Bold typography for motivations.
+
+Key Updates and New Features to Implement:
+
+AI-Driven Personalization: Integrate AI (simulate with logic or OpenAI API stub) to suggest daily tasks based on user progress/goals; dynamically adapt home screen layout (e.g., prioritize incomplete challenges).
+Expanded Gamification: Add animated badges/microinteractions (e.g., confetti on task completion); real-time leaderboards with updates; streaks visualization; AR elements for goal tracking if feasible with expo-camera.
+Minimalist Designs with Dark Mode: Implement system/auto dark mode toggle; use softer colors, glassmorphism for cards (subtle blur/shadows); ensure eye-friendly themes for long sessions.
+Accessibility and Microinteractions: Add voice commands (expo-speech) for task addition/reading; adjustable text sizes; high-contrast modes; subtle animations for feedback (e.g., checkmark bounce).
+Voice and Multimodal Interfaces: Enable hands-free use—voice input for journal/social posts; gesture navigation (swipes for tabs); fix audio controls for podcasts (lock screen/headphones support via expo-av).
+Other Enhancements: Passwordless login (e.g., biometrics); bento grid for home dashboard; kinetic typography for motivations; personalized social feeds; bug fixes like keeping screen awake during streams.
+
+Generate the full app structure with components, styles, and navigation. Start with app setup, then build each screen, incorporating updates. Provide code that's modular, testable, and ready to run in Expo. After generation, suggest commands to preview on device via Expo Go."
+For implementation in Replit: Create a new Repl, select 'Mobile app' template, paste this prompt into the AI Agent interface, and let it generate the code. Test iteratively by prompting refinements like 'Add dark mode toggle to settings.'

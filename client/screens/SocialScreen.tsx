@@ -10,7 +10,8 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { ThemedText } from "@/components/ThemedText";
 import { PostCard } from "@/components/PostCard";
 import { FAB } from "@/components/FAB";
-import { Colors, Spacing, BorderRadius } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { posts as initialPosts } from "@/lib/mockData";
 
@@ -19,6 +20,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const TABS = ["General", "Founders", "Saved"];
 
 export default function SocialScreen() {
+  const { theme } = useTheme();
   const navigation = useNavigation<NavigationProp>();
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
@@ -68,7 +70,7 @@ export default function SocialScreen() {
         : posts;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -83,22 +85,25 @@ export default function SocialScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={Colors.light.accent}
+            tintColor={theme.accent}
           />
         }
       >
-        <Animated.View style={styles.tabBar} entering={FadeInDown.duration(400)}>
+        <Animated.View style={[styles.tabBar, { backgroundColor: theme.backgroundSecondary }]} entering={FadeInDown.duration(400)}>
           {TABS.map((tab) => (
             <Pressable
               key={tab}
-              style={[styles.tab, selectedTab === tab && styles.tabActive]}
+              style={[
+                styles.tab,
+                selectedTab === tab && [styles.tabActive, { backgroundColor: theme.backgroundRoot }],
+              ]}
               onPress={() => handleTabChange(tab)}
             >
               <ThemedText
                 type="bodyBold"
                 style={[
-                  styles.tabText,
-                  selectedTab === tab && styles.tabTextActive,
+                  { color: theme.textSecondary },
+                  selectedTab === tab && { color: theme.text },
                 ]}
               >
                 {tab}
@@ -155,7 +160,6 @@ export default function SocialScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.backgroundRoot,
   },
   scrollView: {
     flex: 1,
@@ -166,7 +170,6 @@ const styles = StyleSheet.create({
   tabBar: {
     flexDirection: "row",
     marginBottom: Spacing.xl,
-    backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: BorderRadius.xl,
     padding: Spacing.xs,
   },
@@ -177,18 +180,11 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
   },
   tabActive: {
-    backgroundColor: Colors.light.backgroundRoot,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 2,
     elevation: 2,
-  },
-  tabText: {
-    color: Colors.light.textSecondary,
-  },
-  tabTextActive: {
-    color: Colors.light.text,
   },
   postList: {
     gap: Spacing.md,

@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet } from "react-native";
-import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -11,9 +11,10 @@ import { queryClient } from "@/lib/query-client";
 
 import RootStackNavigator from "@/navigation/RootStackNavigator";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ThemeProvider, useThemeContext } from "@/contexts/ThemeContext";
 import { Colors } from "@/constants/theme";
 
-const LightTheme = {
+const LightNavigationTheme = {
   ...DefaultTheme,
   dark: false,
   colors: {
@@ -27,19 +28,46 @@ const LightTheme = {
   },
 };
 
+const DarkNavigationTheme = {
+  ...DarkTheme,
+  dark: true,
+  colors: {
+    ...DarkTheme.colors,
+    primary: Colors.dark.accent,
+    background: Colors.dark.backgroundRoot,
+    card: Colors.dark.backgroundRoot,
+    text: Colors.dark.text,
+    border: Colors.dark.border,
+    notification: Colors.dark.accent,
+  },
+};
+
+function AppContent() {
+  const { isDark, theme } = useThemeContext();
+  const navigationTheme = isDark ? DarkNavigationTheme : LightNavigationTheme;
+
+  return (
+    <GestureHandlerRootView
+      style={[styles.root, { backgroundColor: theme.backgroundRoot }]}
+    >
+      <KeyboardProvider>
+        <NavigationContainer theme={navigationTheme}>
+          <RootStackNavigator />
+        </NavigationContainer>
+        <StatusBar style={isDark ? "light" : "dark"} />
+      </KeyboardProvider>
+    </GestureHandlerRootView>
+  );
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <SafeAreaProvider>
-          <GestureHandlerRootView style={styles.root}>
-            <KeyboardProvider>
-              <NavigationContainer theme={LightTheme}>
-                <RootStackNavigator />
-              </NavigationContainer>
-              <StatusBar style="dark" />
-            </KeyboardProvider>
-          </GestureHandlerRootView>
+          <ThemeProvider>
+            <AppContent />
+          </ThemeProvider>
         </SafeAreaProvider>
       </QueryClientProvider>
     </ErrorBoundary>
@@ -49,6 +77,5 @@ export default function App() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: Colors.light.backgroundRoot,
   },
 });

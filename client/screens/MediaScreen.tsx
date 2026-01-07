@@ -8,12 +8,14 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
 import { EpisodeCard } from "@/components/EpisodeCard";
-import { Colors, Spacing, BorderRadius } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 import { episodes as allEpisodes } from "@/lib/mockData";
 
 const CATEGORIES = ["All", "Operator Standard", "MFCEO Project", "Shorts"];
 
 export default function MediaScreen() {
+  const { theme } = useTheme();
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -37,7 +39,7 @@ export default function MediaScreen() {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
       contentContainerStyle={[
         styles.contentContainer,
         {
@@ -48,11 +50,11 @@ export default function MediaScreen() {
       showsVerticalScrollIndicator={false}
     >
       <Animated.View
-        style={styles.featuredCard}
+        style={[styles.featuredCard, { backgroundColor: theme.backgroundRoot, borderColor: theme.border }]}
         entering={FadeInDown.duration(400)}
       >
         <View style={styles.featuredContent}>
-          <View style={styles.latestBadge}>
+          <View style={[styles.latestBadge, { backgroundColor: theme.accent }]}>
             <Feather name="play-circle" size={14} color="#FFFFFF" />
             <ThemedText type="caption" style={styles.latestBadgeText}>
               LATEST
@@ -65,7 +67,7 @@ export default function MediaScreen() {
             {featuredEpisode.description}
           </ThemedText>
           <Pressable
-            style={styles.playButton}
+            style={[styles.playButton, { backgroundColor: theme.accent }]}
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               handleEpisodePress(featuredEpisode.id);
@@ -90,15 +92,16 @@ export default function MediaScreen() {
               key={category}
               style={[
                 styles.categoryPill,
-                selectedCategory === category && styles.categoryPillActive,
+                { backgroundColor: theme.backgroundSecondary },
+                selectedCategory === category && { backgroundColor: theme.text },
               ]}
               onPress={() => handleCategoryChange(category)}
             >
               <ThemedText
                 type="small"
                 style={[
-                  styles.categoryText,
-                  selectedCategory === category && styles.categoryTextActive,
+                  { color: theme.textSecondary },
+                  selectedCategory === category && { color: theme.backgroundRoot, fontWeight: "600" },
                 ]}
               >
                 {category}
@@ -168,18 +171,15 @@ export default function MediaScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.backgroundRoot,
   },
   contentContainer: {
     paddingHorizontal: Spacing.lg,
   },
   featuredCard: {
-    backgroundColor: Colors.light.backgroundRoot,
     borderRadius: BorderRadius.xl,
     overflow: "hidden",
     marginBottom: Spacing.xl,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   featuredContent: {
     padding: Spacing.xl,
@@ -187,7 +187,6 @@ const styles = StyleSheet.create({
   latestBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.light.accent,
     paddingHorizontal: Spacing.sm,
     paddingVertical: Spacing.xs,
     borderRadius: BorderRadius.sm,
@@ -205,7 +204,6 @@ const styles = StyleSheet.create({
   playButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.light.accent,
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.full,
@@ -223,19 +221,8 @@ const styles = StyleSheet.create({
   categoryPill: {
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.sm,
-    backgroundColor: Colors.light.backgroundSecondary,
     borderRadius: BorderRadius.full,
     marginRight: Spacing.sm,
-  },
-  categoryPillActive: {
-    backgroundColor: Colors.light.text,
-  },
-  categoryText: {
-    color: Colors.light.textSecondary,
-  },
-  categoryTextActive: {
-    color: Colors.light.backgroundRoot,
-    fontWeight: "600",
   },
   section: {
     marginTop: Spacing.lg,

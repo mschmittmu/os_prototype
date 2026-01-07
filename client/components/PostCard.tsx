@@ -9,7 +9,8 @@ import Animated, {
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { ThemedText } from "@/components/ThemedText";
-import { Colors, Spacing, BorderRadius } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 
 interface PostCardProps {
   id: string;
@@ -30,13 +31,6 @@ interface PostCardProps {
   onSave: (id: string) => void;
 }
 
-const tierColors: Record<string, string> = {
-  Operator: Colors.light.accent,
-  Founder: "#FFD700",
-  Elite: "#8B5CF6",
-  Member: Colors.light.textSecondary,
-};
-
 export function PostCard({
   id,
   author,
@@ -51,10 +45,18 @@ export function PostCard({
   onComment,
   onSave,
 }: PostCardProps) {
+  const { theme } = useTheme();
   const [isLiked, setIsLiked] = useState(liked);
   const [isSaved, setIsSaved] = useState(saved);
   const [likeCount, setLikeCount] = useState(likes);
   const heartScale = useSharedValue(1);
+
+  const tierColors: Record<string, string> = {
+    Operator: theme.accent,
+    Founder: "#FFD700",
+    Elite: "#8B5CF6",
+    Member: theme.textSecondary,
+  };
 
   const handleLike = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -77,16 +79,26 @@ export function PostCard({
     transform: [{ scale: heartScale.value }],
   }));
 
-  const tierColor = tierColors[author.tier] || Colors.light.textSecondary;
+  const tierColor = tierColors[author.tier] || theme.textSecondary;
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: theme.backgroundRoot, borderColor: theme.border },
+      ]}
+    >
       <View style={styles.header}>
         <View style={styles.avatarContainer}>
           {author.avatar ? (
             <Image source={{ uri: author.avatar }} style={styles.avatar} />
           ) : (
-            <View style={styles.avatarPlaceholder}>
+            <View
+              style={[
+                styles.avatarPlaceholder,
+                { backgroundColor: theme.backgroundSecondary },
+              ]}
+            >
               <ThemedText type="bodyBold" style={styles.avatarText}>
                 {author.name.charAt(0).toUpperCase()}
               </ThemedText>
@@ -113,7 +125,7 @@ export function PostCard({
           <Feather
             name="more-horizontal"
             size={20}
-            color={Colors.light.textSecondary}
+            color={theme.textSecondary}
           />
         </Pressable>
       </View>
@@ -126,13 +138,13 @@ export function PostCard({
         <Image source={{ uri: image }} style={styles.postImage} />
       ) : null}
 
-      <View style={styles.actions}>
+      <View style={[styles.actions, { borderTopColor: theme.border }]}>
         <Pressable style={styles.actionButton} onPress={handleLike}>
           <Animated.View style={heartAnimatedStyle}>
             <Feather
               name="heart"
               size={20}
-              color={isLiked ? Colors.light.accent : Colors.light.textSecondary}
+              color={isLiked ? theme.accent : theme.textSecondary}
             />
           </Animated.View>
           <ThemedText type="small" secondary style={styles.actionText}>
@@ -150,7 +162,7 @@ export function PostCard({
           <Feather
             name="message-circle"
             size={20}
-            color={Colors.light.textSecondary}
+            color={theme.textSecondary}
           />
           <ThemedText type="small" secondary style={styles.actionText}>
             {comments}
@@ -161,7 +173,7 @@ export function PostCard({
           <Feather
             name="bookmark"
             size={20}
-            color={isSaved ? Colors.light.accent : Colors.light.textSecondary}
+            color={isSaved ? theme.accent : theme.textSecondary}
           />
         </Pressable>
       </View>
@@ -171,11 +183,9 @@ export function PostCard({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.light.backgroundRoot,
     borderRadius: BorderRadius.xl,
     padding: Spacing.lg,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   header: {
     flexDirection: "row",
@@ -194,13 +204,10 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: BorderRadius.full,
-    backgroundColor: Colors.light.backgroundSecondary,
     justifyContent: "center",
     alignItems: "center",
   },
-  avatarText: {
-    color: Colors.light.text,
-  },
+  avatarText: {},
   authorInfo: {
     flex: 1,
   },
@@ -236,7 +243,6 @@ const styles = StyleSheet.create({
     gap: Spacing.xl,
     paddingTop: Spacing.sm,
     borderTopWidth: 1,
-    borderTopColor: Colors.light.border,
   },
   actionButton: {
     flexDirection: "row",

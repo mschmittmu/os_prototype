@@ -10,7 +10,8 @@ import Animated, {
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { ThemedText } from "@/components/ThemedText";
-import { Colors, Spacing, BorderRadius } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 
 interface TaskCardProps {
   id: string;
@@ -47,6 +48,7 @@ export function TaskCard({
   onToggle,
   onEdit,
 }: TaskCardProps) {
+  const { theme } = useTheme();
   const scale = useSharedValue(1);
   const checkScale = useSharedValue(completed ? 1 : 0);
 
@@ -79,22 +81,35 @@ export function TaskCard({
   }));
 
   const icon = categoryIcons[category] || "star";
-  const color = categoryColors[category] || Colors.light.accent;
+  const color = categoryColors[category] || theme.accent;
 
   return (
     <AnimatedPressable
       onPress={handlePress}
       onLongPress={handleLongPress}
-      style={[styles.container, animatedStyle]}
+      style={[
+        styles.container,
+        animatedStyle,
+        {
+          backgroundColor: theme.backgroundRoot,
+          borderColor: theme.border,
+        },
+      ]}
       entering={FadeIn.duration(300)}
     >
       <View style={styles.checkbox}>
         {completed ? (
-          <Animated.View style={[styles.checkboxFilled, checkAnimatedStyle]}>
-            <Feather name="check" size={16} color={Colors.light.backgroundRoot} />
+          <Animated.View
+            style={[
+              styles.checkboxFilled,
+              checkAnimatedStyle,
+              { backgroundColor: theme.accent },
+            ]}
+          >
+            <Feather name="check" size={16} color="#FFFFFF" />
           </Animated.View>
         ) : (
-          <View style={styles.checkboxEmpty} />
+          <View style={[styles.checkboxEmpty, { borderColor: theme.border }]} />
         )}
       </View>
       <View style={styles.content}>
@@ -111,7 +126,7 @@ export function TaskCard({
           </ThemedText>
         </View>
       </View>
-      <Feather name="chevron-right" size={20} color={Colors.light.textSecondary} />
+      <Feather name="chevron-right" size={20} color={theme.textSecondary} />
     </AnimatedPressable>
   );
 }
@@ -120,11 +135,9 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.light.backgroundRoot,
     padding: Spacing.lg,
     borderRadius: BorderRadius.xl,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   checkbox: {
     marginRight: Spacing.md,
@@ -134,13 +147,11 @@ const styles = StyleSheet.create({
     height: 24,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: Colors.light.border,
   },
   checkboxFilled: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: Colors.light.accent,
     justifyContent: "center",
     alignItems: "center",
   },

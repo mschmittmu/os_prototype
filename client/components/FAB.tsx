@@ -7,7 +7,8 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { Colors, Shadows } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
+import { Shadows } from "@/constants/theme";
 
 interface FABProps {
   icon?: keyof typeof Feather.glyphMap;
@@ -18,6 +19,7 @@ interface FABProps {
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export function FAB({ icon = "plus", onPress, style }: FABProps) {
+  const { theme } = useTheme();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -42,7 +44,13 @@ export function FAB({ icon = "plus", onPress, style }: FABProps) {
       onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      style={[styles.fab, Shadows.fab, animatedStyle, style]}
+      style={[
+        styles.fab,
+        Shadows.fab,
+        { backgroundColor: theme.accent },
+        animatedStyle,
+        style,
+      ]}
     >
       <Feather name={icon} size={24} color="#FFFFFF" />
     </AnimatedPressable>
@@ -55,7 +63,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.light.accent,
     justifyContent: "center",
     alignItems: "center",
   },

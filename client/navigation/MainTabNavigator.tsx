@@ -18,7 +18,8 @@ import MediaScreen from "@/screens/MediaScreen";
 import SocialScreen from "@/screens/SocialScreen";
 import CrewScreen from "@/screens/CrewScreen";
 import { HeaderTitle } from "@/components/HeaderTitle";
-import { Colors, Spacing } from "@/constants/theme";
+import { Spacing } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 export type MainTabParamList = {
@@ -38,6 +39,7 @@ function HeaderIconButton({
   icon: keyof typeof Feather.glyphMap; 
   onPress: () => void 
 }) {
+  const { theme } = useTheme();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -55,8 +57,8 @@ function HeaderIconButton({
 
   return (
     <Pressable onPress={handlePress}>
-      <Animated.View style={[styles.headerIcon, animatedStyle]}>
-        <Feather name={icon} size={22} color={Colors.light.text} />
+      <Animated.View style={[styles.headerIcon, animatedStyle, { backgroundColor: theme.backgroundSecondary }]}>
+        <Feather name={icon} size={22} color={theme.text} />
       </Animated.View>
     </Pressable>
   );
@@ -72,8 +74,8 @@ function HeaderRightButtons() {
         onPress={() => {}} 
       />
       <HeaderIconButton 
-        icon="user" 
-        onPress={() => navigation.navigate("Profile")} 
+        icon="settings" 
+        onPress={() => navigation.navigate("Settings")} 
       />
     </View>
   );
@@ -111,31 +113,33 @@ function AnimatedTabIcon({
 }
 
 export default function MainTabNavigator() {
+  const { theme, isDark } = useTheme();
+
   return (
     <Tab.Navigator
       initialRouteName="HomeTab"
       screenOptions={{
         headerTitleAlign: "center",
         headerTransparent: Platform.OS === "ios",
-        headerTintColor: Colors.light.text,
+        headerTintColor: theme.text,
         headerStyle: {
           backgroundColor: Platform.select({
             ios: "transparent",
-            android: Colors.light.backgroundRoot,
-            web: Colors.light.backgroundRoot,
+            android: theme.backgroundRoot,
+            web: theme.backgroundRoot,
           }),
         },
-        tabBarActiveTintColor: Colors.light.accent,
-        tabBarInactiveTintColor: Colors.light.tabIconDefault,
+        tabBarActiveTintColor: theme.accent,
+        tabBarInactiveTintColor: theme.tabIconDefault,
         tabBarStyle: {
           position: "absolute",
           backgroundColor: Platform.select({
             ios: "transparent",
-            android: Colors.light.backgroundRoot,
-            web: Colors.light.backgroundRoot,
+            android: theme.backgroundRoot,
+            web: theme.backgroundRoot,
           }),
           borderTopWidth: 1,
-          borderTopColor: Colors.light.border,
+          borderTopColor: theme.border,
           elevation: 0,
           height: 85,
           paddingBottom: Platform.OS === "ios" ? Spacing.xl : Spacing.sm,
@@ -144,11 +148,11 @@ export default function MainTabNavigator() {
           Platform.OS === "ios" ? (
             <BlurView
               intensity={90}
-              tint="light"
+              tint={isDark ? "dark" : "light"}
               style={StyleSheet.absoluteFill}
             />
           ) : (
-            <View style={[StyleSheet.absoluteFill, { backgroundColor: Colors.light.backgroundRoot }]} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.backgroundRoot }]} />
           ),
         tabBarLabelStyle: {
           fontSize: 11,
@@ -233,7 +237,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: Colors.light.backgroundSecondary,
     alignItems: "center",
     justifyContent: "center",
   },

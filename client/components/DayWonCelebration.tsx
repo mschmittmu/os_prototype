@@ -12,7 +12,8 @@ import Animated, {
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { ThemedText } from "@/components/ThemedText";
-import { Colors, Spacing, BorderRadius } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 
 const { width } = Dimensions.get("window");
 
@@ -27,6 +28,7 @@ export function DayWonCelebration({
   xpEarned,
   onDismiss,
 }: DayWonCelebrationProps) {
+  const { theme } = useTheme();
   const scale = useSharedValue(0);
   const opacity = useSharedValue(0);
   const streakScale = useSharedValue(0);
@@ -81,19 +83,30 @@ export function DayWonCelebration({
   return (
     <Animated.View style={[styles.overlay, containerStyle]}>
       <Pressable style={styles.backdrop} onPress={handleDismiss} />
-      <Animated.View style={[styles.card, cardStyle]}>
+      <Animated.View
+        style={[
+          styles.card,
+          cardStyle,
+          { backgroundColor: theme.backgroundRoot },
+        ]}
+      >
         <View style={styles.iconContainer}>
-          <View style={styles.iconCircle}>
-            <Feather name="award" size={48} color={Colors.light.accent} />
+          <View
+            style={[
+              styles.iconCircle,
+              { backgroundColor: theme.backgroundSecondary },
+            ]}
+          >
+            <Feather name="award" size={48} color={theme.accent} />
           </View>
         </View>
 
-        <ThemedText type="h1" style={styles.title}>
+        <ThemedText type="h1" style={[styles.title, { color: theme.accent }]}>
           DAY WON
         </ThemedText>
 
         <Animated.View style={[styles.streakContainer, streakStyle]}>
-          <Feather name="zap" size={28} color={Colors.light.warning} />
+          <Feather name="zap" size={28} color={theme.warning} />
           <ThemedText type="stat" style={styles.streakText}>
             {streak}
           </ThemedText>
@@ -102,7 +115,13 @@ export function DayWonCelebration({
           </ThemedText>
         </Animated.View>
 
-        <Animated.View style={[styles.xpContainer, xpStyle]}>
+        <Animated.View
+          style={[
+            styles.xpContainer,
+            xpStyle,
+            { backgroundColor: theme.success },
+          ]}
+        >
           <ThemedText type="h3" style={styles.xpText}>
             +{xpEarned} XP
           </ThemedText>
@@ -112,7 +131,10 @@ export function DayWonCelebration({
           Now go win another.
         </ThemedText>
 
-        <Pressable style={styles.dismissButton} onPress={handleDismiss}>
+        <Pressable
+          style={[styles.dismissButton, { backgroundColor: theme.accent }]}
+          onPress={handleDismiss}
+        >
           <ThemedText type="bodyBold" style={styles.dismissText}>
             CONTINUE
           </ThemedText>
@@ -134,7 +156,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.6)",
   },
   card: {
-    backgroundColor: Colors.light.backgroundRoot,
     borderRadius: BorderRadius["2xl"],
     padding: Spacing["3xl"],
     alignItems: "center",
@@ -153,13 +174,11 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: Colors.light.backgroundSecondary,
     justifyContent: "center",
     alignItems: "center",
   },
   title: {
     textAlign: "center",
-    color: Colors.light.accent,
     marginBottom: Spacing.xl,
   },
   streakContainer: {
@@ -169,11 +188,9 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.lg,
   },
   streakText: {
-    color: Colors.light.text,
     fontSize: 48,
   },
   xpContainer: {
-    backgroundColor: Colors.light.success,
     paddingHorizontal: Spacing.xl,
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.full,
@@ -187,7 +204,6 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.xl,
   },
   dismissButton: {
-    backgroundColor: Colors.light.accent,
     paddingHorizontal: Spacing["3xl"],
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.full,

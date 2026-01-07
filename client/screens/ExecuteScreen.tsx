@@ -18,7 +18,8 @@ import { ThemedText } from "@/components/ThemedText";
 import { TaskCard } from "@/components/TaskCard";
 import { FAB } from "@/components/FAB";
 import { DayWonCelebration } from "@/components/DayWonCelebration";
-import { Colors, Spacing, BorderRadius } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import {
   getTasks,
@@ -35,6 +36,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const DAYS = ["S", "M", "T", "W", "T", "F", "S"];
 
 export default function ExecuteScreen() {
+  const { theme } = useTheme();
   const navigation = useNavigation<NavigationProp>();
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
@@ -122,7 +124,7 @@ export default function ExecuteScreen() {
   const weekDays = getWeekDays();
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[
@@ -137,7 +139,7 @@ export default function ExecuteScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={Colors.light.accent}
+            tintColor={theme.accent}
           />
         }
       >
@@ -150,16 +152,18 @@ export default function ExecuteScreen() {
               key={index}
               style={[
                 styles.dayCircle,
-                day.status === "won" && styles.dayWon,
-                day.status === "current" && styles.dayCurrent,
+                { backgroundColor: theme.backgroundSecondary },
+                day.status === "won" && { backgroundColor: theme.success },
+                day.status === "current" && { backgroundColor: theme.accent },
               ]}
             >
               <ThemedText
                 type="caption"
                 style={[
                   styles.dayLabel,
-                  day.status === "won" && styles.dayLabelWon,
-                  day.status === "current" && styles.dayLabelCurrent,
+                  { color: theme.textSecondary },
+                  day.status === "won" && { color: theme.backgroundRoot },
+                  day.status === "current" && { color: theme.backgroundRoot },
                 ]}
               >
                 {day.label}
@@ -176,7 +180,7 @@ export default function ExecuteScreen() {
             <Feather
               name="bar-chart-2"
               size={20}
-              color={Colors.light.textSecondary}
+              color={theme.textSecondary}
             />
           </Pressable>
         </Animated.View>
@@ -187,13 +191,13 @@ export default function ExecuteScreen() {
         >
           <View style={styles.progressHeader}>
             <ThemedText type="h4">POWER LIST</ThemedText>
-            <ThemedText type="bodyBold" style={styles.progressText}>
+            <ThemedText type="bodyBold" style={{ color: theme.accent }}>
               {completedTasks}/{tasks.length} COMPLETE
             </ThemedText>
           </View>
-          <View style={styles.progressBar}>
+          <View style={[styles.progressBar, { backgroundColor: theme.backgroundTertiary }]}>
             <Animated.View
-              style={[styles.progressFill, { width: `${progress}%` }]}
+              style={[styles.progressFill, { width: `${progress}%`, backgroundColor: theme.accent }]}
               entering={FadeIn}
             />
           </View>
@@ -222,11 +226,11 @@ export default function ExecuteScreen() {
             style={styles.emptyState}
             entering={FadeInDown.duration(400).delay(200)}
           >
-            <View style={styles.emptyIcon}>
+            <View style={[styles.emptyIcon, { backgroundColor: theme.backgroundSecondary }]}>
               <Feather
                 name="check-square"
                 size={40}
-                color={Colors.light.textSecondary}
+                color={theme.textSecondary}
               />
             </View>
             <ThemedText type="h4" style={styles.emptyTitle}>
@@ -262,7 +266,6 @@ export default function ExecuteScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.backgroundRoot,
   },
   scrollView: {
     flex: 1,
@@ -281,25 +284,11 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: Colors.light.backgroundSecondary,
     justifyContent: "center",
     alignItems: "center",
   },
-  dayWon: {
-    backgroundColor: Colors.light.success,
-  },
-  dayCurrent: {
-    backgroundColor: Colors.light.accent,
-  },
   dayLabel: {
-    color: Colors.light.textSecondary,
     fontWeight: "600",
-  },
-  dayLabelWon: {
-    color: Colors.light.backgroundRoot,
-  },
-  dayLabelCurrent: {
-    color: Colors.light.backgroundRoot,
   },
   statsButton: {
     padding: Spacing.sm,
@@ -313,18 +302,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: Spacing.sm,
   },
-  progressText: {
-    color: Colors.light.accent,
-  },
   progressBar: {
     height: 8,
-    backgroundColor: Colors.light.backgroundTertiary,
     borderRadius: BorderRadius.full,
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    backgroundColor: Colors.light.accent,
     borderRadius: BorderRadius.full,
   },
   taskList: {
@@ -339,7 +323,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: Colors.light.backgroundSecondary,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: Spacing.sm,

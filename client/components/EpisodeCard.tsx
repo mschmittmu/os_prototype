@@ -8,7 +8,8 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { ThemedText } from "@/components/ThemedText";
-import { Colors, Spacing, BorderRadius } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 
 interface EpisodeCardProps {
   id: string;
@@ -33,6 +34,7 @@ export function EpisodeCard({
   onPress,
   horizontal = false,
 }: EpisodeCardProps) {
+  const { theme } = useTheme();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -60,17 +62,17 @@ export function EpisodeCard({
         onPressOut={handlePressOut}
         style={[styles.horizontalContainer, animatedStyle]}
       >
-        <View style={styles.horizontalThumbnail}>
+        <View style={[styles.horizontalThumbnail, { backgroundColor: theme.accent }]}>
           {thumbnail ? (
             <Image source={{ uri: thumbnail }} style={styles.thumbnailImage} />
           ) : (
-            <View style={styles.thumbnailPlaceholder}>
-              <Feather name="play" size={24} color={Colors.light.accent} />
+            <View style={[styles.thumbnailPlaceholder, { backgroundColor: theme.backgroundSecondary }]}>
+              <Feather name="play" size={24} color={theme.accent} />
             </View>
           )}
           {progress > 0 ? (
-            <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: `${progress}%` }]} />
+            <View style={[styles.progressBar, { backgroundColor: theme.backgroundTertiary }]}>
+              <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: theme.accent }]} />
             </View>
           ) : null}
         </View>
@@ -86,14 +88,18 @@ export function EpisodeCard({
       onPress={handlePress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
-      style={[styles.container, animatedStyle]}
+      style={[
+        styles.container,
+        animatedStyle,
+        { backgroundColor: theme.backgroundRoot, borderColor: theme.border },
+      ]}
     >
-      <View style={styles.thumbnail}>
+      <View style={[styles.thumbnail, { backgroundColor: theme.backgroundSecondary }]}>
         {thumbnail ? (
           <Image source={{ uri: thumbnail }} style={styles.thumbnailImage} />
         ) : (
-          <View style={styles.thumbnailPlaceholder}>
-            <Feather name="play-circle" size={40} color={Colors.light.accent} />
+          <View style={[styles.thumbnailPlaceholder, { backgroundColor: theme.backgroundSecondary }]}>
+            <Feather name="play-circle" size={40} color={theme.accent} />
           </View>
         )}
         <View style={styles.durationBadge}>
@@ -102,8 +108,8 @@ export function EpisodeCard({
           </ThemedText>
         </View>
         {progress > 0 ? (
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${progress}%` }]} />
+          <View style={[styles.progressBar, { backgroundColor: theme.backgroundTertiary }]}>
+            <View style={[styles.progressFill, { width: `${progress}%`, backgroundColor: theme.accent }]} />
           </View>
         ) : null}
       </View>
@@ -121,24 +127,20 @@ export function EpisodeCard({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.light.backgroundRoot,
     borderRadius: BorderRadius.xl,
     overflow: "hidden",
     marginBottom: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   horizontalContainer: {
     width: 160,
   },
   thumbnail: {
     height: 160,
-    backgroundColor: Colors.light.backgroundSecondary,
     position: "relative",
   },
   horizontalThumbnail: {
     height: 90,
-    backgroundColor: Colors.light.accent,
     borderRadius: BorderRadius.lg,
     overflow: "hidden",
     position: "relative",
@@ -152,7 +154,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.light.backgroundSecondary,
   },
   durationBadge: {
     position: "absolute",
@@ -172,11 +173,9 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 3,
-    backgroundColor: Colors.light.backgroundTertiary,
   },
   progressFill: {
     height: "100%",
-    backgroundColor: Colors.light.accent,
   },
   content: {
     padding: Spacing.md,

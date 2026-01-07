@@ -7,7 +7,7 @@ import Animated, {
   WithSpringConfig,
 } from "react-native-reanimated";
 import { ThemedText } from "@/components/ThemedText";
-import { Colors } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
 
 interface ProgressRingProps {
   progress: number;
@@ -32,6 +32,7 @@ export function ProgressRing({
   showLabel = true,
   label,
 }: ProgressRingProps) {
+  const { theme } = useTheme();
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const clampedProgress = Math.min(Math.max(progress, 0), 1);
@@ -50,7 +51,7 @@ export function ProgressRing({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={Colors.light.backgroundTertiary}
+          stroke={theme.backgroundTertiary}
           strokeWidth={strokeWidth}
           fill="none"
         />
@@ -58,7 +59,7 @@ export function ProgressRing({
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={Colors.light.accent}
+          stroke={theme.accent}
           strokeWidth={strokeWidth}
           fill="none"
           strokeDasharray={circumference}
@@ -70,7 +71,7 @@ export function ProgressRing({
       </Svg>
       {showLabel ? (
         <View style={styles.labelContainer}>
-          <ThemedText type="stat" style={styles.percentage}>
+          <ThemedText type="stat">
             {Math.round(clampedProgress * 100)}%
           </ThemedText>
           {label ? (
@@ -94,8 +95,5 @@ const styles = StyleSheet.create({
   },
   labelContainer: {
     alignItems: "center",
-  },
-  percentage: {
-    color: Colors.light.text,
   },
 });

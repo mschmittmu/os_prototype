@@ -22,9 +22,9 @@ import Animated, {
 import { ThemedText } from "@/components/ThemedText";
 import { Card } from "@/components/Card";
 import { ProgressRing } from "@/components/ProgressRing";
-import { StreakBadge } from "@/components/StreakBadge";
 import { EpisodeCard } from "@/components/EpisodeCard";
-import { Colors, Spacing, BorderRadius } from "@/constants/theme";
+import { Spacing, BorderRadius } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import {
   getTasks,
@@ -40,79 +40,11 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-function QuickActionButton({
-  icon,
-  label,
-  onPress,
-  delay = 0,
-}: {
-  icon: keyof typeof Feather.glyphMap;
-  label: string;
-  onPress: () => void;
-  delay?: number;
-}) {
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const handlePressIn = () => {
-    scale.value = withSpring(0.95, { damping: 15, stiffness: 400 });
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 15, stiffness: 400 });
-  };
-
-  const handlePress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    onPress();
-  };
-
-  return (
-    <AnimatedPressable
-      style={[styles.quickAction, animatedStyle]}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      onPress={handlePress}
-    >
-      <View style={styles.quickActionIcon}>
-        <Feather name={icon} size={20} color={Colors.light.accent} />
-      </View>
-      <ThemedText type="small">{label}</ThemedText>
-    </AnimatedPressable>
-  );
-}
-
-function StatCard({
-  value,
-  label,
-  accent = false,
-}: {
-  value: string | number;
-  label: string;
-  accent?: boolean;
-}) {
-  return (
-    <View style={styles.statCard}>
-      <ThemedText
-        type="statSmall"
-        style={[styles.statValue, accent && { color: Colors.light.accent }]}
-      >
-        {value}
-      </ThemedText>
-      <ThemedText type="caption" secondary>
-        {label}
-      </ThemedText>
-    </View>
-  );
-}
-
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
+  const { theme } = useTheme();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [streak, setStreak] = useState<StreakData>({
     current: 0,
@@ -157,7 +89,7 @@ export default function HomeScreen() {
 
   return (
     <ScrollView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
       contentContainerStyle={[
         styles.contentContainer,
         {
@@ -170,7 +102,7 @@ export default function HomeScreen() {
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
-          tintColor={Colors.light.accent}
+          tintColor={theme.accent}
         />
       }
     >
@@ -182,16 +114,16 @@ export default function HomeScreen() {
         >
           <View style={styles.todayHeader}>
             <ThemedText type="h2">TODAY'S TASKS</ThemedText>
-            <View style={styles.viewButton}>
+            <View style={[styles.viewButton, { borderColor: theme.border }]}>
               <ThemedText type="small">View Task List</ThemedText>
             </View>
           </View>
           {allComplete ? (
             <View style={styles.dayWonContainer}>
-              <ThemedText type="h3" style={styles.dayWonText}>
+              <ThemedText type="h3" style={[styles.dayWonText, { color: theme.textSecondary }]}>
                 YOU'VE WON THE DAY AND
               </ThemedText>
-              <ThemedText type="h3" style={styles.dayWonText}>
+              <ThemedText type="h3" style={[styles.dayWonText, { color: theme.textSecondary }]}>
                 COMPLETED ALL YOUR TASKS.
               </ThemedText>
             </View>
@@ -230,7 +162,7 @@ export default function HomeScreen() {
                 <Feather
                   name="arrow-right"
                   size={14}
-                  color={Colors.light.textSecondary}
+                  color={theme.textSecondary}
                 />
               </View>
             </Pressable>
@@ -243,15 +175,15 @@ export default function HomeScreen() {
                   {Math.round(activeChallenge.progress * 0.03)}/3 days completed
                 </ThemedText>
               </View>
-              <View style={styles.checkCircle}>
-                <Feather name="check" size={18} color={Colors.light.text} />
+              <View style={[styles.checkCircle, { backgroundColor: theme.accent }]}>
+                <Feather name="check" size={18} color="#FFFFFF" />
               </View>
             </View>
-            <View style={styles.progressBar}>
+            <View style={[styles.progressBar, { backgroundColor: theme.backgroundTertiary }]}>
               <View
                 style={[
                   styles.progressFill,
-                  { width: `${activeChallenge.progress}%` },
+                  { width: `${activeChallenge.progress}%`, backgroundColor: theme.accent },
                 ]}
               />
             </View>
@@ -275,7 +207,7 @@ export default function HomeScreen() {
               <Feather
                 name="arrow-right"
                 size={14}
-                color={Colors.light.textSecondary}
+                color={theme.textSecondary}
               />
             </View>
           </Pressable>
@@ -317,7 +249,7 @@ export default function HomeScreen() {
                 <Feather
                   name="arrow-right"
                   size={14}
-                  color={Colors.light.textSecondary}
+                  color={theme.textSecondary}
                 />
               </View>
             </Pressable>
@@ -349,7 +281,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.backgroundRoot,
   },
   contentContainer: {
     paddingHorizontal: Spacing.lg,
@@ -368,14 +299,12 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.full,
     borderWidth: 1,
-    borderColor: Colors.light.border,
   },
   dayWonContainer: {
     alignItems: "center",
     paddingVertical: Spacing.lg,
   },
   dayWonText: {
-    color: Colors.light.textSecondary,
     textAlign: "center",
     textTransform: "uppercase",
     letterSpacing: 1,
@@ -417,19 +346,16 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: Colors.light.accent,
     alignItems: "center",
     justifyContent: "center",
   },
   progressBar: {
     height: 6,
-    backgroundColor: Colors.light.backgroundTertiary,
     borderRadius: BorderRadius.full,
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    backgroundColor: Colors.light.accent,
     borderRadius: BorderRadius.full,
   },
   statsRow: {
@@ -443,41 +369,6 @@ const styles = StyleSheet.create({
   },
   statValueLarge: {
     marginBottom: Spacing.xs,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: Colors.light.backgroundDefault,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-  },
-  statValue: {
-    marginBottom: Spacing.xs,
-  },
-  quickActions: {
-    flexDirection: "row",
-    gap: Spacing.md,
-    marginBottom: Spacing.xl,
-  },
-  quickAction: {
-    flex: 1,
-    backgroundColor: Colors.light.backgroundDefault,
-    padding: Spacing.lg,
-    borderRadius: BorderRadius.lg,
-    alignItems: "center",
-    gap: Spacing.sm,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-  },
-  quickActionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.light.backgroundSecondary,
-    alignItems: "center",
-    justifyContent: "center",
   },
   episodesContainer: {
     paddingRight: Spacing.lg,

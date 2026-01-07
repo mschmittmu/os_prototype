@@ -6,8 +6,9 @@ import ProfileScreen from "@/screens/ProfileScreen";
 import StatsScreen from "@/screens/StatsScreen";
 import CoreValuesScreen from "@/screens/CoreValuesScreen";
 import PostComposeScreen from "@/screens/PostComposeScreen";
+import SettingsScreen from "@/screens/SettingsScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
-import { Colors } from "@/constants/theme";
+import { useTheme } from "@/hooks/useTheme";
 
 export type RootStackParamList = {
   Main: undefined;
@@ -16,23 +17,25 @@ export type RootStackParamList = {
   Stats: undefined;
   CoreValues: undefined;
   PostCompose: undefined;
+  Settings: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootStackNavigator() {
   const screenOptions = useScreenOptions();
+  const { theme } = useTheme();
 
   return (
     <Stack.Navigator
       screenOptions={{
         ...screenOptions,
         headerStyle: {
-          backgroundColor: Colors.dark.backgroundRoot,
+          backgroundColor: theme.backgroundRoot,
         },
-        headerTintColor: Colors.dark.text,
+        headerTintColor: theme.text,
         contentStyle: {
-          backgroundColor: Colors.dark.backgroundRoot,
+          backgroundColor: theme.backgroundRoot,
         },
       }}
     >
@@ -77,6 +80,13 @@ export default function RootStackNavigator() {
         options={{
           presentation: "modal",
           headerTitle: "New Post",
+        }}
+      />
+      <Stack.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          headerTitle: "Settings",
         }}
       />
     </Stack.Navigator>

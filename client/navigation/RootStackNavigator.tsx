@@ -7,6 +7,7 @@ import StatsScreen from "@/screens/StatsScreen";
 import CoreValuesScreen from "@/screens/CoreValuesScreen";
 import PostComposeScreen from "@/screens/PostComposeScreen";
 import SettingsScreen from "@/screens/SettingsScreen";
+import VideoPlayerScreen from "@/screens/VideoPlayerScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -18,6 +19,7 @@ export type RootStackParamList = {
   CoreValues: undefined;
   PostCompose: undefined;
   Settings: undefined;
+  VideoPlayer: { videoUrl: string; title: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -88,6 +90,14 @@ export default function RootStackNavigator() {
         options={{
           headerTitle: "Settings",
         }}
+      />
+      <Stack.Screen
+        name="VideoPlayer"
+        component={VideoPlayerScreen}
+        options={({ route }) => ({
+          headerTitle: route.params.title,
+          presentation: "fullScreenModal",
+        })}
       />
     </Stack.Navigator>
   );

@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { View, StyleSheet, ScrollView, Pressable } from "react-native";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useHeaderHeight } from "@react-navigation/elements";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import * as WebBrowser from "expo-web-browser";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
@@ -12,13 +13,16 @@ import { EpisodeCard } from "@/components/EpisodeCard";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { episodes as allEpisodes } from "@/lib/mockData";
+import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 const FEATURED_VIDEO_URL = "https://www.youtube.com/watch?v=FEPeOtUi8gk";
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const CATEGORIES = ["All", "Operator Standard", "MFCEO Project", "Shorts"];
 
 export default function MediaScreen() {
   const { theme } = useTheme();
+  const navigation = useNavigation<NavigationProp>();
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -35,9 +39,12 @@ export default function MediaScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
-  const handlePlayFeaturedVideo = async () => {
+  const handlePlayFeaturedVideo = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    await WebBrowser.openBrowserAsync(FEATURED_VIDEO_URL);
+    navigation.navigate("VideoPlayer", {
+      videoUrl: FEATURED_VIDEO_URL,
+      title: featuredEpisode.title,
+    });
   };
 
   const handleCategoryChange = (category: string) => {

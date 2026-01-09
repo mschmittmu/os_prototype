@@ -90,7 +90,10 @@ export async function getTasks(): Promise<Task[]> {
   try {
     const data = await AsyncStorage.getItem(KEYS.TASKS);
     if (data) {
-      return JSON.parse(data);
+      const tasks = JSON.parse(data);
+      if (tasks.length === 5 && tasks.every((t: Task) => defaultTasks.some(d => d.id === t.id))) {
+        return tasks;
+      }
     }
     await saveTasks(defaultTasks);
     return defaultTasks;
@@ -98,6 +101,11 @@ export async function getTasks(): Promise<Task[]> {
     console.error("Error getting tasks:", error);
     return defaultTasks;
   }
+}
+
+export async function resetTasks(): Promise<Task[]> {
+  await saveTasks(defaultTasks);
+  return defaultTasks;
 }
 
 export async function saveTasks(tasks: Task[]): Promise<void> {

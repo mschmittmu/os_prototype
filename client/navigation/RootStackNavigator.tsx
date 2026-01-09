@@ -8,6 +8,7 @@ import CoreValuesScreen from "@/screens/CoreValuesScreen";
 import PostComposeScreen from "@/screens/PostComposeScreen";
 import SettingsScreen from "@/screens/SettingsScreen";
 import VideoPlayerScreen from "@/screens/VideoPlayerScreen";
+import CommentsScreen from "@/screens/CommentsScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -20,6 +21,7 @@ export type RootStackParamList = {
   PostCompose: undefined;
   Settings: undefined;
   VideoPlayer: { videoUrl: string; title: string };
+  Comments: { postId: string; postAuthor: string; postContent: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -98,6 +100,14 @@ export default function RootStackNavigator() {
           headerTitle: route.params.title,
           presentation: "fullScreenModal",
         })}
+      />
+      <Stack.Screen
+        name="Comments"
+        component={CommentsScreen}
+        options={{
+          headerTitle: "Comments",
+          presentation: "modal",
+        }}
       />
     </Stack.Navigator>
   );

@@ -90,6 +90,93 @@ export const episodes: Episode[] = [
   },
 ];
 
+export interface Announcement {
+  id: string;
+  author: {
+    name: string;
+    avatar?: string;
+    tier: string;
+    verified: boolean;
+  };
+  content: string;
+  likes: number;
+  comments: number;
+  timestamp: string;
+  liked: boolean;
+  saved: boolean;
+}
+
+export interface Comment {
+  id: string;
+  author: {
+    name: string;
+    tier: string;
+  };
+  content: string;
+  timestamp: string;
+  likes: number;
+  liked: boolean;
+}
+
+export const announcements: Announcement[] = [
+  {
+    id: "a1",
+    author: { name: "Andy Frisella", tier: "Creator", verified: true },
+    content: "Listen up. The reason you're not where you want to be isn't because of circumstances. It's because you haven't decided to become unstoppable. Make that decision TODAY. The Power List isn't just a productivity tool - it's a commitment device. 5 tasks. Every. Single. Day. Win the day or admit defeat.",
+    likes: 4523,
+    comments: 892,
+    timestamp: "3h ago",
+    liked: false,
+    saved: false,
+  },
+  {
+    id: "a2",
+    author: { name: "Andy Frisella", tier: "Creator", verified: true },
+    content: "New challenge dropping next week: LIVE HARD. This is for those of you who have completed 75 Hard and want to take it to the next level. Prepare yourselves mentally. This will separate the operators from the pretenders.",
+    likes: 3891,
+    comments: 567,
+    timestamp: "1d ago",
+    liked: false,
+    saved: false,
+  },
+  {
+    id: "a3",
+    author: { name: "Andy Frisella", tier: "Creator", verified: true },
+    content: "Your comfort zone is a prison. Every time you choose comfort over growth, you're building the walls higher. Break out. The Operator Standard exists because average is unacceptable. You didn't download this app to be average.",
+    likes: 5234,
+    comments: 1023,
+    timestamp: "2d ago",
+    liked: false,
+    saved: false,
+  },
+  {
+    id: "a4",
+    author: { name: "Andy Frisella", tier: "Creator", verified: true },
+    content: "Shoutout to everyone who has maintained a streak of 30+ days on the Power List. You are proving that discipline beats motivation every single time. Keep executing. The standard owns you now - and that's exactly where you want to be.",
+    likes: 6712,
+    comments: 1456,
+    timestamp: "3d ago",
+    liked: false,
+    saved: false,
+  },
+];
+
+export const sampleComments: Record<string, Comment[]> = {
+  "1": [
+    { id: "c1", author: { name: "Jake Thornton", tier: "Operator" }, content: "Absolute beast mode. Keep crushing it!", timestamp: "1h ago", likes: 12, liked: false },
+    { id: "c2", author: { name: "Chris Walsh", tier: "Elite" }, content: "Day 45 is where the real transformation begins. Stay hard.", timestamp: "2h ago", likes: 8, liked: false },
+  ],
+  "2": [
+    { id: "c3", author: { name: "Marcus Steel", tier: "Founder" }, content: "That's what I'm talking about! Proof that the grind works.", timestamp: "3h ago", likes: 24, liked: false },
+    { id: "c4", author: { name: "David Carter", tier: "Member" }, content: "Inspiration for all of us. Congrats on the deal!", timestamp: "4h ago", likes: 15, liked: false },
+  ],
+  "a1": [
+    { id: "c5", author: { name: "Marcus Steel", tier: "Founder" }, content: "This is why we're here. The Power List changed my life.", timestamp: "2h ago", likes: 89, liked: false },
+    { id: "c6", author: { name: "Jake Thornton", tier: "Operator" }, content: "Day 127 of winning the day. No looking back.", timestamp: "2h ago", likes: 67, liked: false },
+    { id: "c7", author: { name: "Chris Walsh", tier: "Elite" }, content: "The decision IS the turning point. Facts.", timestamp: "3h ago", likes: 45, liked: false },
+  ],
+};
+
 export const posts: Post[] = [
   {
     id: "1",

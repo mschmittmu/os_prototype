@@ -296,23 +296,6 @@ export default function ExecuteScreen() {
           </Animated.View>
         ))}
       </View>
-
-      {tasks.length === 0 && (
-        <Animated.View
-          style={styles.emptyState}
-          entering={FadeInDown.duration(400).delay(200)}
-        >
-          <View style={[styles.emptyIcon, { backgroundColor: theme.backgroundSecondary }]}>
-            <Feather name="check-square" size={40} color={theme.textSecondary} />
-          </View>
-          <ThemedText type="h4" style={styles.emptyTitle}>
-            No tasks yet
-          </ThemedText>
-          <ThemedText type="body" secondary style={styles.emptyText}>
-            Add your first task to start winning the day.
-          </ThemedText>
-        </Animated.View>
-      )}
     </>
   );
 

@@ -9,6 +9,7 @@ import PostComposeScreen from "@/screens/PostComposeScreen";
 import SettingsScreen from "@/screens/SettingsScreen";
 import VideoPlayerScreen from "@/screens/VideoPlayerScreen";
 import CommentsScreen from "@/screens/CommentsScreen";
+import ChallengeCreateScreen from "@/screens/ChallengeCreateScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
 
@@ -22,6 +23,7 @@ export type RootStackParamList = {
   Settings: undefined;
   VideoPlayer: { videoUrl: string; title: string };
   Comments: { postId: string; postAuthor: string; postContent: string };
+  ChallengeCreate: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -106,6 +108,14 @@ export default function RootStackNavigator() {
         component={CommentsScreen}
         options={{
           headerTitle: "Comments",
+          presentation: "modal",
+        }}
+      />
+      <Stack.Screen
+        name="ChallengeCreate"
+        component={ChallengeCreateScreen}
+        options={{
+          headerTitle: "New Challenge",
           presentation: "modal",
         }}
       />

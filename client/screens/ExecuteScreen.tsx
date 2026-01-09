@@ -390,6 +390,10 @@ export default function ExecuteScreen() {
     </>
   );
 
+  const handleSaveJournal = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
+
   const renderJournalTab = () => (
     <>
       {renderDateStrip()}
@@ -406,22 +410,38 @@ export default function ExecuteScreen() {
           </ThemedText>
         </Animated.View>
       ) : (
-        <TextInput
-          style={[
-            styles.journalInput,
-            {
-              backgroundColor: theme.backgroundSecondary,
-              color: theme.text,
-              borderColor: theme.border,
-            },
-          ]}
-          placeholder="Write your thoughts for today..."
-          placeholderTextColor={theme.textSecondary}
-          multiline
-          value={journalText}
-          onChangeText={setJournalText}
-          textAlignVertical="top"
-        />
+        <>
+          <TextInput
+            style={[
+              styles.journalInput,
+              {
+                backgroundColor: theme.backgroundSecondary,
+                color: theme.text,
+                borderColor: theme.border,
+              },
+            ]}
+            placeholder="Write your thoughts for today..."
+            placeholderTextColor={theme.textSecondary}
+            multiline
+            value={journalText}
+            onChangeText={setJournalText}
+            textAlignVertical="top"
+          />
+          <Pressable
+            style={[
+              styles.saveButton,
+              { backgroundColor: theme.accent },
+              !journalText.trim() && { opacity: 0.5 },
+            ]}
+            onPress={handleSaveJournal}
+            disabled={!journalText.trim()}
+          >
+            <Feather name="save" size={18} color="#FFFFFF" />
+            <ThemedText type="bodyBold" style={{ color: "#FFFFFF", marginLeft: Spacing.sm }}>
+              Save Journal
+            </ThemedText>
+          </Pressable>
+        </>
       )}
     </>
   );
@@ -453,16 +473,16 @@ export default function ExecuteScreen() {
         {activeTab === "Journal" && renderJournalTab()}
       </ScrollView>
 
-      <FAB
-        icon="plus"
-        onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          if (activeTab === "Tasks") {
-            navigation.navigate("TaskCreate");
-          }
-        }}
-        style={{ bottom: tabBarHeight + Spacing.xl, right: Spacing.lg }}
-      />
+      {activeTab === "Challenges" && (
+        <FAB
+          icon="plus"
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            navigation.navigate("ChallengeCreate");
+          }}
+          style={{ bottom: tabBarHeight + Spacing.xl, right: Spacing.lg }}
+        />
+      )}
 
       {showCelebration && (
         <DayWonCelebration
@@ -639,5 +659,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     fontSize: 16,
     lineHeight: 24,
+  },
+  saveButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.full,
+    marginTop: Spacing.lg,
   },
 });

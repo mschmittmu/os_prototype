@@ -47,6 +47,113 @@ export interface Challenge {
   active: boolean;
 }
 
+export interface ExecutionChallenge {
+  id: string;
+  title: string;
+  durationDays: number;
+  xpReward: number;
+  daysCompleted: number;
+  totalDays: number;
+  startDate: string;
+  doneToday: boolean;
+  status: "current" | "past";
+}
+
+export interface JournalEntry {
+  id: string;
+  date: string;
+  content: string;
+}
+
+export const executionChallenges: ExecutionChallenge[] = [
+  {
+    id: "ec1",
+    title: "90-Minute Deep Work Immersion",
+    durationDays: 3,
+    xpReward: 600,
+    daysCompleted: 1,
+    totalDays: 3,
+    startDate: "Jan. 8, 2026",
+    doneToday: true,
+    status: "current",
+  },
+  {
+    id: "ec2",
+    title: "The 3-Day Iron Will Workout",
+    durationDays: 3,
+    xpReward: 600,
+    daysCompleted: 2,
+    totalDays: 3,
+    startDate: "Jan. 7, 2026",
+    doneToday: true,
+    status: "current",
+  },
+  {
+    id: "ec3",
+    title: "The 90-Minute Deep Work Blitz",
+    durationDays: 3,
+    xpReward: 600,
+    daysCompleted: 3,
+    totalDays: 3,
+    startDate: "Jan. 4, 2026",
+    doneToday: false,
+    status: "past",
+  },
+  {
+    id: "ec4",
+    title: "7-Day Cold Shower Challenge",
+    durationDays: 7,
+    xpReward: 1000,
+    daysCompleted: 7,
+    totalDays: 7,
+    startDate: "Dec. 28, 2025",
+    doneToday: false,
+    status: "past",
+  },
+];
+
+export const journalEntries: JournalEntry[] = [
+  {
+    id: "j1",
+    date: "2026-01-08",
+    content: `Big move made yesterday. We hired the new agency for shoperator. I have to fire my old team now.
+
+They just weren't moving fast enough with enough skills to handle what needs to be done.
+
+My next plan is to ensure this new team has the standard from the start. Clear road map.
+
+Fix bugs
+New features
+Build the best damn image generation tool on the planet
+
+Point and click acceleration for the clients.`,
+  },
+  {
+    id: "j2",
+    date: "2026-01-07",
+    content: `Focus today was on eliminating distractions. Turned off all notifications except for essential apps.
+
+The morning routine is locked in. 4:30 AM wake up, cold shower, workout, then deep work block before anyone else is awake.
+
+This is where the magic happens. The early hours belong to me.`,
+  },
+  {
+    id: "j3",
+    date: "2026-01-06",
+    content: `Reflection day. Looking back at Q4 performance and setting intentions for Q1.
+
+Key wins from last quarter:
+- Launched two new products
+- Revenue up 34%
+- Built the team to 12 people
+
+Areas for improvement:
+- Better delegation
+- More time with family
+- Sleep consistency`,
+  },
+];
+
 export const episodes: Episode[] = [
   {
     id: "1",

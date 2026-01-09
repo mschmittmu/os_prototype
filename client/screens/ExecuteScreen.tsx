@@ -5,6 +5,7 @@ import {
   ScrollView,
   Pressable,
   RefreshControl,
+  TextInput,
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -15,6 +16,7 @@ import * as Haptics from "expo-haptics";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
 import { TaskCard } from "@/components/TaskCard";
 import { FAB } from "@/components/FAB";
 import { DayWonCelebration } from "@/components/DayWonCelebration";
@@ -30,16 +32,31 @@ import {
   Task,
   StreakData,
 } from "@/lib/storage";
+import {
+  executionChallenges,
+  journalEntries,
+  ExecutionChallenge,
+  JournalEntry,
+} from "@/lib/mockData";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type TabType = "Tasks" | "Challenges" | "Journal";
 
-const DAYS = ["S", "M", "T", "W", "T", "F", "S"];
+const CATEGORY_ICONS: Record<string, string> = {
+  "Family & Relationships": "users",
+  "Health & Fitness": "heart",
+  "Self Development": "book",
+  "Business & Career": "briefcase",
+  default: "check-square",
+};
 
 export default function ExecuteScreen() {
   const { theme } = useTheme();
   const navigation = useNavigation<NavigationProp>();
   const headerHeight = useHeaderHeight();
   const tabBarHeight = useBottomTabBarHeight();
+  
+  const [activeTab, setActiveTab] = useState<TabType>("Tasks");
   const [tasks, setTasks] = useState<Task[]>([]);
   const [streak, setStreak] = useState<StreakData>({
     current: 0,
@@ -50,6 +67,8 @@ export default function ExecuteScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [journalText, setJournalText] = useState("");
 
   const loadData = useCallback(async () => {
     const [tasksData, streakData] = await Promise.all([
@@ -107,21 +126,305 @@ export default function ExecuteScreen() {
     setXpEarned(0);
   };
 
-  const completedTasks = tasks.filter((t) => t.completed).length;
-  const totalTasks = Math.max(tasks.length, 1);
-  const progress = (completedTasks / totalTasks) * 100;
+  const handleTabChange = (tab: TabType) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setActiveTab(tab);
+  };
 
   const getWeekDays = () => {
     const today = new Date();
-    const currentDay = today.getDay();
-    return DAYS.map((day, index) => ({
-      label: day,
-      status:
-        index < currentDay ? "won" : index === currentDay ? "current" : "future",
-    }));
+    const startOfWeek = new Date(today);
+    const dayOfWeek = today.getDay();
+    startOfWeek.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1) - 1);
+    
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(startOfWeek);
+      date.setDate(startOfWeek.getDate() + i);
+      const isToday = date.toDateString() === today.toDateString();
+      const isSelected = date.toDateString() === selectedDate.toDateString();
+      days.push({
+        date,
+        dayNum: date.getDate(),
+        dayName: date.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase(),
+        isToday,
+        isSelected,
+      });
+    }
+    return days;
   };
 
   const weekDays = getWeekDays();
+  const completedTasks = tasks.filter((t) => t.completed).length;
+  const progress = tasks.length > 0 ? (completedTasks / tasks.length) * 100 : 0;
+
+  const currentChallenges = executionChallenges.filter((c) => c.status === "current");
+  const pastChallenges = executionChallenges.filter((c) => c.status === "past");
+
+  const formatDateHeader = (date: Date) => {
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }).toUpperCase();
+  };
+
+  const getMonthYear = () => {
+    return selectedDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  };
+
+  const getJournalForDate = (date: Date): JournalEntry | undefined => {
+    const dateStr = date.toISOString().split("T")[0];
+    return journalEntries.find((j) => j.date === dateStr);
+  };
+
+  const currentJournal = getJournalForDate(selectedDate);
+
+  const renderTabBar = () => (
+    <View style={[styles.tabBar, { backgroundColor: theme.backgroundSecondary }]}>
+      {(["Tasks", "Challenges", "Journal"] as TabType[]).map((tab) => (
+        <Pressable
+          key={tab}
+          style={[
+            styles.tab,
+            activeTab === tab && { backgroundColor: theme.text },
+          ]}
+          onPress={() => handleTabChange(tab)}
+        >
+          <ThemedText
+            type="bodyBold"
+            style={[
+              styles.tabText,
+              { color: activeTab === tab ? theme.backgroundRoot : theme.textSecondary },
+            ]}
+          >
+            {tab}
+          </ThemedText>
+        </Pressable>
+      ))}
+    </View>
+  );
+
+  const renderDateStrip = () => (
+    <View style={styles.dateStripContainer}>
+      <Pressable style={[styles.monthSelector, { borderColor: theme.border }]}>
+        <ThemedText type="body">{getMonthYear()}</ThemedText>
+        <Feather name="chevron-down" size={16} color={theme.textSecondary} />
+      </Pressable>
+      {activeTab === "Tasks" && (
+        <Pressable
+          style={[styles.statsButton, { borderColor: theme.border }]}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            navigation.navigate("Stats");
+          }}
+        >
+          <Feather name="bar-chart-2" size={16} color={theme.textSecondary} />
+          <ThemedText type="caption" style={{ marginLeft: Spacing.xs }}>
+            Stats
+          </ThemedText>
+        </Pressable>
+      )}
+    </View>
+  );
+
+  const renderWeekStrip = () => (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      style={styles.weekStrip}
+      contentContainerStyle={styles.weekStripContent}
+    >
+      {weekDays.map((day, index) => (
+        <Pressable
+          key={index}
+          style={[
+            styles.dayColumn,
+            day.isSelected && { backgroundColor: theme.text, borderRadius: BorderRadius.lg },
+          ]}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setSelectedDate(day.date);
+          }}
+        >
+          <ThemedText
+            type="caption"
+            style={[
+              styles.dayName,
+              { color: day.isSelected ? theme.backgroundRoot : theme.textSecondary },
+            ]}
+          >
+            {day.dayName}
+          </ThemedText>
+          <ThemedText
+            type="h4"
+            style={[
+              styles.dayNum,
+              { color: day.isSelected ? theme.backgroundRoot : theme.text },
+            ]}
+          >
+            {day.dayNum}
+          </ThemedText>
+          {day.isToday && !day.isSelected && (
+            <View style={[styles.todayDot, { backgroundColor: theme.success }]} />
+          )}
+        </Pressable>
+      ))}
+    </ScrollView>
+  );
+
+  const renderTasksTab = () => (
+    <>
+      {renderDateStrip()}
+      {renderWeekStrip()}
+      
+      <View style={styles.taskList}>
+        {tasks.map((task, index) => (
+          <Animated.View
+            key={task.id}
+            entering={FadeInDown.duration(400).delay(100 + index * 50)}
+          >
+            <TaskCard
+              id={task.id}
+              title={task.title}
+              category={task.category}
+              completed={task.completed}
+              onToggle={handleToggleTask}
+              onEdit={handleEditTask}
+            />
+          </Animated.View>
+        ))}
+      </View>
+
+      {tasks.length === 0 && (
+        <Animated.View
+          style={styles.emptyState}
+          entering={FadeInDown.duration(400).delay(200)}
+        >
+          <View style={[styles.emptyIcon, { backgroundColor: theme.backgroundSecondary }]}>
+            <Feather name="check-square" size={40} color={theme.textSecondary} />
+          </View>
+          <ThemedText type="h4" style={styles.emptyTitle}>
+            No tasks yet
+          </ThemedText>
+          <ThemedText type="body" secondary style={styles.emptyText}>
+            Add your first task to start winning the day.
+          </ThemedText>
+        </Animated.View>
+      )}
+    </>
+  );
+
+  const renderChallengeCard = (challenge: ExecutionChallenge) => {
+    const progressPercent = (challenge.daysCompleted / challenge.totalDays) * 100;
+    
+    return (
+      <Animated.View
+        key={challenge.id}
+        style={[styles.challengeCard, { backgroundColor: theme.backgroundSecondary }]}
+        entering={FadeInDown.duration(400)}
+      >
+        <View style={styles.challengeHeader}>
+          <ThemedText type="h4" style={styles.challengeTitle}>
+            {challenge.title}
+          </ThemedText>
+          <View style={[styles.xpBadge, { backgroundColor: theme.accent }]}>
+            <ThemedText type="caption" style={{ color: "#FFFFFF", fontWeight: "700" }}>
+              +{challenge.xpReward} XP
+            </ThemedText>
+          </View>
+        </View>
+        
+        <View style={[styles.durationBadge, { backgroundColor: theme.backgroundTertiary }]}>
+          <ThemedText type="caption" style={{ color: theme.text }}>
+            {challenge.durationDays} Days
+          </ThemedText>
+        </View>
+        
+        <View style={styles.challengeProgress}>
+          <View style={styles.progressInfo}>
+            <ThemedText type="caption" secondary>
+              {challenge.daysCompleted}/{challenge.totalDays} days completed
+            </ThemedText>
+            {challenge.doneToday && (
+              <View style={styles.doneTodayBadge}>
+                <Feather name="check" size={12} color={theme.text} />
+                <ThemedText type="caption" style={{ marginLeft: 4 }}>
+                  Done Today
+                </ThemedText>
+              </View>
+            )}
+          </View>
+          <View style={[styles.progressBar, { backgroundColor: theme.backgroundTertiary }]}>
+            <View
+              style={[
+                styles.progressFill,
+                { width: `${progressPercent}%`, backgroundColor: theme.accent },
+              ]}
+            />
+          </View>
+          <ThemedText type="caption" secondary style={{ marginTop: Spacing.xs }}>
+            Started on {challenge.startDate}
+          </ThemedText>
+        </View>
+      </Animated.View>
+    );
+  };
+
+  const renderChallengesTab = () => (
+    <>
+      <ThemedText type="h4" style={styles.sectionHeader}>
+        CURRENT CHALLENGES
+      </ThemedText>
+      {currentChallenges.map(renderChallengeCard)}
+      
+      {pastChallenges.length > 0 && (
+        <>
+          <ThemedText type="h4" style={[styles.sectionHeader, { marginTop: Spacing.xl }]}>
+            PAST CHALLENGES
+          </ThemedText>
+          {pastChallenges.map(renderChallengeCard)}
+        </>
+      )}
+    </>
+  );
+
+  const renderJournalTab = () => (
+    <>
+      {renderDateStrip()}
+      {renderWeekStrip()}
+      
+      <ThemedText type="h4" style={styles.journalDateHeader}>
+        {formatDateHeader(selectedDate)}
+      </ThemedText>
+      
+      {currentJournal ? (
+        <Animated.View entering={FadeIn.duration(300)}>
+          <ThemedText type="body" style={styles.journalContent}>
+            {currentJournal.content}
+          </ThemedText>
+        </Animated.View>
+      ) : (
+        <TextInput
+          style={[
+            styles.journalInput,
+            {
+              backgroundColor: theme.backgroundSecondary,
+              color: theme.text,
+              borderColor: theme.border,
+            },
+          ]}
+          placeholder="Write your thoughts for today..."
+          placeholderTextColor={theme.textSecondary}
+          multiline
+          value={journalText}
+          onChangeText={setJournalText}
+          textAlignVertical="top"
+        />
+      )}
+    </>
+  );
 
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
@@ -130,7 +433,7 @@ export default function ExecuteScreen() {
         contentContainerStyle={[
           styles.contentContainer,
           {
-            paddingTop: headerHeight,
+            paddingTop: headerHeight + Spacing.md,
             paddingBottom: tabBarHeight + Spacing["4xl"],
           },
         ]}
@@ -143,122 +446,31 @@ export default function ExecuteScreen() {
           />
         }
       >
-        <Animated.View
-          style={styles.weekStrip}
-          entering={FadeInDown.duration(400)}
-        >
-          {weekDays.map((day, index) => (
-            <View
-              key={index}
-              style={[
-                styles.dayCircle,
-                { backgroundColor: theme.backgroundSecondary },
-                day.status === "won" && { backgroundColor: theme.success },
-                day.status === "current" && { backgroundColor: theme.accent },
-              ]}
-            >
-              <ThemedText
-                type="caption"
-                style={[
-                  styles.dayLabel,
-                  { color: theme.textSecondary },
-                  day.status === "won" && { color: theme.backgroundRoot },
-                  day.status === "current" && { color: theme.backgroundRoot },
-                ]}
-              >
-                {day.label}
-              </ThemedText>
-            </View>
-          ))}
-          <Pressable
-            style={styles.statsButton}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              navigation.navigate("Stats");
-            }}
-          >
-            <Feather
-              name="bar-chart-2"
-              size={20}
-              color={theme.textSecondary}
-            />
-          </Pressable>
-        </Animated.View>
-
-        <Animated.View
-          style={styles.progressContainer}
-          entering={FadeInDown.duration(400).delay(100)}
-        >
-          <View style={styles.progressHeader}>
-            <ThemedText type="h4">POWER LIST</ThemedText>
-            <ThemedText type="bodyBold" style={{ color: theme.accent }}>
-              {completedTasks}/{tasks.length} COMPLETE
-            </ThemedText>
-          </View>
-          <View style={[styles.progressBar, { backgroundColor: theme.backgroundTertiary }]}>
-            <Animated.View
-              style={[styles.progressFill, { width: `${progress}%`, backgroundColor: theme.accent }]}
-              entering={FadeIn}
-            />
-          </View>
-        </Animated.View>
-
-        <View style={styles.taskList}>
-          {tasks.map((task, index) => (
-            <Animated.View
-              key={task.id}
-              entering={FadeInDown.duration(400).delay(150 + index * 50)}
-            >
-              <TaskCard
-                id={task.id}
-                title={task.title}
-                category={task.category}
-                completed={task.completed}
-                onToggle={handleToggleTask}
-                onEdit={handleEditTask}
-              />
-            </Animated.View>
-          ))}
-        </View>
-
-        {tasks.length === 0 ? (
-          <Animated.View
-            style={styles.emptyState}
-            entering={FadeInDown.duration(400).delay(200)}
-          >
-            <View style={[styles.emptyIcon, { backgroundColor: theme.backgroundSecondary }]}>
-              <Feather
-                name="check-square"
-                size={40}
-                color={theme.textSecondary}
-              />
-            </View>
-            <ThemedText type="h4" style={styles.emptyTitle}>
-              No tasks yet
-            </ThemedText>
-            <ThemedText type="body" secondary style={styles.emptyText}>
-              Add your first task to start winning the day.
-            </ThemedText>
-          </Animated.View>
-        ) : null}
+        {renderTabBar()}
+        
+        {activeTab === "Tasks" && renderTasksTab()}
+        {activeTab === "Challenges" && renderChallengesTab()}
+        {activeTab === "Journal" && renderJournalTab()}
       </ScrollView>
 
       <FAB
         icon="plus"
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-          navigation.navigate("TaskCreate");
+          if (activeTab === "Tasks") {
+            navigation.navigate("TaskCreate");
+          }
         }}
         style={{ bottom: tabBarHeight + Spacing.xl, right: Spacing.lg }}
       />
 
-      {showCelebration ? (
+      {showCelebration && (
         <DayWonCelebration
           streak={streak.current}
           xpEarned={xpEarned > 0 ? xpEarned : 250}
           onDismiss={handleDismissCelebration}
         />
-      ) : null}
+      )}
     </View>
   );
 }
@@ -273,43 +485,68 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingHorizontal: Spacing.lg,
   },
-  weekStrip: {
+  tabBar: {
+    flexDirection: "row",
+    borderRadius: BorderRadius.full,
+    padding: 4,
+    marginBottom: Spacing.lg,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: Spacing.sm,
+    alignItems: "center",
+    borderRadius: BorderRadius.full,
+  },
+  tabText: {
+    fontSize: 14,
+  },
+  dateStripContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: Spacing.xl,
-    paddingHorizontal: Spacing.sm,
+    marginBottom: Spacing.md,
   },
-  dayCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: "center",
+  monthSelector: {
+    flexDirection: "row",
     alignItems: "center",
-  },
-  dayLabel: {
-    fontWeight: "600",
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    gap: Spacing.xs,
   },
   statsButton: {
-    padding: Spacing.sm,
-  },
-  progressContainer: {
-    marginBottom: Spacing.xl,
-  },
-  progressHeader: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: Spacing.sm,
-  },
-  progressBar: {
-    height: 8,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
     borderRadius: BorderRadius.full,
-    overflow: "hidden",
+    borderWidth: 1,
   },
-  progressFill: {
-    height: "100%",
-    borderRadius: BorderRadius.full,
+  weekStrip: {
+    marginBottom: Spacing.lg,
+  },
+  weekStripContent: {
+    flexDirection: "row",
+    gap: Spacing.sm,
+  },
+  dayColumn: {
+    width: 48,
+    alignItems: "center",
+    paddingVertical: Spacing.sm,
+  },
+  dayName: {
+    fontSize: 11,
+    marginBottom: 4,
+  },
+  dayNum: {
+    fontSize: 18,
+  },
+  todayDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginTop: 4,
   },
   taskList: {
     gap: Spacing.sm,
@@ -333,5 +570,74 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: "center",
     maxWidth: 280,
+  },
+  sectionHeader: {
+    marginBottom: Spacing.md,
+    letterSpacing: 1,
+  },
+  challengeCard: {
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.lg,
+    marginBottom: Spacing.md,
+  },
+  challengeHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: Spacing.sm,
+  },
+  challengeTitle: {
+    flex: 1,
+    marginRight: Spacing.sm,
+  },
+  xpBadge: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.sm,
+  },
+  durationBadge: {
+    alignSelf: "flex-start",
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.sm,
+    marginBottom: Spacing.md,
+  },
+  challengeProgress: {
+    gap: Spacing.xs,
+  },
+  progressInfo: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  doneTodayBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  progressBar: {
+    height: 6,
+    borderRadius: BorderRadius.full,
+    overflow: "hidden",
+    marginTop: Spacing.xs,
+  },
+  progressFill: {
+    height: "100%",
+    borderRadius: BorderRadius.full,
+  },
+  journalDateHeader: {
+    textAlign: "center",
+    marginBottom: Spacing.lg,
+    letterSpacing: 1,
+  },
+  journalContent: {
+    lineHeight: 24,
+  },
+  journalInput: {
+    minHeight: 200,
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    fontSize: 16,
+    lineHeight: 24,
   },
 });

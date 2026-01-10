@@ -228,7 +228,7 @@ function OperatorModeHeaderButton() {
               GO TO WAR?
             </ThemedText>
             <ThemedText type="body" style={[styles.confirmationSubtitle, { color: theme.textSecondary }]}>
-              {selectedProtocol ? `${formatDuration(selectedProtocol.durationMinutes)} ${selectedProtocol.name} protocol` : "Loading..."}
+              {selectedProtocol ? `${selectedProtocol.name} protocol` : "Loading..."}
             </ThemedText>
             <View style={styles.confirmationButtons}>
               <Pressable

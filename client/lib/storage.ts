@@ -290,16 +290,16 @@ export const defaultProtocols: OperatorModeProtocol[] = [
   {
     id: "standard",
     name: "STANDARD",
-    description: "90 min, grayscale, notification blocking",
-    durationMinutes: 90,
+    description: "Grayscale, notification blocking",
+    durationMinutes: 0,
     settings: { ...defaultOperatorSettings },
     isCustom: false,
   },
   {
     id: "deep-work",
     name: "DEEP WORK",
-    description: "3 hours, strictest settings, Crew approval to exit",
-    durationMinutes: 180,
+    description: "Strictest settings, Crew approval to exit",
+    durationMinutes: 0,
     settings: {
       ...defaultOperatorSettings,
       requireCrewApprovalToExit: true,
@@ -310,8 +310,8 @@ export const defaultProtocols: OperatorModeProtocol[] = [
   {
     id: "fitness",
     name: "FITNESS",
-    description: "60 min, only health apps accessible",
-    durationMinutes: 60,
+    description: "Only health apps accessible",
+    durationMinutes: 0,
     settings: {
       ...defaultOperatorSettings,
       grayscaleMode: false,
@@ -322,7 +322,7 @@ export const defaultProtocols: OperatorModeProtocol[] = [
   {
     id: "family",
     name: "FAMILY",
-    description: "No time limit, work apps blocked, family contacts only",
+    description: "Work apps blocked, family contacts only",
     durationMinutes: 0,
     settings: {
       ...defaultOperatorSettings,
@@ -336,7 +336,7 @@ export const defaultProtocols: OperatorModeProtocol[] = [
     id: "nuclear",
     name: "NUCLEAR",
     description: "Phone locked entirely, emergency calls only",
-    durationMinutes: 120,
+    durationMinutes: 0,
     settings: {
       ...defaultOperatorSettings,
       grayscaleMode: true,

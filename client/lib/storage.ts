@@ -6,6 +6,9 @@ const KEYS = {
   STREAK: "@operator_streak",
   LAST_COMPLETED_DATE: "@operator_last_completed",
   BIOMETRIC_ENABLED: "@operator_biometric_enabled",
+  OPERATOR_MODE_CONFIG: "@operator_mode_config",
+  OPERATOR_MODE_SESSION: "@operator_mode_session",
+  OPERATOR_MODE_HISTORY: "@operator_mode_history",
 };
 
 export interface Task {
@@ -208,5 +211,226 @@ export async function setBiometricEnabled(enabled: boolean): Promise<void> {
     await AsyncStorage.setItem(KEYS.BIOMETRIC_ENABLED, enabled ? "true" : "false");
   } catch (error) {
     console.error("Error saving biometric setting:", error);
+  }
+}
+
+export interface OperatorModeSettings {
+  grayscaleMode: boolean;
+  hideDistractingApps: boolean;
+  simplifiedLockScreen: boolean;
+  blockNonEssentialNotifications: boolean;
+  allowFavoritesCalls: boolean;
+  allowCriticalApps: boolean;
+  autoReplyTexts: boolean;
+  autoReplyMessage: string;
+  autoReplyMissedCalls: boolean;
+  startFocusPlaylist: boolean;
+  triggerSmartHome: boolean;
+  startTimer: boolean;
+  defaultDurationMinutes: number;
+  burnStrikeOnExit: boolean;
+  notifyCrewOnExit: boolean;
+  breakStreakOnExit: boolean;
+  cooldownHours: number;
+  requireCrewApprovalToExit: boolean;
+}
+
+export interface OperatorModeProtocol {
+  id: string;
+  name: string;
+  description: string;
+  durationMinutes: number;
+  settings: OperatorModeSettings;
+  isCustom: boolean;
+}
+
+export interface OperatorModeSession {
+  isActive: boolean;
+  protocolId: string;
+  protocolName: string;
+  startTime: string;
+  durationMinutes: number;
+  tasksCompletedAtStart: number;
+}
+
+export interface OperatorModeHistoryEntry {
+  id: string;
+  protocolName: string;
+  date: string;
+  durationMinutes: number;
+  actualDurationMinutes: number;
+  tasksCompleted: number;
+  totalTasks: number;
+  completedSuccessfully: boolean;
+  exitedEarly: boolean;
+}
+
+export const defaultOperatorSettings: OperatorModeSettings = {
+  grayscaleMode: true,
+  hideDistractingApps: true,
+  simplifiedLockScreen: false,
+  blockNonEssentialNotifications: true,
+  allowFavoritesCalls: true,
+  allowCriticalApps: false,
+  autoReplyTexts: true,
+  autoReplyMessage: "I'm in Operator Mode. I'll respond when I'm done executing.",
+  autoReplyMissedCalls: false,
+  startFocusPlaylist: false,
+  triggerSmartHome: false,
+  startTimer: true,
+  defaultDurationMinutes: 90,
+  burnStrikeOnExit: true,
+  notifyCrewOnExit: true,
+  breakStreakOnExit: false,
+  cooldownHours: 2,
+  requireCrewApprovalToExit: false,
+};
+
+export const defaultProtocols: OperatorModeProtocol[] = [
+  {
+    id: "standard",
+    name: "STANDARD",
+    description: "90 min, grayscale, notification blocking",
+    durationMinutes: 90,
+    settings: { ...defaultOperatorSettings },
+    isCustom: false,
+  },
+  {
+    id: "deep-work",
+    name: "DEEP WORK",
+    description: "3 hours, strictest settings, Crew approval to exit",
+    durationMinutes: 180,
+    settings: {
+      ...defaultOperatorSettings,
+      requireCrewApprovalToExit: true,
+      breakStreakOnExit: true,
+    },
+    isCustom: false,
+  },
+  {
+    id: "fitness",
+    name: "FITNESS",
+    description: "60 min, only health apps accessible",
+    durationMinutes: 60,
+    settings: {
+      ...defaultOperatorSettings,
+      grayscaleMode: false,
+      allowCriticalApps: true,
+    },
+    isCustom: false,
+  },
+  {
+    id: "family",
+    name: "FAMILY",
+    description: "No time limit, work apps blocked, family contacts only",
+    durationMinutes: 0,
+    settings: {
+      ...defaultOperatorSettings,
+      grayscaleMode: false,
+      hideDistractingApps: true,
+      allowFavoritesCalls: true,
+    },
+    isCustom: false,
+  },
+  {
+    id: "nuclear",
+    name: "NUCLEAR",
+    description: "Phone locked entirely, emergency calls only",
+    durationMinutes: 120,
+    settings: {
+      ...defaultOperatorSettings,
+      grayscaleMode: true,
+      hideDistractingApps: true,
+      blockNonEssentialNotifications: true,
+      allowFavoritesCalls: false,
+      allowCriticalApps: false,
+      requireCrewApprovalToExit: true,
+      breakStreakOnExit: true,
+    },
+    isCustom: false,
+  },
+];
+
+export interface OperatorModeConfig {
+  isSetupComplete: boolean;
+  selectedProtocolId: string;
+  customSettings: OperatorModeSettings;
+  protocols: OperatorModeProtocol[];
+}
+
+export const defaultOperatorModeConfig: OperatorModeConfig = {
+  isSetupComplete: false,
+  selectedProtocolId: "standard",
+  customSettings: { ...defaultOperatorSettings },
+  protocols: [...defaultProtocols],
+};
+
+export async function getOperatorModeConfig(): Promise<OperatorModeConfig> {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.OPERATOR_MODE_CONFIG);
+    if (data) {
+      return JSON.parse(data);
+    }
+    return defaultOperatorModeConfig;
+  } catch (error) {
+    console.error("Error getting operator mode config:", error);
+    return defaultOperatorModeConfig;
+  }
+}
+
+export async function saveOperatorModeConfig(config: OperatorModeConfig): Promise<void> {
+  try {
+    await AsyncStorage.setItem(KEYS.OPERATOR_MODE_CONFIG, JSON.stringify(config));
+  } catch (error) {
+    console.error("Error saving operator mode config:", error);
+  }
+}
+
+export async function getOperatorModeSession(): Promise<OperatorModeSession | null> {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.OPERATOR_MODE_SESSION);
+    if (data) {
+      return JSON.parse(data);
+    }
+    return null;
+  } catch (error) {
+    console.error("Error getting operator mode session:", error);
+    return null;
+  }
+}
+
+export async function saveOperatorModeSession(session: OperatorModeSession | null): Promise<void> {
+  try {
+    if (session) {
+      await AsyncStorage.setItem(KEYS.OPERATOR_MODE_SESSION, JSON.stringify(session));
+    } else {
+      await AsyncStorage.removeItem(KEYS.OPERATOR_MODE_SESSION);
+    }
+  } catch (error) {
+    console.error("Error saving operator mode session:", error);
+  }
+}
+
+export async function getOperatorModeHistory(): Promise<OperatorModeHistoryEntry[]> {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.OPERATOR_MODE_HISTORY);
+    if (data) {
+      return JSON.parse(data);
+    }
+    return [];
+  } catch (error) {
+    console.error("Error getting operator mode history:", error);
+    return [];
+  }
+}
+
+export async function addOperatorModeHistoryEntry(entry: OperatorModeHistoryEntry): Promise<void> {
+  try {
+    const history = await getOperatorModeHistory();
+    history.unshift(entry);
+    const trimmedHistory = history.slice(0, 50);
+    await AsyncStorage.setItem(KEYS.OPERATOR_MODE_HISTORY, JSON.stringify(trimmedHistory));
+  } catch (error) {
+    console.error("Error adding operator mode history entry:", error);
   }
 }

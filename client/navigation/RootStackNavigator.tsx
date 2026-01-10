@@ -10,11 +10,17 @@ import SettingsScreen from "@/screens/SettingsScreen";
 import VideoPlayerScreen from "@/screens/VideoPlayerScreen";
 import CommentsScreen from "@/screens/CommentsScreen";
 import ChallengeCreateScreen from "@/screens/ChallengeCreateScreen";
+import OperatorModeSetupScreen from "@/screens/OperatorModeSetupScreen";
+import OperatorModeActivationScreen from "@/screens/OperatorModeActivationScreen";
+import OperatorModeActiveScreen from "@/screens/OperatorModeActiveScreen";
+import OperatorModeCompleteScreen from "@/screens/OperatorModeCompleteScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
 
 export type RootStackParamList = {
   Main: undefined;
+  Home: undefined;
+  Crew: undefined;
   TaskCreate: { taskId?: string } | undefined;
   Profile: undefined;
   Stats: undefined;
@@ -24,6 +30,16 @@ export type RootStackParamList = {
   VideoPlayer: { videoUrl: string; title: string };
   Comments: { postId: string; postAuthor: string; postContent: string };
   ChallengeCreate: undefined;
+  OperatorModeSetup: undefined;
+  OperatorModeActivation: undefined;
+  OperatorModeActive: undefined;
+  OperatorModeComplete: {
+    exitedEarly: boolean;
+    duration: number;
+    tasksCompleted: number;
+    totalTasks: number;
+    protocolName: string;
+  };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -117,6 +133,40 @@ export default function RootStackNavigator() {
         options={{
           headerTitle: "New Challenge",
           presentation: "modal",
+        }}
+      />
+      <Stack.Screen
+        name="OperatorModeSetup"
+        component={OperatorModeSetupScreen}
+        options={{
+          headerShown: false,
+          presentation: "fullScreenModal",
+        }}
+      />
+      <Stack.Screen
+        name="OperatorModeActivation"
+        component={OperatorModeActivationScreen}
+        options={{
+          headerShown: false,
+          presentation: "fullScreenModal",
+        }}
+      />
+      <Stack.Screen
+        name="OperatorModeActive"
+        component={OperatorModeActiveScreen}
+        options={{
+          headerShown: false,
+          presentation: "fullScreenModal",
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="OperatorModeComplete"
+        component={OperatorModeCompleteScreen}
+        options={{
+          headerShown: false,
+          presentation: "fullScreenModal",
+          gestureEnabled: false,
         }}
       />
     </Stack.Navigator>

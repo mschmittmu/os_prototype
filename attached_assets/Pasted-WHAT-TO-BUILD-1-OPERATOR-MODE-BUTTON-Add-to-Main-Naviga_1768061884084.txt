@@ -1,0 +1,256 @@
+WHAT TO BUILD
+1. OPERATOR MODE BUTTON (Add to Main Navigation or Home Screen)
+Add a prominent "OPERATOR MODE" button that stands out. Design options:
+
+A shield icon with "OPERATOR MODE" text
+Red/black color scheme
+Pulsing or glowing effect when idle to draw attention
+Should feel like a "big red button" moment
+
+2. OPERATOR MODE SETUP SCREEN (First-Time Configuration)
+When user first accesses Operator Mode, show a setup flow:
+Screen 1: "Design Your War Protocol"
+Header: "OPERATOR MODE SETUP"
+Subheader: "Define what 'going to war' looks like for YOU"
+
+Philosophy quote in smaller text:
+"You design this when you're thinking clearly. 
+The AI enforces it when discipline is hard."
+Screen 2: "Phone Transformation" - Toggle Options
+VISUAL CHANGES
+[ ] Grayscale Mode - Remove all color (kills dopamine triggers)
+[ ] Hide Distracting Apps - Clean home screen
+[ ] Simplified Lock Screen - No notifications visible
+
+NOTIFICATIONS
+[ ] Block All Non-Essential
+[ ] Allow Only Calls from Favorites  
+[ ] Allow Only Critical Apps (select which)
+
+COMMUNICATION
+[ ] Auto-Reply to Texts
+    Default: "I'm in Operator Mode. I'll respond when I'm done executing."
+    [Edit Message button]
+[ ] Auto-Reply to Missed Calls
+Screen 3: "Focus Activations"
+WHEN OPERATOR MODE ACTIVATES:
+[ ] Start Focus Playlist (connect Spotify/Apple Music)
+[ ] Trigger Smart Home Scene (lights dim, etc.)
+[ ] Start Timer
+
+DEFAULT DURATION: [90] minutes
+[Slider or number input]
+Screen 4: "Exit Consequences" - What happens if they quit early
+"What happens if you try to exit early?"
+
+[ ] Burn 1 Strike
+[ ] Notify Your Crew
+[ ] Break Your Streak  
+[ ] Cooldown Period: [2] hours before next activation
+[ ] Require Crew Member Approval to Exit
+
+Note at bottom:
+"You're setting these rules for yourself.
+No one is forcing you. But once set, no negotiation."
+Screen 5: "Preset Protocols"
+Choose a starting template or create custom:
+
+[STANDARD] - 90 min, grayscale, notification blocking
+[DEEP WORK] - 3 hours, strictest settings, Crew approval to exit
+[FITNESS] - 60 min, only health apps accessible
+[FAMILY] - No time limit, work apps blocked, family contacts only
+[NUCLEAR] - Phone locked entirely, emergency calls only
+[+ CREATE CUSTOM]
+3. OPERATOR MODE ACTIVATION SCREEN
+When user taps the Operator Mode button (after setup), show:
+┌─────────────────────────────────────┐
+│                                     │
+│         [SHIELD ICON]               │
+│                                     │
+│      ACTIVATE OPERATOR MODE         │
+│                                     │
+│      Protocol: STANDARD             │
+│      Duration: 90 minutes           │
+│                                     │
+│      This will:                     │
+│      • Enable grayscale             │
+│      • Block notifications          │
+│      • Auto-reply to messages       │
+│                                     │
+│   ┌─────────────────────────────┐   │
+│   │    [GO TO WAR - RED BTN]    │   │
+│   └─────────────────────────────┘   │
+│                                     │
+│      Change Protocol ▼              │
+│                                     │
+└─────────────────────────────────────┘
+4. OPERATOR MODE ACTIVE STATE
+When Operator Mode is active, show a transformed UI:
+Option A: Full-Screen Takeover
+┌─────────────────────────────────────┐
+│  ████████████████████████████████   │
+│                                     │
+│         ⚔️ OPERATOR MODE ⚔️          │
+│              ACTIVE                 │
+│                                     │
+│         ┌───────────────┐           │
+│         │   1:23:45     │           │
+│         │   remaining   │           │
+│         └───────────────┘           │
+│                                     │
+│    ████████████████░░░░░░░░░░░░     │
+│    Progress: 62% complete           │
+│                                     │
+│    ─────────────────────────────    │
+│                                     │
+│    Power List: 3/5 complete         │
+│    [ ] Call accountant              │
+│    [ ] Finish proposal              │
+│                                     │
+│    ─────────────────────────────    │
+│                                     │
+│    "Stay focused. Execute.          │
+│     The standard owns you now."     │
+│                                     │
+│    [EXIT EARLY] (small, subtle)     │
+│                                     │
+└─────────────────────────────────────┘
+Design Notes for Active State:
+
+Consider making the entire screen GRAYSCALE to simulate what the phone would look like
+Minimal UI - only what matters (timer, tasks)
+Dark/black background
+Timer should be prominent
+Motivational quote rotates or is static
+Exit button should be present but not prominent (small, gray text)
+
+5. EARLY EXIT CONFIRMATION
+If user taps "Exit Early":
+┌─────────────────────────────────────┐
+│                                     │
+│     ⚠️ EXIT OPERATOR MODE?          │
+│                                     │
+│     Time remaining: 47:23           │
+│     Power List: 3/5 complete        │
+│                                     │
+│     Exiting early will:             │
+│     • Notify your Crew              │
+│     • Burn 1 Strike                 │
+│     • Start 2-hour cooldown         │
+│                                     │
+│     ─────────────────────────────   │
+│                                     │
+│     "You set these rules yourself.  │
+│      The pain of discipline is less │
+│      than the pain of regret."      │
+│                                     │
+│   ┌───────────┐  ┌───────────────┐  │
+│   │   STAY    │  │  EXIT ANYWAY  │  │
+│   │  (green)  │  │    (red)      │  │
+│   └───────────┘  └───────────────┘  │
+│                                     │
+└─────────────────────────────────────┘
+6. OPERATOR MODE COMPLETE SCREEN
+When timer ends or all tasks complete:
+┌─────────────────────────────────────┐
+│                                     │
+│         ✓ MISSION COMPLETE          │
+│                                     │
+│     ┌─────────────────────────┐     │
+│     │      [TROPHY/BADGE]     │     │
+│     └─────────────────────────┘     │
+│                                     │
+│     Duration: 1:30:00               │
+│     Tasks Completed: 4/5            │
+│     Streak: Day 24 ✓                │
+│                                     │
+│     "You stayed the course.         │
+│      That's what operators do."     │
+│                                     │
+│   ┌─────────────────────────────┐   │
+│   │      VIEW RESULTS           │   │
+│   └─────────────────────────────┘   │
+│                                     │
+│        Share to Crew                │
+│                                     │
+└─────────────────────────────────────┘
+7. OPERATOR MODE HISTORY/STATS (Optional but nice)
+A section showing past Operator Mode sessions:
+OPERATOR MODE HISTORY
+
+This Week: 5 sessions | 7.5 hours focused
+─────────────────────────────────────
+
+Today - STANDARD - 90 min ✓
+Yesterday - DEEP WORK - 3 hrs ✓  
+Mon - STANDARD - 90 min ✓
+Sun - STANDARD - 45 min ⚠️ (exited early)
+
+─────────────────────────────────────
+
+Completion Rate: 92%
+Average Session: 87 minutes
+Total Focus Time: 42 hours (all time)
+INTERACTION FLOW SUMMARY
+
+User sees OPERATOR MODE button on home/nav
+First time: Goes through setup flow (5 screens)
+After setup: Taps button → sees activation confirmation
+Taps "GO TO WAR" → Screen transforms to active state
+Timer counts down, shows tasks, grayscale effect
+If exit early → warning with consequences
+Timer ends → completion celebration screen
+Returns to normal app
+
+TECHNICAL NOTES
+
+Use CSS filters for grayscale effect: filter: grayscale(100%)
+Timer should persist (use localStorage or state management)
+Animations: Subtle pulse on active state, smooth transitions
+Mobile-first design (this is primarily a mobile app)
+The setup should save to state so it persists
+
+VISUAL INSPIRATION
+
+Think military command center aesthetic
+"Going dark" / "radio silence" vibes
+The grayscale transformation should feel like the phone is "shutting down distractions"
+Shield iconography, tactical fonts
+Red is used sparingly for emphasis (GO TO WAR button, warnings)
+
+PRIORITY ORDER
+If time is limited, build in this order:
+
+Operator Mode button + Activation screen
+Active state with timer and grayscale effect
+Exit confirmation with consequences
+Completion screen
+Setup flow (can use defaults initially)
+History/stats
+
+SAMPLE COPY/TEXT TO USE
+Taglines:
+
+"The Operator Sets The Standard. The AI Enforces It."
+"You designed this when you were strong. Now execute."
+"No negotiation. No excuses. Execute."
+"Stay focused. The standard owns you now."
+"The pain of discipline is less than the pain of regret."
+
+Button Text:
+
+"GO TO WAR"
+"ACTIVATE"
+"EXECUTE"
+"ENGAGE PROTOCOL"
+
+Exit Warning:
+
+"You set these rules yourself."
+"Are you really going to quit on yourself?"
+"Your Crew will be notified."
+
+
+DELIVERABLE
+Create a working visualization of Operator Mode that I can demo to stakeholders. Focus on the UI/UX experience - making it FEEL powerful and transformative. The grayscale effect when active is particularly important as it shows how the phone would actually change.
+This doesn't need to actually block apps or send auto-replies - it's a visualization of the concept.

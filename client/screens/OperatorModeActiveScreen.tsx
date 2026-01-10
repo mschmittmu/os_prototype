@@ -338,12 +338,9 @@ export default function OperatorModeActiveScreen() {
             ))}
           </ScrollView>
         </Animated.View>
+      </View>
 
-        <Animated.View
-          entering={FadeInDown.duration(400).delay(500)}
-          style={styles.divider}
-        />
-
+      <View style={[styles.bottomSection, { paddingBottom: insets.bottom + Spacing.lg }]}>
         <Animated.View
           entering={FadeInDown.duration(400).delay(600)}
           style={styles.quoteContainer}
@@ -352,16 +349,13 @@ export default function OperatorModeActiveScreen() {
             "{quote}"
           </ThemedText>
         </Animated.View>
-      </View>
 
-      <Pressable
-        onPress={handleExitEarly}
-        style={[styles.exitButton, { bottom: insets.bottom + Spacing.xl }]}
-      >
-        <ThemedText type="caption" style={styles.exitButtonText}>
-          EXIT EARLY
-        </ThemedText>
-      </Pressable>
+        <Pressable onPress={handleExitEarly} style={styles.exitButton}>
+          <ThemedText type="caption" style={styles.exitButtonText}>
+            EXIT EARLY
+          </ThemedText>
+        </Pressable>
+      </View>
 
       {showExitConfirm && (
         <View style={styles.overlay}>
@@ -506,9 +500,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#374151",
     marginVertical: Spacing.xl,
   },
+  bottomSection: {
+    paddingHorizontal: Spacing.xl,
+    alignItems: "center",
+    gap: Spacing.md,
+  },
   tasksSection: {
     flex: 1,
-    marginBottom: Spacing.lg,
   },
   tasksHeader: {
     color: "#FFFFFF",
@@ -568,7 +566,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   quoteContainer: {
-    paddingVertical: Spacing.lg,
+    paddingVertical: Spacing.sm,
   },
   quoteText: {
     color: "#9CA3AF",
@@ -577,8 +575,6 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   exitButton: {
-    position: "absolute",
-    alignSelf: "center",
     paddingVertical: Spacing.sm,
     paddingHorizontal: Spacing.lg,
   },

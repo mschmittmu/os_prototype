@@ -23,6 +23,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { Card } from "@/components/Card";
 import { ProgressRing } from "@/components/ProgressRing";
 import { EpisodeCard } from "@/components/EpisodeCard";
+import { OperatorModeButton } from "@/components/OperatorModeButton";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
@@ -30,9 +31,12 @@ import {
   getTasks,
   getStreak,
   getUser,
+  getOperatorModeConfig,
+  getOperatorModeSession,
   Task,
   StreakData,
   UserData,
+  OperatorModeSession,
 } from "@/lib/storage";
 import { episodes, challenges } from "@/lib/mockData";
 
@@ -54,17 +58,34 @@ export default function HomeScreen() {
   });
   const [user, setUser] = useState<UserData | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [operatorModeActive, setOperatorModeActive] = useState(false);
 
   const loadData = useCallback(async () => {
-    const [tasksData, streakData, userData] = await Promise.all([
+    const [tasksData, streakData, userData, operatorSession] = await Promise.all([
       getTasks(),
       getStreak(),
       getUser(),
+      getOperatorModeSession(),
     ]);
     setTasks(tasksData);
     setStreak(streakData);
     setUser(userData);
+    setOperatorModeActive(operatorSession?.isActive || false);
   }, []);
+
+  const handleOperatorModePress = useCallback(async () => {
+    const session = await getOperatorModeSession();
+    if (session?.isActive) {
+      navigation.navigate("OperatorModeActive");
+      return;
+    }
+    const config = await getOperatorModeConfig();
+    if (config.isSetupComplete) {
+      navigation.navigate("OperatorModeActivation");
+    } else {
+      navigation.navigate("OperatorModeSetup");
+    }
+  }, [navigation]);
 
   useFocusEffect(
     useCallback(() => {
@@ -106,7 +127,17 @@ export default function HomeScreen() {
         />
       }
     >
-      <Animated.View entering={FadeInDown.duration(400).delay(0)}>
+      <Animated.View
+        entering={FadeInDown.duration(400).delay(0)}
+        style={styles.operatorModeContainer}
+      >
+        <OperatorModeButton
+          onPress={handleOperatorModePress}
+          isActive={operatorModeActive}
+        />
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.duration(400).delay(100)}>
         <Card
           elevation={1}
           style={styles.todayCard}
@@ -149,7 +180,7 @@ export default function HomeScreen() {
       </Animated.View>
 
       {activeChallenge ? (
-        <Animated.View entering={FadeInDown.duration(400).delay(100)}>
+        <Animated.View entering={FadeInDown.duration(400).delay(200)}>
           <View style={styles.sectionHeader}>
             <ThemedText type="h2">CURRENT CHALLENGES</ThemedText>
             <Pressable
@@ -191,7 +222,7 @@ export default function HomeScreen() {
         </Animated.View>
       ) : null}
 
-      <Animated.View entering={FadeInDown.duration(400).delay(200)}>
+      <Animated.View entering={FadeInDown.duration(400).delay(300)}>
         <View style={styles.sectionHeader}>
           <ThemedText type="h2">XP PROGRESS</ThemedText>
           <Pressable
@@ -233,7 +264,7 @@ export default function HomeScreen() {
       </Animated.View>
 
       {continueWatching.length > 0 ? (
-        <Animated.View entering={FadeInDown.duration(400).delay(300)}>
+        <Animated.View entering={FadeInDown.duration(400).delay(400)}>
           <View style={styles.sectionHeader}>
             <ThemedText type="h2">CONTINUE WATCHING</ThemedText>
             <Pressable
@@ -284,6 +315,10 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     paddingHorizontal: Spacing.lg,
+  },
+  operatorModeContainer: {
+    alignItems: "center",
+    marginBottom: Spacing.xl,
   },
   todayCard: {
     marginBottom: Spacing.xl,

@@ -99,6 +99,7 @@ function OperatorModeHeaderButton() {
   const [isActive, setIsActive] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [selectedProtocol, setSelectedProtocol] = useState<OperatorModeProtocol | null>(null);
+  const [durationMinutes, setDurationMinutes] = useState(90);
   const scale = useSharedValue(1);
   const glowOpacity = useSharedValue(0.3);
 
@@ -145,6 +146,7 @@ function OperatorModeHeaderButton() {
     const allProtocols = [...defaultProtocols, ...(config.protocols.filter(p => p.isCustom))];
     const protocol = allProtocols.find(p => p.id === config.selectedProtocolId) || defaultProtocols[0];
     setSelectedProtocol(protocol);
+    setDurationMinutes(config.customSettings.defaultDurationMinutes || 90);
     setShowConfirmation(true);
   };
 
@@ -153,12 +155,13 @@ function OperatorModeHeaderButton() {
     setShowConfirmation(false);
     
     const protocol = selectedProtocol || defaultProtocols[0];
+    
     const newSession: OperatorModeSession = {
       isActive: true,
       protocolId: protocol.id,
       protocolName: protocol.name,
       startTime: new Date().toISOString(),
-      durationMinutes: protocol.durationMinutes,
+      durationMinutes: durationMinutes,
       tasksCompletedAtStart: 0,
     };
     await saveOperatorModeSession(newSession);
@@ -228,7 +231,7 @@ function OperatorModeHeaderButton() {
               GO TO WAR?
             </ThemedText>
             <ThemedText type="body" style={[styles.confirmationSubtitle, { color: theme.textSecondary }]}>
-              {selectedProtocol ? `${selectedProtocol.name} protocol` : "Loading..."}
+              {selectedProtocol ? `${formatDuration(durationMinutes)} ${selectedProtocol.name} protocol` : "Loading..."}
             </ThemedText>
             <View style={styles.confirmationButtons}>
               <Pressable

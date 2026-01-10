@@ -28,7 +28,10 @@ import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import {
   getOperatorModeSession,
   saveOperatorModeSession,
+  getOperatorModeConfig,
   OperatorModeSession,
+  OperatorModeProtocol,
+  defaultProtocols,
 } from "@/lib/storage";
 
 export type MainTabParamList = {
@@ -95,6 +98,7 @@ function OperatorModeHeaderButton() {
   const { theme } = useTheme();
   const [isActive, setIsActive] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [selectedProtocol, setSelectedProtocol] = useState<OperatorModeProtocol | null>(null);
   const scale = useSharedValue(1);
   const glowOpacity = useSharedValue(0.3);
 
@@ -137,6 +141,10 @@ function OperatorModeHeaderButton() {
       return;
     }
 
+    const config = await getOperatorModeConfig();
+    const allProtocols = [...defaultProtocols, ...(config.protocols.filter(p => p.isCustom))];
+    const protocol = allProtocols.find(p => p.id === config.selectedProtocolId) || defaultProtocols[0];
+    setSelectedProtocol(protocol);
     setShowConfirmation(true);
   };
 
@@ -144,12 +152,13 @@ function OperatorModeHeaderButton() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setShowConfirmation(false);
     
+    const protocol = selectedProtocol || defaultProtocols[0];
     const newSession: OperatorModeSession = {
       isActive: true,
-      protocolId: "standard",
-      protocolName: "STANDARD",
+      protocolId: protocol.id,
+      protocolName: protocol.name,
       startTime: new Date().toISOString(),
-      durationMinutes: 60,
+      durationMinutes: protocol.durationMinutes,
       tasksCompletedAtStart: 0,
     };
     await saveOperatorModeSession(newSession);
@@ -159,6 +168,16 @@ function OperatorModeHeaderButton() {
   const handleConfirmNo = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setShowConfirmation(false);
+  };
+
+  const formatDuration = (minutes: number) => {
+    if (minutes === 0) return "No time limit";
+    if (minutes >= 60) {
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+      return mins > 0 ? `${hours}h ${mins}m` : `${hours}-hour`;
+    }
+    return `${minutes}-minute`;
   };
 
   return (
@@ -209,7 +228,7 @@ function OperatorModeHeaderButton() {
               GO TO WAR?
             </ThemedText>
             <ThemedText type="body" style={[styles.confirmationSubtitle, { color: theme.textSecondary }]}>
-              60-minute STANDARD protocol
+              {selectedProtocol ? `${formatDuration(selectedProtocol.durationMinutes)} ${selectedProtocol.name} protocol` : "Loading..."}
             </ThemedText>
             <View style={styles.confirmationButtons}>
               <Pressable

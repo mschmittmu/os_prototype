@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { View, StyleSheet, Pressable, AppState } from "react-native";
+import { View, StyleSheet, Pressable, AppState, ScrollView } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import Animated, {
   FadeIn,
@@ -9,6 +9,7 @@ import Animated, {
   withRepeat,
   withSequence,
   withTiming,
+  withSpring,
   Easing,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -23,11 +24,22 @@ import {
   getOperatorModeSession,
   saveOperatorModeSession,
   getTasks,
+  saveTasks,
   Task,
   addOperatorModeHistoryEntry,
   generateId,
 } from "@/lib/storage";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
+
+const CATEGORY_COLORS: Record<string, string> = {
+  health: "#10B981",
+  business: "#3B82F6",
+  "self development": "#8B5CF6",
+  family: "#F97316",
+  relationships: "#EC4899",
+  spiritual: "#06B6D4",
+  other: "#6B7280",
+};
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -115,6 +127,19 @@ export default function OperatorModeActiveScreen() {
     setTasks(t);
   };
 
+  const handleToggleTask = async (taskId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const updatedTasks = tasks.map((t) =>
+      t.id === taskId ? { ...t, completed: !t.completed } : t
+    );
+    setTasks(updatedTasks);
+    await saveTasks(updatedTasks);
+  };
+
+  const getCategoryColor = (category: string) => {
+    return CATEGORY_COLORS[category.toLowerCase()] || CATEGORY_COLORS.other;
+  };
+
   const formatTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
     const hours = Math.floor(totalSeconds / 3600);
@@ -186,7 +211,6 @@ export default function OperatorModeActiveScreen() {
   };
 
   const completedTasks = tasks.filter((t) => t.completed).length;
-  const incompleteTasks = tasks.filter((t) => !t.completed);
   const progress = getProgress();
 
   const pulseStyle = useAnimatedStyle(() => ({
@@ -260,19 +284,59 @@ export default function OperatorModeActiveScreen() {
           <ThemedText type="body" style={styles.tasksHeader}>
             Power List: {completedTasks}/{tasks.length} complete
           </ThemedText>
-          {incompleteTasks.slice(0, 3).map((task) => (
-            <View key={task.id} style={styles.taskRow}>
-              <View style={styles.taskCheckbox} />
-              <ThemedText type="body" style={styles.taskText}>
-                {task.title}
-              </ThemedText>
-            </View>
-          ))}
-          {incompleteTasks.length > 3 && (
-            <ThemedText type="caption" style={styles.moreTasks}>
-              +{incompleteTasks.length - 3} more tasks
-            </ThemedText>
-          )}
+          <ScrollView 
+            style={styles.tasksList} 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.tasksListContent}
+          >
+            {tasks.map((task) => (
+              <Pressable
+                key={task.id}
+                style={styles.taskCard}
+                onPress={() => handleToggleTask(task.id)}
+              >
+                <View
+                  style={[
+                    styles.taskCheckbox,
+                    task.completed && styles.taskCheckboxCompleted,
+                  ]}
+                >
+                  {task.completed && (
+                    <Feather name="check" size={14} color="#FFFFFF" />
+                  )}
+                </View>
+                <View style={styles.taskContent}>
+                  <ThemedText
+                    type="body"
+                    style={[
+                      styles.taskText,
+                      task.completed && styles.taskTextCompleted,
+                    ]}
+                  >
+                    {task.title}
+                  </ThemedText>
+                  <View style={styles.categoryBadge}>
+                    <View
+                      style={[
+                        styles.categoryDot,
+                        { backgroundColor: getCategoryColor(task.category) },
+                      ]}
+                    />
+                    <ThemedText
+                      type="caption"
+                      style={[
+                        styles.categoryText,
+                        { color: getCategoryColor(task.category) },
+                      ]}
+                    >
+                      {task.category.toUpperCase()}
+                    </ThemedText>
+                  </View>
+                </View>
+                <Feather name="chevron-right" size={18} color="#6B7280" />
+              </Pressable>
+            ))}
+          </ScrollView>
         </Animated.View>
 
         <Animated.View
@@ -443,31 +507,65 @@ const styles = StyleSheet.create({
     marginVertical: Spacing.xl,
   },
   tasksSection: {
+    flex: 1,
     marginBottom: Spacing.lg,
   },
   tasksHeader: {
     color: "#FFFFFF",
     marginBottom: Spacing.md,
   },
-  taskRow: {
+  tasksList: {
+    flex: 1,
+  },
+  tasksListContent: {
+    gap: Spacing.sm,
+  },
+  taskCard: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#1A1A1A",
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
     gap: Spacing.md,
-    marginBottom: Spacing.sm,
   },
   taskCheckbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     borderWidth: 2,
     borderColor: "#6B7280",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  taskCheckboxCompleted: {
+    backgroundColor: "#10B981",
+    borderColor: "#10B981",
+  },
+  taskContent: {
+    flex: 1,
+    gap: 2,
   },
   taskText: {
-    color: "#9CA3AF",
+    color: "#FFFFFF",
   },
-  moreTasks: {
+  taskTextCompleted: {
     color: "#6B7280",
-    marginTop: Spacing.sm,
+    textDecorationLine: "line-through",
+  },
+  categoryBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  categoryDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  categoryText: {
+    fontSize: 10,
+    fontWeight: "600",
+    letterSpacing: 0.5,
   },
   quoteContainer: {
     paddingVertical: Spacing.lg,

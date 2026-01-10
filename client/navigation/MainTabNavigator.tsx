@@ -2,7 +2,7 @@ import React, { useState, useCallback } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
-import { Platform, StyleSheet, View, Pressable } from "react-native";
+import { Platform, StyleSheet, View, Pressable, Modal } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as Haptics from "expo-haptics";
@@ -12,6 +12,7 @@ import Animated, {
   useSharedValue,
   withRepeat,
   withTiming,
+  FadeIn,
 } from "react-native-reanimated";
 
 import HomeScreen from "@/screens/HomeScreen";
@@ -20,7 +21,8 @@ import MediaScreen from "@/screens/MediaScreen";
 import SocialScreen from "@/screens/SocialScreen";
 import CrewScreen from "@/screens/CrewScreen";
 import { HeaderTitle } from "@/components/HeaderTitle";
-import { Spacing } from "@/constants/theme";
+import { ThemedText } from "@/components/ThemedText";
+import { Spacing, BorderRadius } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import {
@@ -92,6 +94,7 @@ function OperatorModeHeaderButton() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { theme } = useTheme();
   const [isActive, setIsActive] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const scale = useSharedValue(1);
   const glowOpacity = useSharedValue(0.3);
 
@@ -134,6 +137,13 @@ function OperatorModeHeaderButton() {
       return;
     }
 
+    setShowConfirmation(true);
+  };
+
+  const handleConfirmYes = async () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setShowConfirmation(false);
+    
     const newSession: OperatorModeSession = {
       isActive: true,
       protocolId: "standard",
@@ -144,6 +154,11 @@ function OperatorModeHeaderButton() {
     };
     await saveOperatorModeSession(newSession);
     navigation.navigate("OperatorModeActive");
+  };
+
+  const handleConfirmNo = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setShowConfirmation(false);
   };
 
   return (
@@ -175,6 +190,48 @@ function OperatorModeHeaderButton() {
           </View>
         </Animated.View>
       </Pressable>
+
+      <Modal
+        visible={showConfirmation}
+        transparent
+        animationType="fade"
+        onRequestClose={handleConfirmNo}
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View
+            entering={FadeIn.duration(200)}
+            style={[styles.confirmationModal, { backgroundColor: theme.backgroundSecondary }]}
+          >
+            <View style={styles.confirmationIconContainer}>
+              <Feather name="shield" size={48} color={theme.accent} />
+            </View>
+            <ThemedText type="h2" style={styles.confirmationTitle}>
+              GO TO WAR?
+            </ThemedText>
+            <ThemedText type="body" style={[styles.confirmationSubtitle, { color: theme.textSecondary }]}>
+              60-minute STANDARD protocol
+            </ThemedText>
+            <View style={styles.confirmationButtons}>
+              <Pressable
+                onPress={handleConfirmNo}
+                style={[styles.confirmButton, styles.confirmButtonNo, { backgroundColor: theme.backgroundTertiary }]}
+              >
+                <ThemedText type="bodyBold" style={{ color: theme.textSecondary }}>
+                  NO
+                </ThemedText>
+              </Pressable>
+              <Pressable
+                onPress={handleConfirmYes}
+                style={[styles.confirmButton, styles.confirmButtonYes, { backgroundColor: theme.accent }]}
+              >
+                <ThemedText type="bodyBold" style={{ color: "#FFFFFF" }}>
+                  YES
+                </ThemedText>
+              </Pressable>
+            </View>
+          </Animated.View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -352,4 +409,49 @@ const styles = StyleSheet.create({
     bottom: -2,
     borderRadius: 20,
   },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: Spacing.xl,
+  },
+  confirmationModal: {
+    width: "100%",
+    maxWidth: 320,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing["2xl"],
+    alignItems: "center",
+  },
+  confirmationIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "rgba(220, 38, 38, 0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Spacing.lg,
+  },
+  confirmationTitle: {
+    textAlign: "center",
+    letterSpacing: 2,
+    marginBottom: Spacing.sm,
+  },
+  confirmationSubtitle: {
+    textAlign: "center",
+    marginBottom: Spacing["2xl"],
+  },
+  confirmationButtons: {
+    flexDirection: "row",
+    gap: Spacing.md,
+    width: "100%",
+  },
+  confirmButton: {
+    flex: 1,
+    paddingVertical: Spacing.lg,
+    borderRadius: BorderRadius.lg,
+    alignItems: "center",
+  },
+  confirmButtonNo: {},
+  confirmButtonYes: {},
 });

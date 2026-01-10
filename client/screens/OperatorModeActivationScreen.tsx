@@ -77,16 +77,17 @@ export default function OperatorModeActivationScreen() {
   }));
 
   const handleActivate = async () => {
-    if (!selectedProtocol) return;
+    if (!selectedProtocol || !config) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     const tasks = await getTasks();
     const completedTasks = tasks.filter((t) => t.completed).length;
+    const durationMinutes = config.customSettings.defaultDurationMinutes || 90;
     await saveOperatorModeSession({
       isActive: true,
       protocolId: selectedProtocol.id,
       protocolName: selectedProtocol.name,
       startTime: new Date().toISOString(),
-      durationMinutes: selectedProtocol.durationMinutes,
+      durationMinutes: durationMinutes,
       tasksCompletedAtStart: completedTasks,
     });
     navigation.replace("OperatorModeActive");
@@ -152,12 +153,12 @@ export default function OperatorModeActivationScreen() {
             </ThemedText>
             <ThemedText type="h4">{selectedProtocol.name}</ThemedText>
           </View>
-          {selectedProtocol.durationMinutes > 0 && (
+          {config && config.customSettings.defaultDurationMinutes > 0 && (
             <View style={styles.protocolRow}>
               <ThemedText type="caption" secondary>
                 DURATION
               </ThemedText>
-              <ThemedText type="h4">{selectedProtocol.durationMinutes} minutes</ThemedText>
+              <ThemedText type="h4">{config.customSettings.defaultDurationMinutes} minutes</ThemedText>
             </View>
           )}
         </Animated.View>

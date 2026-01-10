@@ -104,7 +104,7 @@ export default function OperatorModeActiveScreen() {
   const loadSession = async () => {
     const sess = await getOperatorModeSession();
     if (!sess || !sess.isActive) {
-      navigation.replace("Home");
+      navigation.replace("Main");
       return;
     }
     setSession(sess);

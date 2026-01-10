@@ -66,12 +66,12 @@ export default function OperatorModeCompleteScreen() {
 
   const handleViewResults = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    navigation.replace("Home");
+    navigation.replace("Main");
   };
 
   const handleShareToCrew = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    navigation.replace("Crew");
+    navigation.replace("Main");
   };
 
   return (

@@ -19,8 +19,6 @@ import { useTheme } from "@/hooks/useTheme";
 
 export type RootStackParamList = {
   Main: undefined;
-  Home: undefined;
-  Crew: undefined;
   TaskCreate: { taskId?: string } | undefined;
   Profile: undefined;
   Stats: undefined;

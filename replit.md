@@ -82,8 +82,18 @@ The app runs on:
 - **Web**: Port 8081 (Expo)
 - **Mobile**: Scan QR code with Expo Go
 
+### Operator Mode
+- One-tap activation from shield icon in header (top-left)
+- Uses default 60-minute STANDARD protocol on quick start
+- Full setup/customization available in Settings
+- Timer screen with exit confirmation and consequences
+- Mission complete celebration
+
 ## Recent Changes
 
+- Added Operator Mode with one-tap activation from header icon
+- Operator Mode setup moved to Settings screen
+- Shield icon in top-left header for instant activation
 - Initial MVP implementation with all core screens
 - Power List with task completion and celebration
 - Social feed with likes and saves

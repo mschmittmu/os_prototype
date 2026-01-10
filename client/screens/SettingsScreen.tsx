@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Pressable, ScrollView, Switch, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -10,7 +11,8 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Colors, Spacing, BorderRadius, ThemeMode } from "@/constants/theme";
-import { getBiometricEnabled, setBiometricEnabled } from "@/lib/storage";
+import { getBiometricEnabled, setBiometricEnabled, getOperatorModeConfig } from "@/lib/storage";
+import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
 const THEME_OPTIONS: { label: string; value: ThemeMode; icon: string }[] = [
   { label: "Light", value: "light", icon: "sun" },
@@ -19,17 +21,29 @@ const THEME_OPTIONS: { label: string; value: ThemeMode; icon: string }[] = [
 ];
 
 export default function SettingsScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const { theme, themeMode, setThemeMode, isDark } = useTheme();
   const [biometricEnabled, setBiometricEnabledState] = useState(false);
   const [biometricAvailable, setBiometricAvailable] = useState(false);
   const [biometricType, setBiometricType] = useState<string>("Biometric");
+  const [operatorModeSetup, setOperatorModeSetup] = useState(false);
 
   useEffect(() => {
     checkBiometricAvailability();
     loadBiometricSetting();
+    loadOperatorModeConfig();
   }, []);
+
+  const loadOperatorModeConfig = async () => {
+    const config = await getOperatorModeConfig();
+    setOperatorModeSetup(config.isSetupComplete);
+  };
+
+  const handleOperatorModeSetup = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    navigation.navigate("OperatorModeSetup");
+  };
 
   const checkBiometricAvailability = async () => {
     if (Platform.OS === "web") {
@@ -269,6 +283,41 @@ export default function SettingsScreen() {
       ) : null}
 
       <Animated.View entering={FadeInDown.duration(400).delay(biometricAvailable ? 300 : 200)}>
+        <ThemedText type="caption" secondary style={styles.sectionTitle}>
+          OPERATOR MODE
+        </ThemedText>
+        <View
+          style={[
+            styles.settingsCard,
+            {
+              backgroundColor: theme.backgroundRoot,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Pressable style={styles.settingsRow} onPress={handleOperatorModeSetup}>
+            <View style={styles.settingsRowContent}>
+              <View
+                style={[
+                  styles.settingsIcon,
+                  { backgroundColor: theme.accent + "20" },
+                ]}
+              >
+                <Feather name="shield" size={18} color={theme.accent} />
+              </View>
+              <View>
+                <ThemedText type="body">Configure Operator Mode</ThemedText>
+                <ThemedText type="small" secondary>
+                  {operatorModeSetup ? "Customize protocols and settings" : "Set up your focus protocols"}
+                </ThemedText>
+              </View>
+            </View>
+            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+          </Pressable>
+        </View>
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.duration(400).delay(biometricAvailable ? 400 : 300)}>
         <ThemedText type="caption" secondary style={styles.sectionTitle}>
           NOTIFICATIONS
         </ThemedText>

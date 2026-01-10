@@ -1,15 +1,17 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Feather } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { Platform, StyleSheet, View, Pressable } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import * as Haptics from "expo-haptics";
 import Animated, {
   useAnimatedStyle,
   withSpring,
   useSharedValue,
+  withRepeat,
+  withTiming,
 } from "react-native-reanimated";
 
 import HomeScreen from "@/screens/HomeScreen";
@@ -21,6 +23,11 @@ import { HeaderTitle } from "@/components/HeaderTitle";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import {
+  getOperatorModeSession,
+  saveOperatorModeSession,
+  OperatorModeSession,
+} from "@/lib/storage";
 
 export type MainTabParamList = {
   HomeTab: undefined;
@@ -77,6 +84,97 @@ function HeaderRightButtons() {
         icon="settings" 
         onPress={() => navigation.navigate("Settings")} 
       />
+    </View>
+  );
+}
+
+function OperatorModeHeaderButton() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { theme } = useTheme();
+  const [isActive, setIsActive] = useState(false);
+  const scale = useSharedValue(1);
+  const glowOpacity = useSharedValue(0.3);
+
+  useFocusEffect(
+    useCallback(() => {
+      const checkSession = async () => {
+        const session = await getOperatorModeSession();
+        setIsActive(session?.isActive || false);
+      };
+      checkSession();
+    }, [])
+  );
+
+  React.useEffect(() => {
+    glowOpacity.value = withRepeat(
+      withTiming(0.8, { duration: 1500 }),
+      -1,
+      true
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const glowStyle = useAnimatedStyle(() => ({
+    opacity: glowOpacity.value,
+  }));
+
+  const handlePress = async () => {
+    scale.value = withSpring(0.85, { damping: 15, stiffness: 400 });
+    setTimeout(() => {
+      scale.value = withSpring(1, { damping: 15, stiffness: 400 });
+    }, 100);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    const session = await getOperatorModeSession();
+    if (session?.isActive) {
+      navigation.navigate("OperatorModeActive");
+      return;
+    }
+
+    const newSession: OperatorModeSession = {
+      isActive: true,
+      protocolId: "standard",
+      protocolName: "STANDARD",
+      startTime: new Date().toISOString(),
+      durationMinutes: 60,
+      tasksCompletedAtStart: 0,
+    };
+    await saveOperatorModeSession(newSession);
+    navigation.navigate("OperatorModeActive");
+  };
+
+  return (
+    <View style={styles.headerLeft}>
+      <Pressable onPress={handlePress}>
+        <Animated.View style={animatedStyle}>
+          {!isActive && (
+            <Animated.View
+              style={[
+                styles.operatorGlow,
+                glowStyle,
+                { backgroundColor: theme.accent },
+              ]}
+            />
+          )}
+          <View
+            style={[
+              styles.headerIcon,
+              {
+                backgroundColor: isActive ? theme.accent : theme.backgroundSecondary,
+              },
+            ]}
+          >
+            <Feather
+              name="shield"
+              size={20}
+              color={isActive ? "#FFFFFF" : theme.accent}
+            />
+          </View>
+        </Animated.View>
+      </Pressable>
     </View>
   );
 }
@@ -160,6 +258,7 @@ export default function MainTabNavigator() {
           marginTop: 2,
         },
         headerRight: () => <HeaderRightButtons />,
+        headerLeft: () => <OperatorModeHeaderButton />,
       }}
       screenListeners={{
         tabPress: () => {
@@ -233,11 +332,24 @@ const styles = StyleSheet.create({
     marginRight: Spacing.lg,
     gap: Spacing.md,
   },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: Spacing.lg,
+  },
   headerIcon: {
     width: 36,
     height: 36,
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
+  },
+  operatorGlow: {
+    position: "absolute",
+    top: -2,
+    left: -2,
+    right: -2,
+    bottom: -2,
+    borderRadius: 20,
   },
 });

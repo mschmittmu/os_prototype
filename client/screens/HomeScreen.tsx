@@ -127,7 +127,6 @@ export default function HomeScreen() {
           message={hudData.arcaneDirective.message}
           focusArea={hudData.arcaneDirective.focusArea}
           severity={hudData.arcaneDirective.severity}
-          onFocusPress={handleFocusNow}
         />
       </Animated.View>
 

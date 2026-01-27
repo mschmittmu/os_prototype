@@ -35,10 +35,10 @@ export function LifeScoreRing({
   score,
   trend,
   trendDirection,
-  size = 180,
+  size = 120,
 }: LifeScoreRingProps) {
   const { theme } = useTheme();
-  const strokeWidth = 12;
+  const strokeWidth = 8;
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
 
@@ -83,9 +83,9 @@ export function LifeScoreRing({
         style={[
           styles.glow,
           {
-            width: size + 40,
-            height: size + 40,
-            borderRadius: (size + 40) / 2,
+            width: size + 30,
+            height: size + 30,
+            borderRadius: (size + 30) / 2,
             backgroundColor: scoreColor,
           },
           glowStyle,
@@ -146,11 +146,11 @@ export function LifeScoreRing({
 const styles = StyleSheet.create({
   container: {
     alignItems: "center",
-    paddingVertical: Spacing.xl,
+    paddingVertical: Spacing.md,
   },
   glow: {
     position: "absolute",
-    top: Spacing.xl - 20,
+    top: Spacing.md - 15,
   },
   ringContainer: {
     position: "relative",
@@ -163,19 +163,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   scoreNumber: {
-    fontSize: 56,
+    fontSize: 36,
     fontWeight: "800",
-    letterSpacing: -2,
+    letterSpacing: -1,
   },
   label: {
-    marginTop: Spacing.md,
-    letterSpacing: 3,
+    marginTop: Spacing.sm,
+    letterSpacing: 2,
     textTransform: "uppercase",
+    fontSize: 11,
   },
   trendContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: Spacing.xs,
-    marginTop: Spacing.sm,
+    marginTop: Spacing.xs,
   },
 });

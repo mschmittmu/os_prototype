@@ -1,6 +1,6 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import Svg, { Path, Circle, Line, Defs, LinearGradient, Stop } from "react-native-svg";
+import Svg, { Path, Circle, Line } from "react-native-svg";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -65,15 +65,6 @@ export function LifeScoreRing({
     <View style={[styles.container, { backgroundColor: theme.backgroundSecondary }]}>
       <View style={styles.gaugeWrapper}>
         <Svg width={size} height={size * 0.7} viewBox={`0 0 ${size} ${size * 0.75}`}>
-          <Defs>
-            <LinearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <Stop offset="0%" stopColor="#EF4444" />
-              <Stop offset="40%" stopColor="#F59E0B" />
-              <Stop offset="70%" stopColor="#10B981" />
-              <Stop offset="100%" stopColor="#10B981" />
-            </LinearGradient>
-          </Defs>
-          
           <Path
             d={describeArc(cx, cy, radius, startAngle, endAngle)}
             stroke={theme.backgroundTertiary}
@@ -84,7 +75,7 @@ export function LifeScoreRing({
           
           <Path
             d={describeArc(cx, cy, radius, startAngle, startAngle + (score / 100) * angleRange)}
-            stroke="url(#gaugeGradient)"
+            stroke={scoreColor}
             strokeWidth={strokeWidth}
             fill="none"
             strokeLinecap="round"

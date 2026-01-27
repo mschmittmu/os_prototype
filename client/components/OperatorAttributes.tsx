@@ -1,6 +1,6 @@
 import React from "react";
 import { View, StyleSheet } from "react-native";
-import Svg, { Path, Circle, Line, Defs, LinearGradient, Stop } from "react-native-svg";
+import Svg, { Path, Circle, Line } from "react-native-svg";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
@@ -66,15 +66,6 @@ function AttributeGauge({
     >
       <View style={styles.gaugeWrapper}>
         <Svg width={size} height={size * 0.65} viewBox={`0 0 ${size} ${size * 0.7}`}>
-          <Defs>
-            <LinearGradient id={`attrGradient-${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
-              <Stop offset="0%" stopColor="#EF4444" />
-              <Stop offset="40%" stopColor="#F59E0B" />
-              <Stop offset="70%" stopColor="#10B981" />
-              <Stop offset="100%" stopColor="#10B981" />
-            </LinearGradient>
-          </Defs>
-          
           <Path
             d={describeArc(cx, cy, radius, startAngle, endAngle)}
             stroke={theme.backgroundSecondary}
@@ -85,7 +76,7 @@ function AttributeGauge({
           
           <Path
             d={describeArc(cx, cy, radius, startAngle, startAngle + (attribute.score / 100) * angleRange)}
-            stroke={`url(#attrGradient-${index})`}
+            stroke={scoreColor}
             strokeWidth={strokeWidth}
             fill="none"
             strokeLinecap="round"

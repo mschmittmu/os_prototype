@@ -10,6 +10,13 @@ The Operator Standard is a command center for people taking control of their liv
 
 ## Core Features
 
+### Operator HUD Dashboard (Home Screen)
+- **Life Score Ring**: Large animated circular display showing overall life score (0-100)
+- **Vital Stats Row**: Streak, Win Rate, and Total Days at a glance
+- **Arcane Assessment**: AI-powered truth statement highlighting the user's biggest issue
+- **Operator Attributes**: 8 life attributes with progress bars (Discipline, Physical, Work Execution, Consistency, Mental Control, Financial, Recovery, Relationships)
+- **Today's Tasks Summary**: Simplified Power List view with completion status
+
 ### Power List (Daily Tasks)
 - 5 daily tasks that must be completed to "win the day"
 - Task completion with satisfying animations
@@ -55,6 +62,11 @@ client/
     PostCard.tsx          # Social feed post
     FAB.tsx               # Floating action button
     DayWonCelebration.tsx # Victory celebration overlay
+    LifeScoreRing.tsx     # Animated life score circular display
+    VitalStatsRow.tsx     # Streak, win rate, total days stats
+    ArcaneDirective.tsx   # AI assessment component
+    OperatorAttributes.tsx # 8 life attributes with progress bars
+    TodaysTasksSummary.tsx # Simplified task list for HUD
   constants/
     theme.ts              # Colors, spacing, typography
   hooks/                  # Custom React hooks
@@ -91,6 +103,12 @@ The app runs on:
 
 ## Recent Changes
 
+- **NEW: Operator HUD Dashboard** - Replaced home screen with Life Score system
+  - Life Score ring with animated progress and trend indicator
+  - Vital Stats row (streak, win rate, total days)
+  - Arcane Assessment - AI-powered truth statement
+  - Operator Attributes - 8 life metrics with color-coded progress bars
+  - Today's Tasks summary with quick access to full list
 - Added Operator Mode with one-tap activation from header icon
 - Operator Mode setup moved to Settings screen
 - Shield icon in top-left header for instant activation

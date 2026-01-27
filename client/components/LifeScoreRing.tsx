@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { View, StyleSheet } from "react-native";
-import Svg, { Path, Circle, G, Text as SvgText, Line, Defs, LinearGradient, Stop } from "react-native-svg";
+import Svg, { Path, Circle, G, Line, Defs, LinearGradient, Stop } from "react-native-svg";
 import Animated, {
   useSharedValue,
   useAnimatedProps,
@@ -50,11 +50,11 @@ export function LifeScoreRing({
   const { theme } = useTheme();
   const needleRotation = useSharedValue(-135);
   
-  const size = 160;
+  const size = 120;
   const cx = size / 2;
   const cy = size / 2;
-  const radius = 60;
-  const strokeWidth = 10;
+  const radius = 45;
+  const strokeWidth = 8;
   const startAngle = -135;
   const endAngle = 135;
   const angleRange = endAngle - startAngle;
@@ -79,12 +79,10 @@ export function LifeScoreRing({
       ? "#EF4444"
       : theme.textSecondary;
 
-  const tickMarks = [0, 25, 50, 75, 100];
-
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundSecondary }]}>
-      <View style={styles.gaugeContainer}>
-        <Svg width={size} height={size * 0.65} viewBox={`0 0 ${size} ${size * 0.75}`}>
+      <View style={styles.gaugeWrapper}>
+        <Svg width={size} height={size * 0.7} viewBox={`0 0 ${size} ${size * 0.75}`}>
           <Defs>
             <LinearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <Stop offset="0%" stopColor="#EF4444" />
@@ -110,59 +108,36 @@ export function LifeScoreRing({
             strokeLinecap="round"
           />
           
-          {tickMarks.map((tick) => {
-            const angle = startAngle + (tick / 100) * angleRange;
-            const innerPoint = polarToCartesian(cx, cy, radius - strokeWidth / 2 - 4, angle);
-            const outerPoint = polarToCartesian(cx, cy, radius - strokeWidth / 2 - 12, angle);
-            return (
-              <Line
-                key={tick}
-                x1={innerPoint.x}
-                y1={innerPoint.y}
-                x2={outerPoint.x}
-                y2={outerPoint.y}
-                stroke={theme.textSecondary}
-                strokeWidth={1.5}
-              />
-            );
-          })}
-          
-          <AnimatedG
-            origin={`${cx}, ${cy}`}
-            animatedProps={animatedNeedleProps}
-          >
+          <AnimatedG origin={`${cx}, ${cy}`} animatedProps={animatedNeedleProps}>
             <Line
               x1={cx}
               y1={cy}
               x2={cx}
-              y2={cy - radius + strokeWidth + 8}
+              y2={cy - radius + strokeWidth + 5}
               stroke={scoreColor}
               strokeWidth={3}
               strokeLinecap="round"
             />
-            <Circle cx={cx} cy={cy} r={6} fill={scoreColor} />
+            <Circle cx={cx} cy={cy} r={5} fill={scoreColor} />
           </AnimatedG>
         </Svg>
-        
-        <View style={styles.scoreDisplay}>
-          <ThemedText style={[styles.scoreNumber, { color: scoreColor }]}>
-            {score}
-          </ThemedText>
-        </View>
       </View>
       
-      <View style={styles.labelRow}>
+      <View style={styles.textContainer}>
         <ThemedText type="caption" style={styles.label}>
           LIFE SCORE
         </ThemedText>
-        <View style={styles.trendBadge}>
+        <ThemedText style={[styles.scoreNumber, { color: scoreColor }]}>
+          {score}
+        </ThemedText>
+        <View style={styles.trendRow}>
           <Feather
             name={trendDirection === "up" ? "trending-up" : trendDirection === "down" ? "trending-down" : "minus"}
-            size={14}
+            size={16}
             color={trendColor}
           />
-          <ThemedText type="small" style={{ color: trendColor }}>
-            {trend}
+          <ThemedText type="body" style={{ color: trendColor }}>
+            {trend} this week
           </ThemedText>
         </View>
       </View>
@@ -172,38 +147,32 @@ export function LifeScoreRing({
 
 const styles = StyleSheet.create({
   container: {
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    alignItems: "center",
-  },
-  gaugeContainer: {
-    alignItems: "center",
-    position: "relative",
-  },
-  scoreDisplay: {
-    position: "absolute",
-    bottom: 0,
-    alignItems: "center",
-  },
-  scoreNumber: {
-    fontSize: 28,
-    fontWeight: "800",
-  },
-  labelRow: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    width: "100%",
-    marginTop: Spacing.sm,
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+  },
+  gaugeWrapper: {
+    marginRight: Spacing.md,
+  },
+  textContainer: {
+    flex: 1,
   },
   label: {
     letterSpacing: 1.5,
     textTransform: "uppercase",
     fontWeight: "600",
+    marginBottom: 4,
   },
-  trendBadge: {
+  scoreNumber: {
+    fontSize: 48,
+    fontWeight: "800",
+    lineHeight: 52,
+  },
+  trendRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: Spacing.xs,
+    marginTop: 4,
   },
 });

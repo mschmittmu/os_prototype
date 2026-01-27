@@ -41,7 +41,7 @@ function describeArc(cx: number, cy: number, r: number, startAngle: number, endA
   return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y}`;
 }
 
-function MiniGauge({
+function AttributeGauge({
   attribute,
   index,
 }: {
@@ -51,10 +51,10 @@ function MiniGauge({
   const { theme } = useTheme();
   const needleRotation = useSharedValue(-135);
   
-  const size = 80;
+  const size = 70;
   const cx = size / 2;
   const cy = size / 2;
-  const radius = 30;
+  const radius = 26;
   const strokeWidth = 5;
   const startAngle = -135;
   const endAngle = 135;
@@ -80,62 +80,65 @@ function MiniGauge({
   return (
     <Animated.View
       entering={FadeInDown.duration(300).delay(index * 50)}
-      style={[styles.gaugeCard, { backgroundColor: theme.backgroundTertiary }]}
+      style={[styles.attributeRow, { backgroundColor: theme.backgroundTertiary }]}
     >
-      <Svg width={size} height={size * 0.6} viewBox={`0 0 ${size} ${size * 0.65}`}>
-        <Defs>
-          <LinearGradient id={`gradient-${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
-            <Stop offset="0%" stopColor="#EF4444" />
-            <Stop offset="40%" stopColor="#F59E0B" />
-            <Stop offset="70%" stopColor="#10B981" />
-            <Stop offset="100%" stopColor="#10B981" />
-          </LinearGradient>
-        </Defs>
-        
-        <Path
-          d={describeArc(cx, cy, radius, startAngle, endAngle)}
-          stroke={theme.backgroundSecondary}
-          strokeWidth={strokeWidth}
-          fill="none"
-          strokeLinecap="round"
-        />
-        
-        <Path
-          d={describeArc(cx, cy, radius, startAngle, startAngle + (attribute.score / 100) * angleRange)}
-          stroke={`url(#gradient-${index})`}
-          strokeWidth={strokeWidth}
-          fill="none"
-          strokeLinecap="round"
-        />
-        
-        <AnimatedG origin={`${cx}, ${cy}`} animatedProps={animatedNeedleProps}>
-          <Line
-            x1={cx}
-            y1={cy}
-            x2={cx}
-            y2={cy - radius + strokeWidth + 2}
-            stroke={scoreColor}
-            strokeWidth={2}
+      <View style={styles.gaugeWrapper}>
+        <Svg width={size} height={size * 0.65} viewBox={`0 0 ${size} ${size * 0.7}`}>
+          <Defs>
+            <LinearGradient id={`attrGradient-${index}`} x1="0%" y1="0%" x2="100%" y2="0%">
+              <Stop offset="0%" stopColor="#EF4444" />
+              <Stop offset="40%" stopColor="#F59E0B" />
+              <Stop offset="70%" stopColor="#10B981" />
+              <Stop offset="100%" stopColor="#10B981" />
+            </LinearGradient>
+          </Defs>
+          
+          <Path
+            d={describeArc(cx, cy, radius, startAngle, endAngle)}
+            stroke={theme.backgroundSecondary}
+            strokeWidth={strokeWidth}
+            fill="none"
             strokeLinecap="round"
           />
-          <Circle cx={cx} cy={cy} r={3} fill={scoreColor} />
-        </AnimatedG>
-      </Svg>
-      
-      <View style={styles.gaugeInfo}>
-        <ThemedText style={[styles.scoreNumber, { color: scoreColor }]}>
-          {attribute.score}
-        </ThemedText>
-        {trendValue !== 0 && (
-          <ThemedText type="caption" style={{ color: trendColor, fontSize: 10 }}>
-            {attribute.trend}
-          </ThemedText>
-        )}
+          
+          <Path
+            d={describeArc(cx, cy, radius, startAngle, startAngle + (attribute.score / 100) * angleRange)}
+            stroke={`url(#attrGradient-${index})`}
+            strokeWidth={strokeWidth}
+            fill="none"
+            strokeLinecap="round"
+          />
+          
+          <AnimatedG origin={`${cx}, ${cy}`} animatedProps={animatedNeedleProps}>
+            <Line
+              x1={cx}
+              y1={cy}
+              x2={cx}
+              y2={cy - radius + strokeWidth + 2}
+              stroke={scoreColor}
+              strokeWidth={2}
+              strokeLinecap="round"
+            />
+            <Circle cx={cx} cy={cy} r={3} fill={scoreColor} />
+          </AnimatedG>
+        </Svg>
       </View>
       
-      <ThemedText type="caption" style={[styles.attributeName, { color: theme.textSecondary }]}>
-        {attribute.name}
-      </ThemedText>
+      <View style={styles.textContainer}>
+        <ThemedText type="small" style={styles.attributeName}>
+          {attribute.name}
+        </ThemedText>
+        <View style={styles.scoreRow}>
+          <ThemedText style={[styles.scoreNumber, { color: scoreColor }]}>
+            {attribute.score}
+          </ThemedText>
+          {trendValue !== 0 && (
+            <ThemedText type="small" style={{ color: trendColor }}>
+              {attribute.trend}
+            </ThemedText>
+          )}
+        </View>
+      </View>
     </Animated.View>
   );
 }
@@ -149,9 +152,9 @@ export function OperatorAttributes({ attributes }: OperatorAttributesProps) {
       <ThemedText type="h4" style={styles.header}>
         OPERATOR ATTRIBUTES
       </ThemedText>
-      <View style={styles.gaugeGrid}>
+      <View style={styles.attributeGrid}>
         {sortedAttributes.map((attr, index) => (
-          <MiniGauge key={attr.name} attribute={attr} index={index} />
+          <AttributeGauge key={attr.name} attribute={attr} index={index} />
         ))}
       </View>
     </View>
@@ -167,32 +170,39 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     marginBottom: Spacing.md,
   },
-  gaugeGrid: {
+  attributeGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
     gap: Spacing.sm,
   },
-  gaugeCard: {
+  attributeRow: {
     width: "48%",
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: BorderRadius.md,
     padding: Spacing.sm,
-    alignItems: "center",
   },
-  gaugeInfo: {
+  gaugeWrapper: {
+    marginRight: Spacing.xs,
+  },
+  textContainer: {
+    flex: 1,
+  },
+  attributeName: {
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+    fontWeight: "600",
+    fontSize: 10,
+  },
+  scoreRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
+    marginTop: 2,
   },
   scoreNumber: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: "700",
-  },
-  attributeName: {
-    fontSize: 9,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-    textAlign: "center",
-    marginTop: 2,
   },
 });

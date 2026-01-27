@@ -1,18 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { View, StyleSheet } from "react-native";
-import Svg, { Path, Circle, G, Line, Defs, LinearGradient, Stop } from "react-native-svg";
-import Animated, {
-  useSharedValue,
-  useAnimatedProps,
-  withTiming,
-  Easing,
-} from "react-native-reanimated";
+import Svg, { Path, Circle, Line, Defs, LinearGradient, Stop } from "react-native-svg";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { Feather } from "@expo/vector-icons";
-
-const AnimatedG = Animated.createAnimatedComponent(G);
 
 interface LifeScoreRingProps {
   score: number;
@@ -48,7 +40,6 @@ export function LifeScoreRing({
   trendDirection,
 }: LifeScoreRingProps) {
   const { theme } = useTheme();
-  const needleRotation = useSharedValue(-135);
   
   const size = 120;
   const cx = size / 2;
@@ -58,18 +49,9 @@ export function LifeScoreRing({
   const startAngle = -135;
   const endAngle = 135;
   const angleRange = endAngle - startAngle;
-
-  useEffect(() => {
-    const targetAngle = startAngle + (score / 100) * angleRange;
-    needleRotation.value = withTiming(targetAngle, {
-      duration: 1500,
-      easing: Easing.out(Easing.cubic),
-    });
-  }, [score]);
-
-  const animatedNeedleProps = useAnimatedProps(() => ({
-    transform: [{ rotate: `${needleRotation.value}deg` }],
-  }));
+  
+  const targetAngle = startAngle + (score / 100) * angleRange;
+  const needleEnd = polarToCartesian(cx, cy, radius - strokeWidth - 3, targetAngle);
 
   const scoreColor = getScoreColor(score);
   const trendColor =
@@ -108,18 +90,16 @@ export function LifeScoreRing({
             strokeLinecap="round"
           />
           
-          <AnimatedG origin={`${cx}, ${cy}`} animatedProps={animatedNeedleProps}>
-            <Line
-              x1={cx}
-              y1={cy}
-              x2={cx}
-              y2={cy - radius + strokeWidth + 5}
-              stroke={scoreColor}
-              strokeWidth={3}
-              strokeLinecap="round"
-            />
-            <Circle cx={cx} cy={cy} r={5} fill={scoreColor} />
-          </AnimatedG>
+          <Line
+            x1={cx}
+            y1={cy}
+            x2={needleEnd.x}
+            y2={needleEnd.y}
+            stroke={scoreColor}
+            strokeWidth={3}
+            strokeLinecap="round"
+          />
+          <Circle cx={cx} cy={cy} r={5} fill={scoreColor} />
         </Svg>
       </View>
       

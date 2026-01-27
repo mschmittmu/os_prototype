@@ -1,19 +1,11 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { View, StyleSheet } from "react-native";
-import Svg, { Path, Circle, G, Line, Defs, LinearGradient, Stop } from "react-native-svg";
-import Animated, {
-  useSharedValue,
-  useAnimatedProps,
-  withTiming,
-  Easing,
-  FadeInDown,
-} from "react-native-reanimated";
+import Svg, { Path, Circle, Line, Defs, LinearGradient, Stop } from "react-native-svg";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { OperatorAttribute } from "@/lib/mockData";
-
-const AnimatedG = Animated.createAnimatedComponent(G);
 
 interface OperatorAttributesProps {
   attributes: OperatorAttribute[];
@@ -49,7 +41,6 @@ function AttributeGauge({
   index: number;
 }) {
   const { theme } = useTheme();
-  const needleRotation = useSharedValue(-135);
   
   const size = 70;
   const cx = size / 2;
@@ -59,18 +50,9 @@ function AttributeGauge({
   const startAngle = -135;
   const endAngle = 135;
   const angleRange = endAngle - startAngle;
-
-  useEffect(() => {
-    const targetAngle = startAngle + (attribute.score / 100) * angleRange;
-    needleRotation.value = withTiming(targetAngle, {
-      duration: 1200 + index * 100,
-      easing: Easing.out(Easing.cubic),
-    });
-  }, [attribute.score, index]);
-
-  const animatedNeedleProps = useAnimatedProps(() => ({
-    transform: [{ rotate: `${needleRotation.value}deg` }],
-  }));
+  
+  const targetAngle = startAngle + (attribute.score / 100) * angleRange;
+  const needleEnd = polarToCartesian(cx, cy, radius - strokeWidth - 2, targetAngle);
 
   const scoreColor = getScoreColor(attribute.score);
   const trendValue = parseInt(attribute.trend, 10);
@@ -109,18 +91,16 @@ function AttributeGauge({
             strokeLinecap="round"
           />
           
-          <AnimatedG origin={`${cx}, ${cy}`} animatedProps={animatedNeedleProps}>
-            <Line
-              x1={cx}
-              y1={cy}
-              x2={cx}
-              y2={cy - radius + strokeWidth + 2}
-              stroke={scoreColor}
-              strokeWidth={2}
-              strokeLinecap="round"
-            />
-            <Circle cx={cx} cy={cy} r={3} fill={scoreColor} />
-          </AnimatedG>
+          <Line
+            x1={cx}
+            y1={cy}
+            x2={needleEnd.x}
+            y2={needleEnd.y}
+            stroke={scoreColor}
+            strokeWidth={2}
+            strokeLinecap="round"
+          />
+          <Circle cx={cx} cy={cy} r={3} fill={scoreColor} />
         </Svg>
       </View>
       

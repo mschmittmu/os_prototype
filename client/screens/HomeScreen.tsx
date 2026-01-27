@@ -92,7 +92,7 @@ export default function HomeScreen() {
       contentContainerStyle={[
         styles.contentContainer,
         {
-          paddingTop: headerHeight + Spacing.md,
+          paddingTop: headerHeight + Spacing.xs,
           paddingBottom: tabBarHeight + Spacing.xl,
         },
       ]}

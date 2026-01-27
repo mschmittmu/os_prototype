@@ -1,0 +1,490 @@
+# OPERATOR STANDARD - Life Score HUD Dashboard
+
+## PROJECT OVERVIEW
+
+Build a new home screen dashboard for The Operator Standard app called the "Operator HUD." This replaces the current home screen with a behavioral identity system that shows users who they are becoming based on their actions - not just whether they completed tasks.
+
+Think of it like a **Madden Ultimate Team player card** meets **Instagram Creator Dashboard**. Clean, serious, honest. Not gamified with confetti. The kind of screen you open and immediately know exactly where you stand.
+
+---
+
+## DESIGN PHILOSOPHY
+
+**Core Principle:** This is not motivation. This is confrontation. The user cannot argue with these numbers. They cannot hide from them.
+
+**Visual Style:**
+- Clean, minimal, serious
+- Dark mode primary (black/dark gray background)
+- Accent color: Red (#E63946) for the Operator Standard brand
+- Secondary: White text, gray for secondary elements
+- No charts, no graphs, no walls of numbers
+- Immediate comprehension, not analysis
+- Mobile-first design (375px width base)
+
+**Font Suggestions:**
+- Headers: Bold, all-caps, condensed (similar to sports/military aesthetic)
+- Numbers: Large, bold, impactful
+- Body: Clean sans-serif
+
+---
+
+## SCREEN STRUCTURE (Top to Bottom)
+
+### 1. HEADER BAR
+```
+[Buffalo Logo]                    [Compass] [Star] [Bell] [Menu]
+```
+- Keep existing header with Operator Standard buffalo logo
+- Notification bell with red dot indicator
+- Hamburger menu
+
+---
+
+### 2. LIFE SCORE (Hero Section)
+
+This is THE number. Large, dominant, center of attention.
+
+**Layout:**
+```
+┌─────────────────────────────────────┐
+│                                     │
+│              ┌───────┐              │
+│              │  73   │              │  ← Large circular element
+│              └───────┘              │
+│           LIFE SCORE                │
+│         ▲ +2 from last week         │  ← Trend indicator
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**Specifications:**
+- Circular container with colored ring/border based on score
+- Score number: 72px+ font, bold
+- "LIFE SCORE" label below: 14px, uppercase, letter-spaced
+- Trend indicator: Small arrow (▲ or ▼) with "+X" or "-X" and "from last week"
+- Trend text: Green if positive, red if negative, gray if unchanged
+
+**Color Ring Logic:**
+- 80-100: Green (#10B981)
+- 60-79: Yellow (#F59E0B)
+- 40-59: Orange (#F97316)
+- 0-39: Red (#EF4444)
+
+**Animation:** Subtle pulse or glow on the ring. Score should feel "alive."
+
+---
+
+### 3. VITAL STATS ROW
+
+Three key execution metrics in a horizontal row.
+
+**Layout:**
+```
+┌─────────────┬─────────────┬─────────────┐
+│     🔥      │     📊      │     📅      │
+│     47      │     78%     │     156     │
+│   STREAK    │  WIN RATE   │ TOTAL DAYS  │
+│             │  (30 days)  │             │
+└─────────────┴─────────────┴─────────────┘
+```
+
+**Specifications:**
+- Three equal-width cards/columns
+- Icon or emoji at top (optional, can be subtle)
+- Large number: 32px, bold
+- Label below: 12px, uppercase, gray
+- Subtle dividers between columns or card-style separation
+- Win Rate should specify timeframe "(30 days)"
+
+---
+
+### 4. ARCANE DIRECTIVE (The Truth)
+
+A single statement from the AI that tells the user their one biggest issue. Not advice. Not options. A truth statement.
+
+**Layout:**
+```
+┌─────────────────────────────────────┐
+│  ⚡ ARCANE ASSESSMENT               │
+│                                     │
+│  "Your discipline is strong, but    │
+│   your relationships are            │
+│   deteriorating. 3 weeks without    │
+│   a single relationship task."      │
+│                                     │
+│           [FOCUS NOW →]             │
+└─────────────────────────────────────┘
+```
+
+**Specifications:**
+- Card with subtle border or different background shade
+- Lightning bolt icon (⚡) with "ARCANE ASSESSMENT" header
+- Quote-style text in italics or with quotation marks
+- 16px font, slightly lighter weight than headers
+- Optional CTA button: "FOCUS NOW" that could link to relevant tasks
+- The message should feel personal, direct, confrontational but not mean
+
+**Sample ARCANE Directives (for mock data):**
+- "Your discipline is strong, but your relationships are deteriorating. 3 weeks without a single relationship task."
+- "You win most days but collapse every weekend. Your consistency score proves it."
+- "Your problem isn't losing days. It's how long it takes you to recover. Average: 6 days."
+- "Financial tasks keep getting skipped. Your income goals require execution, not intention."
+- "Strong week. But don't confuse momentum with transformation. Stay locked in."
+- "Recovery is your weakness. After losses, you spiral instead of execute."
+
+---
+
+### 5. OPERATOR ATTRIBUTES (The Player Card Stats)
+
+Eight fixed life attributes, each scored 0-100 based on behavioral data. This is the core of the identity system.
+
+**Layout:**
+```
+┌─────────────────────────────────────┐
+│  OPERATOR ATTRIBUTES                │
+├─────────────────────────────────────┤
+│                                     │
+│  DISCIPLINE                      82 │
+│  [████████████████░░░░]             │
+│                                     │
+│  PHYSICAL                        71 │
+│  [██████████████░░░░░░]             │
+│                                     │
+│  WORK EXECUTION                  65 │
+│  [█████████████░░░░░░░]             │
+│                                     │
+│  CONSISTENCY                     54 │
+│  [███████████░░░░░░░░░]             │
+│                                     │
+│  MENTAL CONTROL                  48 │
+│  [██████████░░░░░░░░░░]             │
+│                                     │
+│  FINANCIAL                       45 │
+│  [█████████░░░░░░░░░░░]             │
+│                                     │
+│  RECOVERY                        38 │
+│  [████████░░░░░░░░░░░░]             │
+│                                     │
+│  RELATIONSHIPS                   29 │
+│  [██████░░░░░░░░░░░░░░]             │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+**The 8 Fixed Attributes:**
+
+| Attribute | Description | What Affects It |
+|-----------|-------------|-----------------|
+| DISCIPLINE | Overall execution consistency | Power List completion, on-time completion, no overrides |
+| PHYSICAL | Body and health execution | Health/fitness task completion, workout verification |
+| WORK EXECUTION | Career and business tasks | Business/career task completion |
+| FINANCIAL | Money-related commitments | Financial task completion |
+| RELATIONSHIPS | People and connection tasks | Family/relationship task completion |
+| MENTAL CONTROL | Mind management and focus | Avoidance patterns, screen time, stress handling |
+| CONSISTENCY | Steadiness over time | Win rate variance, weekend vs weekday, streak stability |
+| RECOVERY | Bounce-back ability | Days to return to winning after a loss |
+
+**Specifications:**
+- Section header: "OPERATOR ATTRIBUTES" - bold, uppercase
+- Each attribute row contains:
+  - Attribute name (left aligned, uppercase, 14px)
+  - Score number (right aligned, bold, 18px)
+  - Progress bar below the name
+- Progress bar: Filled portion colored based on score, unfilled portion is dark gray
+- Sort attributes by score (highest to lowest) OR by severity (lowest first to highlight problems)
+- Tapping an attribute could expand to show more detail (optional, Phase 2)
+
+**Progress Bar Colors:**
+- 80-100: Green (#10B981)
+- 60-79: Yellow (#F59E0B)  
+- 40-59: Orange (#F97316)
+- 0-39: Red (#EF4444)
+
+**Alternative Compact View (for smaller screens):**
+```
+┌─────────────────────────────────────┐
+│  OPERATOR ATTRIBUTES                │
+├─────────────────────────────────────┤
+│  DIS  PHY  WRK  FIN  REL  MNT  CON  REC │
+│   82   71   65   45   29   48   54   38 │
+│  [▓▓] [▓▓] [▓░] [▓░] [░░] [▓░] [▓░] [▓░]│
+└─────────────────────────────────────┘
+```
+
+---
+
+### 6. TODAY'S POWER LIST (Simplified)
+
+Keep the existing Power List but make it cleaner and secondary to the HUD.
+
+**Layout:**
+```
+┌─────────────────────────────────────┐
+│  TODAY'S TASKS              3/5 ✓  │
+├─────────────────────────────────────┤
+│  ☑ Morning workout                  │
+│  ☑ Review Q1 numbers                │
+│  ☑ Call Dad                         │
+│  ☐ 90-min deep work block           │
+│  ☐ Evening reflection               │
+├─────────────────────────────────────┤
+│         [VIEW FULL LIST →]          │
+└─────────────────────────────────────┘
+```
+
+**Specifications:**
+- Collapsible or summary view showing task count
+- Checkboxes with strikethrough for completed items
+- "VIEW FULL LIST" link to expanded task view
+- This should feel secondary to the Life Score/Attributes above
+
+---
+
+### 7. BOTTOM NAVIGATION (Keep Existing)
+
+```
+[Home]  [Execution]  [Media]  [Social]  [Crews]
+```
+
+Keep the existing 5-tab bottom navigation.
+
+---
+
+## MOCK DATA FOR PROTOTYPE
+
+Use this data to populate the prototype:
+
+```javascript
+const mockUserData = {
+  user: {
+    name: "Matt Schmitt",
+    photo: "/placeholder-avatar.jpg",
+    tier: "Iron",
+    tierRank: 1
+  },
+  
+  lifeScore: {
+    current: 73,
+    previous: 71,
+    trend: "+2",
+    trendDirection: "up" // "up", "down", "neutral"
+  },
+  
+  vitalStats: {
+    streak: 47,
+    winRate: 78,
+    winRatePeriod: "30 days",
+    totalDays: 156
+  },
+  
+  arcaneDirective: {
+    message: "Your discipline is strong, but your relationships are deteriorating. 3 weeks without a single relationship task.",
+    focusArea: "RELATIONSHIPS",
+    severity: "critical" // "critical", "warning", "observation"
+  },
+  
+  attributes: [
+    { name: "DISCIPLINE", score: 82, trend: "+3" },
+    { name: "PHYSICAL", score: 71, trend: "+1" },
+    { name: "WORK EXECUTION", score: 65, trend: "-2" },
+    { name: "CONSISTENCY", score: 54, trend: "+5" },
+    { name: "MENTAL CONTROL", score: 48, trend: "0" },
+    { name: "FINANCIAL", score: 45, trend: "-4" },
+    { name: "RECOVERY", score: 38, trend: "+2" },
+    { name: "RELATIONSHIPS", score: 29, trend: "-8" }
+  ],
+  
+  todaysTasks: [
+    { id: 1, text: "Morning workout", completed: true, category: "PHYSICAL" },
+    { id: 2, text: "Review Q1 numbers", completed: true, category: "WORK EXECUTION" },
+    { id: 3, text: "Call Dad", completed: true, category: "RELATIONSHIPS" },
+    { id: 4, text: "90-min deep work block", completed: false, category: "DISCIPLINE" },
+    { id: 5, text: "Evening reflection", completed: false, category: "MENTAL CONTROL" }
+  ]
+};
+```
+
+---
+
+## COLOR PALETTE
+
+```css
+:root {
+  /* Background */
+  --bg-primary: #0F0F0F;
+  --bg-secondary: #1A1A1A;
+  --bg-card: #242424;
+  
+  /* Text */
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0A0A0;
+  --text-muted: #666666;
+  
+  /* Brand */
+  --brand-red: #E63946;
+  --brand-red-dark: #B82D38;
+  
+  /* Score Colors */
+  --score-green: #10B981;
+  --score-yellow: #F59E0B;
+  --score-orange: #F97316;
+  --score-red: #EF4444;
+  
+  /* Accents */
+  --accent-blue: #3B82F6;
+  --border-subtle: #333333;
+}
+```
+
+---
+
+## COMPONENT STRUCTURE (React)
+
+```
+OperatorHUD/
+├── OperatorHUD.jsx          (Main container)
+├── LifeScoreHero.jsx        (Big score circle)
+├── VitalStatsRow.jsx        (Streak, Win Rate, Total Days)
+├── ArcaneDirective.jsx      (AI truth statement)
+├── AttributesList.jsx       (8 attribute bars)
+├── AttributeBar.jsx         (Individual attribute)
+├── TodaysTasks.jsx          (Power List summary)
+└── styles/
+    └── operatorHUD.css
+```
+
+---
+
+## RESPONSIVE BEHAVIOR
+
+**Mobile (375px - default):**
+- Single column layout
+- Life Score: 120px diameter circle
+- Attributes: Full-width bars
+
+**Tablet (768px+):**
+- Life Score and Vital Stats could be side by side
+- Attributes could be 2-column grid
+
+**Desktop (1024px+):**
+- Max-width container (480px) centered
+- Maintains mobile-first aesthetic
+- Optional: Attributes as a 2x4 grid
+
+---
+
+## ANIMATIONS & INTERACTIONS
+
+1. **Life Score Ring:** Subtle pulsing glow animation (CSS keyframes)
+2. **Attribute Bars:** Animate fill on load (width transition from 0 to score%)
+3. **Score Changes:** Number counter animation when score updates
+4. **Card Hover:** Subtle lift/shadow on hover (desktop)
+5. **Pull to Refresh:** Could refresh all stats
+
+---
+
+## OPTIONAL ENHANCEMENTS (Phase 2)
+
+1. **Time Range Toggle:** Switch between 7-day, 30-day, 90-day views
+2. **Attribute Detail View:** Tap an attribute to see breakdown
+3. **Historical Graph:** Simple trend line for Life Score over time
+4. **Share Card:** Export your player card as an image
+5. **Comparison:** See how you rank vs. other operators
+
+---
+
+## WHAT THIS SHOULD FEEL LIKE
+
+When a user opens this screen, they should:
+
+1. **Immediately know their Life Score** - The one number that matters
+2. **See their weakest areas highlighted** - Can't hide from red attributes
+3. **Read ARCANE's truth** - One clear statement about what's broken
+4. **Feel like the system knows them** - Better than they know themselves
+5. **Have no room for self-deception** - "I'm doing pretty good" is replaced by "My relationships are at 29"
+
+---
+
+## IMPLEMENTATION NOTES
+
+- This is a **home screen replacement**, not an addition
+- Keep existing navigation and header patterns
+- The Life Score should be calculated server-side (for now, use mock data)
+- Attributes are NOT user-customizable - they're fixed categories
+- Attributes are NOT self-reported - they're calculated from behavior
+- The ARCANE directive should feel AI-generated and personal
+
+---
+
+## SAMPLE COMPLETE SCREEN (ASCII)
+
+```
+┌─────────────────────────────────────┐
+│ [🦬]                    ⚙️ ⭐ 🔔 ≡  │
+├─────────────────────────────────────┤
+│                                     │
+│              ╭───────╮              │
+│              │  73   │              │
+│              ╰───────╯              │
+│           LIFE SCORE                │
+│          ▲ +2 this week             │
+│                                     │
+├─────────────────────────────────────┤
+│   🔥 47    │   📊 78%   │   📅 156  │
+│  STREAK    │  WIN RATE  │   DAYS    │
+├─────────────────────────────────────┤
+│                                     │
+│  ⚡ ARCANE ASSESSMENT               │
+│                                     │
+│  "Your discipline is strong, but    │
+│   your relationships are            │
+│   deteriorating."                   │
+│                                     │
+│           [FOCUS NOW →]             │
+│                                     │
+├─────────────────────────────────────┤
+│  OPERATOR ATTRIBUTES                │
+│                                     │
+│  DISCIPLINE                      82 │
+│  [████████████████░░░░]             │
+│                                     │
+│  PHYSICAL                        71 │
+│  [██████████████░░░░░░]             │
+│                                     │
+│  WORK EXECUTION                  65 │
+│  [█████████████░░░░░░░]             │
+│                                     │
+│  CONSISTENCY                     54 │
+│  [███████████░░░░░░░░░]             │
+│                                     │
+│  MENTAL CONTROL                  48 │
+│  [██████████░░░░░░░░░░]             │
+│                                     │
+│  FINANCIAL                       45 │
+│  [█████████░░░░░░░░░░░]             │
+│                                     │
+│  RECOVERY                        38 │
+│  [████████░░░░░░░░░░░░]             │
+│                                     │
+│  RELATIONSHIPS                   29 │
+│  [██████░░░░░░░░░░░░░░]             │
+│                                     │
+├─────────────────────────────────────┤
+│  TODAY'S TASKS              3/5 ✓  │
+│  ☑ Morning workout                  │
+│  ☑ Review Q1 numbers                │
+│  ☐ 90-min deep work block           │
+│         [VIEW FULL LIST →]          │
+├─────────────────────────────────────┤
+│ [🏠] [📋] [▶️] [👥] [⚙️]            │
+│ Home  Exec  Media Social Crews      │
+└─────────────────────────────────────┘
+```
+
+---
+
+## BUILD THIS NOW
+
+Create a React component that renders this complete Operator HUD dashboard. Use the mock data provided. Make it look clean, serious, and professional. This should feel like a premium sports app or a high-end fitness tracker - not a typical habit app.
+
+The goal: When someone sees this screen, they can't lie to themselves anymore. They see exactly who their behavior says they are.

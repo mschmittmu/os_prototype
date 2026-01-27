@@ -408,6 +408,73 @@ export const challenges: Challenge[] = [
   },
 ];
 
+export interface OperatorAttribute {
+  name: string;
+  shortName: string;
+  score: number;
+  trend: string;
+}
+
+export interface HUDData {
+  lifeScore: {
+    current: number;
+    previous: number;
+    trend: string;
+    trendDirection: "up" | "down" | "neutral";
+  };
+  vitalStats: {
+    streak: number;
+    winRate: number;
+    winRatePeriod: string;
+    totalDays: number;
+  };
+  arcaneDirective: {
+    message: string;
+    focusArea: string;
+    severity: "critical" | "warning" | "observation";
+  };
+  attributes: OperatorAttribute[];
+}
+
+export const hudData: HUDData = {
+  lifeScore: {
+    current: 73,
+    previous: 71,
+    trend: "+2",
+    trendDirection: "up",
+  },
+  vitalStats: {
+    streak: 47,
+    winRate: 78,
+    winRatePeriod: "30 days",
+    totalDays: 156,
+  },
+  arcaneDirective: {
+    message: "Your discipline is strong, but your relationships are deteriorating. 3 weeks without a single relationship task.",
+    focusArea: "RELATIONSHIPS",
+    severity: "critical",
+  },
+  attributes: [
+    { name: "DISCIPLINE", shortName: "DIS", score: 82, trend: "+3" },
+    { name: "PHYSICAL", shortName: "PHY", score: 71, trend: "+1" },
+    { name: "WORK EXECUTION", shortName: "WRK", score: 65, trend: "-2" },
+    { name: "CONSISTENCY", shortName: "CON", score: 54, trend: "+5" },
+    { name: "MENTAL CONTROL", shortName: "MNT", score: 48, trend: "0" },
+    { name: "FINANCIAL", shortName: "FIN", score: 45, trend: "-4" },
+    { name: "RECOVERY", shortName: "REC", score: 38, trend: "+2" },
+    { name: "RELATIONSHIPS", shortName: "REL", score: 29, trend: "-8" },
+  ],
+};
+
+export const arcaneDirectives = [
+  "Your discipline is strong, but your relationships are deteriorating. 3 weeks without a single relationship task.",
+  "You win most days but collapse every weekend. Your consistency score proves it.",
+  "Your problem isn't losing days. It's how long it takes you to recover. Average: 6 days.",
+  "Financial tasks keep getting skipped. Your income goals require execution, not intention.",
+  "Strong week. But don't confuse momentum with transformation. Stay locked in.",
+  "Recovery is your weakness. After losses, you spiral instead of execute.",
+];
+
 export const coreValues = [
   {
     id: "1",

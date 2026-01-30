@@ -96,7 +96,7 @@ function AttributeGauge({
       </View>
       
       <View style={styles.textContainer}>
-        <ThemedText type="small" style={styles.attributeName}>
+        <ThemedText type="small" style={styles.attributeName} numberOfLines={1}>
           {attribute.name}
         </ThemedText>
         <View style={styles.scoreRow}>
@@ -161,10 +161,10 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   attributeName: {
-    letterSpacing: 0.5,
+    letterSpacing: 0.3,
     textTransform: "uppercase",
     fontWeight: "600",
-    fontSize: 10,
+    fontSize: 8,
   },
   scoreRow: {
     flexDirection: "row",

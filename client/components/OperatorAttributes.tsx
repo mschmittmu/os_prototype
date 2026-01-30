@@ -64,42 +64,43 @@ function AttributeGauge({
       entering={FadeInDown.duration(300).delay(index * 50)}
       style={[styles.attributeRow, { backgroundColor: theme.backgroundTertiary }]}
     >
-      <View style={styles.gaugeWrapper}>
-        <Svg width={size} height={size * 0.65} viewBox={`0 0 ${size} ${size * 0.7}`}>
-          <Path
-            d={describeArc(cx, cy, radius, startAngle, endAngle)}
-            stroke={theme.backgroundSecondary}
-            strokeWidth={strokeWidth}
-            fill="none"
-            strokeLinecap="round"
-          />
-          
-          <Path
-            d={describeArc(cx, cy, radius, startAngle, startAngle + (attribute.score / 100) * angleRange)}
-            stroke={scoreColor}
-            strokeWidth={strokeWidth}
-            fill="none"
-            strokeLinecap="round"
-          />
-          
-          <Line
-            x1={cx}
-            y1={cy}
-            x2={needleEnd.x}
-            y2={needleEnd.y}
-            stroke={scoreColor}
-            strokeWidth={2}
-            strokeLinecap="round"
-          />
-          <Circle cx={cx} cy={cy} r={3} fill={scoreColor} />
-        </Svg>
-      </View>
+      <ThemedText style={styles.attributeName} numberOfLines={1}>
+        {attribute.name}
+      </ThemedText>
       
-      <View style={styles.textContainer}>
-        <ThemedText type="small" style={styles.attributeName} numberOfLines={1}>
-          {attribute.name}
-        </ThemedText>
-        <View style={styles.scoreRow}>
+      <View style={styles.gaugeAndScoreRow}>
+        <View style={styles.gaugeWrapper}>
+          <Svg width={size} height={size * 0.65} viewBox={`0 0 ${size} ${size * 0.7}`}>
+            <Path
+              d={describeArc(cx, cy, radius, startAngle, endAngle)}
+              stroke={theme.backgroundSecondary}
+              strokeWidth={strokeWidth}
+              fill="none"
+              strokeLinecap="round"
+            />
+            
+            <Path
+              d={describeArc(cx, cy, radius, startAngle, startAngle + (attribute.score / 100) * angleRange)}
+              stroke={scoreColor}
+              strokeWidth={strokeWidth}
+              fill="none"
+              strokeLinecap="round"
+            />
+            
+            <Line
+              x1={cx}
+              y1={cy}
+              x2={needleEnd.x}
+              y2={needleEnd.y}
+              stroke={scoreColor}
+              strokeWidth={2}
+              strokeLinecap="round"
+            />
+            <Circle cx={cx} cy={cy} r={3} fill={scoreColor} />
+          </Svg>
+        </View>
+        
+        <View style={styles.scoreContainer}>
           <ThemedText style={[styles.scoreNumber, { color: scoreColor }]}>
             {attribute.score}
           </ThemedText>
@@ -149,31 +150,30 @@ const styles = StyleSheet.create({
   },
   attributeRow: {
     width: "48%",
-    flexDirection: "row",
     alignItems: "center",
     borderRadius: BorderRadius.md,
     padding: Spacing.sm,
   },
+  attributeName: {
+    letterSpacing: 1,
+    textTransform: "uppercase",
+    fontWeight: "700",
+    fontSize: 11,
+    textAlign: "center",
+    marginBottom: Spacing.xs,
+  },
+  gaugeAndScoreRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   gaugeWrapper: {
     marginRight: Spacing.xs,
   },
-  textContainer: {
-    flex: 1,
-  },
-  attributeName: {
-    letterSpacing: 0.3,
-    textTransform: "uppercase",
-    fontWeight: "600",
-    fontSize: 8,
-  },
-  scoreRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 2,
+  scoreContainer: {
+    alignItems: "flex-start",
   },
   scoreNumber: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "700",
   },
 });

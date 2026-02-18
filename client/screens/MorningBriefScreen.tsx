@@ -30,13 +30,13 @@ import {
   getYesterdayResult,
   getPatternCallOut,
   getDirective,
+  isFirstTimeUser,
   YesterdayResult,
   PatternCallOut,
   Directive,
 } from "@/lib/morningBriefLogic";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 
-const TOTAL_COMPONENTS = 5;
 const AUTO_ADVANCE_MS = 3000;
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -69,7 +69,9 @@ export default function MorningBriefScreen() {
   const [pattern, setPattern] = useState<PatternCallOut | null>(null);
   const [directive, setDirective] = useState<Directive | null>(null);
   const [isReady, setIsReady] = useState(false);
+  const [isFirstTime, setIsFirstTime] = useState(false);
   const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const TOTAL_COMPONENTS = isFirstTime ? 4 : 5;
 
   useEffect(() => {
     const loadData = async () => {
@@ -81,6 +83,12 @@ export default function MorningBriefScreen() {
       setClaims(loadedClaims);
       setTasks(loadedTasks);
       setStreak(loadedStreak);
+
+      if (isFirstTimeUser(loadedTasks, loadedStreak)) {
+        setIsFirstTime(true);
+        setIsReady(true);
+        return;
+      }
 
       const result = getYesterdayResult(loadedTasks, loadedStreak);
       setYesterdayResult(result);
@@ -160,16 +168,110 @@ export default function MorningBriefScreen() {
     </View>
   );
 
+  const renderFirstTimeWelcome = () => (
+    <Pressable style={styles.fullScreenComponent} onPress={advance}>
+      <Animated.View entering={FadeIn.duration(800)} style={styles.centerContent}>
+        <ThemedText
+          style={[styles.sectionLabel, { color: theme.textSecondary }]}
+        >
+          DAY ONE
+        </ThemedText>
+        <Animated.View entering={FadeInDown.delay(200).duration(600)}>
+          <ThemedText style={[styles.welcomeText, { color: "#FFFFFF" }]}>
+            Today is the first day you operate at a higher standard.
+          </ThemedText>
+        </Animated.View>
+        <Animated.View entering={FadeInDown.delay(600).duration(600)}>
+          <ThemedText
+            style={[styles.welcomeSubtext, { color: theme.textSecondary }]}
+          >
+            No history. No excuses. Just execution.
+          </ThemedText>
+        </Animated.View>
+      </Animated.View>
+    </Pressable>
+  );
+
+  const renderFirstTimeSetup = () => (
+    <Pressable style={styles.fullScreenComponent} onPress={advance}>
+      <Animated.View entering={FadeIn.duration(600)} style={styles.centerContent}>
+        <ThemedText
+          style={[styles.sectionLabel, { color: theme.textSecondary }]}
+        >
+          HOW THIS WORKS
+        </ThemedText>
+        <Animated.View
+          entering={FadeInDown.delay(200).duration(500)}
+          style={styles.setupList}
+        >
+          {[
+            { icon: "check-square", text: "Set 5 critical tasks for today" },
+            { icon: "target", text: "Complete all 5. No negotiation." },
+            { icon: "trending-up", text: "Win the day. Build your streak." },
+          ].map((item, index) => (
+            <Animated.View
+              key={index}
+              entering={FadeInDown.delay(400 + index * 200).duration(400)}
+              style={styles.setupRow}
+            >
+              <View
+                style={[
+                  styles.setupIconWrap,
+                  { backgroundColor: "rgba(227, 24, 55, 0.15)" },
+                ]}
+              >
+                <Feather name={item.icon as any} size={18} color={theme.accent} />
+              </View>
+              <ThemedText style={[styles.setupText, { color: "#FFFFFF" }]}>
+                {item.text}
+              </ThemedText>
+            </Animated.View>
+          ))}
+        </Animated.View>
+      </Animated.View>
+    </Pressable>
+  );
+
+  const renderFirstTimeDirective = () => (
+    <View style={styles.fullScreenComponent}>
+      <Animated.View entering={FadeIn.duration(600)} style={styles.centerContent}>
+        <ThemedText
+          style={[styles.sectionLabel, { color: theme.textSecondary }]}
+        >
+          DIRECTIVE
+        </ThemedText>
+        <Animated.View entering={FadeInDown.delay(300).duration(600)}>
+          <ThemedText style={[styles.directiveText, { color: theme.accent }]}>
+            SET YOUR FIRST{"\n"}POWER LIST.
+          </ThemedText>
+        </Animated.View>
+        <Animated.View
+          entering={FadeInUp.delay(800).duration(500)}
+          style={{ width: "100%", paddingHorizontal: Spacing["2xl"] }}
+        >
+          <Pressable
+            style={[styles.beginButton, { backgroundColor: theme.accent }]}
+            onPress={handleDismiss}
+          >
+            <ThemedText style={styles.beginButtonText}>
+              LET'S GO
+            </ThemedText>
+          </Pressable>
+        </Animated.View>
+      </Animated.View>
+    </View>
+  );
+
   const renderIdentityAnchor = () => (
     <Pressable style={styles.fullScreenComponent} onPress={advance}>
       <Animated.View entering={FadeIn.duration(800)} style={styles.centerContent}>
         <ThemedText
           style={[styles.identityLabel, { color: theme.textSecondary }]}
         >
-          ARCANE ASSESSMENT
+          {isFirstTime ? "YOUR DECLARATION" : "ARCANE ASSESSMENT"}
         </ThemedText>
         <ThemedText style={[styles.identityText, { color: "#FFFFFF" }]}>
-          {"You claimed to be"}
+          {isFirstTime ? "You declared yourself" : "You claimed to be"}
         </ThemedText>
         <ThemedText style={[styles.identityHighlight, { color: theme.accent }]}>
           {claims?.coreIdentity || "AN OPERATOR"}
@@ -178,7 +280,7 @@ export default function MorningBriefScreen() {
           <ThemedText
             style={[styles.identitySubtitle, { color: theme.textSecondary }]}
           >
-            Prove it today.
+            {isFirstTime ? "Now let's build the proof." : "Prove it today."}
           </ThemedText>
         </Animated.View>
         <Animated.View
@@ -382,13 +484,20 @@ export default function MorningBriefScreen() {
     );
   };
 
-  const components = [
-    renderIdentityAnchor,
-    renderYesterdayResult,
-    renderPatternCallOut,
-    renderTasksPreview,
-    renderDirective,
-  ];
+  const components = isFirstTime
+    ? [
+        renderIdentityAnchor,
+        renderFirstTimeWelcome,
+        renderFirstTimeSetup,
+        renderFirstTimeDirective,
+      ]
+    : [
+        renderIdentityAnchor,
+        renderYesterdayResult,
+        renderPatternCallOut,
+        renderTasksPreview,
+        renderDirective,
+      ];
 
   return (
     <View
@@ -607,5 +716,41 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 2,
     textTransform: "uppercase",
+  },
+  welcomeText: {
+    fontSize: 26,
+    fontWeight: "600",
+    textAlign: "center",
+    lineHeight: 36,
+    marginBottom: Spacing.xl,
+  },
+  welcomeSubtext: {
+    fontSize: 16,
+    fontWeight: "500",
+    textAlign: "center",
+    fontStyle: "italic",
+  },
+  setupList: {
+    width: "100%",
+    gap: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
+  },
+  setupRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.lg,
+  },
+  setupIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  setupText: {
+    fontSize: 17,
+    fontWeight: "600",
+    flex: 1,
+    lineHeight: 24,
   },
 });

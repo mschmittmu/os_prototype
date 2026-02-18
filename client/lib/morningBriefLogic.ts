@@ -180,3 +180,9 @@ export function getDirective(
 
   return { message: "EXECUTE. NO NEGOTIATION." };
 }
+
+export function isFirstTimeUser(tasks: Task[], streak: StreakData): boolean {
+  const hasNoHistory = streak.totalDaysWon === 0 && streak.totalDaysLost === 0;
+  const hasNoTasks = tasks.length === 0;
+  return hasNoHistory && hasNoTasks;
+}

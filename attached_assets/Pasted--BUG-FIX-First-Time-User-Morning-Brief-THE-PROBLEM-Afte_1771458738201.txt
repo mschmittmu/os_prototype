@@ -1,0 +1,342 @@
+# BUG FIX: First-Time User Morning Brief
+
+## THE PROBLEM
+After completing onboarding, new users immediately see the Morning Brief with slides that critique performance they haven't had yet:
+- Slide 2: Yesterday's Result shows a giant **L** or **?** with "NO DATA LOGGED" — they just signed up
+- Slide 3: Pattern Detected shows "Your win rate is 0%. That's not discipline." — they have zero history
+- Slide 4: "NO TASKS SET. YOUR DAY HAS NO STRUCTURE." — they haven't had a chance to set tasks yet
+- Slide 5: "STOP MAKING EXCUSES. START EXECUTING." — insulting for someone who literally just joined
+
+This is a terrible first impression. The Morning Brief should welcome first-time users and set them up for success, not critique results that don't exist.
+
+## THE FIX
+
+### File: `client/lib/morningBriefLogic.ts`
+
+Add a new exported function at the bottom of the file:
+
+```typescript
+export function isFirstTimeUser(tasks: Task[], streak: StreakData): boolean {
+  const hasNoHistory = streak.totalDaysWon === 0 && streak.totalDaysLost === 0;
+  const hasNoTasks = tasks.length === 0;
+  return hasNoHistory && hasNoTasks;
+}
+```
+
+### File: `client/screens/MorningBriefScreen.tsx`
+
+This is the main change. We need to detect first-time users and show completely different slides.
+
+**Step 1: Import the new function**
+
+Add `isFirstTimeUser` to the imports from `morningBriefLogic`:
+
+```typescript
+import {
+  getYesterdayResult,
+  getPatternCallOut,
+  getDirective,
+  isFirstTimeUser,
+  YesterdayResult,
+  PatternCallOut,
+  Directive,
+} from "@/lib/morningBriefLogic";
+```
+
+**Step 2: Add a `isFirstTime` state variable**
+
+After the existing state declarations (around line 71, near the other `useState` calls), add:
+
+```typescript
+const [isFirstTime, setIsFirstTime] = useState(false);
+```
+
+**Step 3: Detect first-time user in the loadData effect**
+
+In the existing `useEffect` that calls `loadData`, AFTER the data is loaded but BEFORE calculating yesterday's result, add the first-time check. Replace the entire `loadData` function body with:
+
+```typescript
+const loadData = async () => {
+  const [loadedClaims, loadedTasks, loadedStreak] = await Promise.all([
+    getIdentityClaims(),
+    getTasks(),
+    getStreak(),
+  ]);
+  setClaims(loadedClaims);
+  setTasks(loadedTasks);
+  setStreak(loadedStreak);
+
+  // Detect first-time user — skip all critique slides
+  if (isFirstTimeUser(loadedTasks, loadedStreak)) {
+    setIsFirstTime(true);
+    setIsReady(true);
+    return; // Don't calculate yesterday/pattern/directive
+  }
+
+  const result = getYesterdayResult(loadedTasks, loadedStreak);
+  setYesterdayResult(result);
+
+  const pat = getPatternCallOut(loadedClaims, loadedTasks, loadedStreak);
+  setPattern(pat);
+
+  const dir = getDirective(pat, result, loadedClaims);
+  setDirective(dir);
+
+  setIsReady(true);
+};
+```
+
+**Step 4: Change TOTAL_COMPONENTS to be dynamic**
+
+Replace the static constant:
+```typescript
+const TOTAL_COMPONENTS = 5;
+```
+
+With a computed value INSIDE the component (move it from module-level to inside the component body, after the `isFirstTime` state). The first-time brief has 4 slides, the normal brief has 5:
+
+```typescript
+const TOTAL_COMPONENTS = isFirstTime ? 4 : 5;
+```
+
+**Step 5: Add 3 new render functions for first-time slides**
+
+Add these new functions INSIDE the component, right before the existing `renderIdentityAnchor` function. These replace slides 2, 3, and 4 for first-time users:
+
+```typescript
+const renderFirstTimeWelcome = () => (
+  <Pressable style={styles.fullScreenComponent} onPress={advance}>
+    <Animated.View entering={FadeIn.duration(800)} style={styles.centerContent}>
+      <ThemedText
+        style={[styles.sectionLabel, { color: theme.textSecondary }]}
+      >
+        DAY ONE
+      </ThemedText>
+      <Animated.View entering={FadeInDown.delay(200).duration(600)}>
+        <ThemedText style={[styles.welcomeText, { color: "#FFFFFF" }]}>
+          Today is the first day you operate at a higher standard.
+        </ThemedText>
+      </Animated.View>
+      <Animated.View entering={FadeInDown.delay(600).duration(600)}>
+        <ThemedText
+          style={[styles.welcomeSubtext, { color: theme.textSecondary }]}
+        >
+          No history. No excuses. Just execution.
+        </ThemedText>
+      </Animated.View>
+    </Animated.View>
+  </Pressable>
+);
+
+const renderFirstTimeSetup = () => (
+  <Pressable style={styles.fullScreenComponent} onPress={advance}>
+    <Animated.View entering={FadeIn.duration(600)} style={styles.centerContent}>
+      <ThemedText
+        style={[styles.sectionLabel, { color: theme.textSecondary }]}
+      >
+        HOW THIS WORKS
+      </ThemedText>
+      <Animated.View
+        entering={FadeInDown.delay(200).duration(500)}
+        style={styles.setupList}
+      >
+        {[
+          { icon: "check-square", text: "Set 5 critical tasks for today" },
+          { icon: "target", text: "Complete all 5. No negotiation." },
+          { icon: "trending-up", text: "Win the day. Build your streak." },
+        ].map((item, index) => (
+          <Animated.View
+            key={index}
+            entering={FadeInDown.delay(400 + index * 200).duration(400)}
+            style={styles.setupRow}
+          >
+            <View
+              style={[
+                styles.setupIconWrap,
+                { backgroundColor: "rgba(227, 24, 55, 0.15)" },
+              ]}
+            >
+              <Feather name={item.icon as any} size={18} color={theme.accent} />
+            </View>
+            <ThemedText style={[styles.setupText, { color: "#FFFFFF" }]}>
+              {item.text}
+            </ThemedText>
+          </Animated.View>
+        ))}
+      </Animated.View>
+    </Animated.View>
+  </Pressable>
+);
+
+const renderFirstTimeDirective = () => (
+  <View style={styles.fullScreenComponent}>
+    <Animated.View entering={FadeIn.duration(600)} style={styles.centerContent}>
+      <ThemedText
+        style={[styles.sectionLabel, { color: theme.textSecondary }]}
+      >
+        DIRECTIVE
+      </ThemedText>
+      <Animated.View entering={FadeInDown.delay(300).duration(600)}>
+        <ThemedText style={[styles.directiveText, { color: theme.accent }]}>
+          SET YOUR FIRST{"\n"}POWER LIST.
+        </ThemedText>
+      </Animated.View>
+      <Animated.View
+        entering={FadeInUp.delay(800).duration(500)}
+        style={{ width: "100%", paddingHorizontal: Spacing["2xl"] }}
+      >
+        <Pressable
+          style={[styles.beginButton, { backgroundColor: theme.accent }]}
+          onPress={handleDismiss}
+        >
+          <ThemedText style={styles.beginButtonText}>
+            LET'S GO
+          </ThemedText>
+        </Pressable>
+      </Animated.View>
+    </Animated.View>
+  </View>
+);
+```
+
+**Step 6: Modify the identity anchor slide for first-time users**
+
+The existing `renderIdentityAnchor` is fine for both cases BUT the label and subtitle should change. Replace the existing `renderIdentityAnchor` function with:
+
+```typescript
+const renderIdentityAnchor = () => (
+  <Pressable style={styles.fullScreenComponent} onPress={advance}>
+    <Animated.View entering={FadeIn.duration(800)} style={styles.centerContent}>
+      <ThemedText
+        style={[styles.identityLabel, { color: theme.textSecondary }]}
+      >
+        {isFirstTime ? "YOUR DECLARATION" : "ARCANE ASSESSMENT"}
+      </ThemedText>
+      <ThemedText style={[styles.identityText, { color: "#FFFFFF" }]}>
+        {isFirstTime ? "You declared yourself" : "You claimed to be"}
+      </ThemedText>
+      <ThemedText style={[styles.identityHighlight, { color: theme.accent }]}>
+        {claims?.coreIdentity || "AN OPERATOR"}
+      </ThemedText>
+      <Animated.View entering={FadeInUp.delay(600).duration(600)}>
+        <ThemedText
+          style={[styles.identitySubtitle, { color: theme.textSecondary }]}
+        >
+          {isFirstTime ? "Now let's build the proof." : "Prove it today."}
+        </ThemedText>
+      </Animated.View>
+      <Animated.View
+        entering={FadeInUp.delay(1200).duration(400)}
+        style={styles.tapHint}
+      >
+        <ThemedText
+          style={[styles.tapHintText, { color: "rgba(255,255,255,0.3)" }]}
+        >
+          TAP TO CONTINUE
+        </ThemedText>
+      </Animated.View>
+    </Animated.View>
+  </Pressable>
+);
+```
+
+**Step 7: Switch the components array based on isFirstTime**
+
+Replace the existing `components` array:
+
+```typescript
+const components = [
+  renderIdentityAnchor,
+  renderYesterdayResult,
+  renderPatternCallOut,
+  renderTasksPreview,
+  renderDirective,
+];
+```
+
+With:
+
+```typescript
+const components = isFirstTime
+  ? [
+      renderIdentityAnchor,
+      renderFirstTimeWelcome,
+      renderFirstTimeSetup,
+      renderFirstTimeDirective,
+    ]
+  : [
+      renderIdentityAnchor,
+      renderYesterdayResult,
+      renderPatternCallOut,
+      renderTasksPreview,
+      renderDirective,
+    ];
+```
+
+**Step 8: Add new styles**
+
+Add these styles to the existing `StyleSheet.create` block (anywhere inside it, e.g. after `beginButtonText`):
+
+```typescript
+welcomeText: {
+  fontSize: 26,
+  fontWeight: "600",
+  textAlign: "center",
+  lineHeight: 36,
+  marginBottom: Spacing.xl,
+},
+welcomeSubtext: {
+  fontSize: 16,
+  fontWeight: "500",
+  textAlign: "center",
+  fontStyle: "italic",
+},
+setupList: {
+  width: "100%",
+  gap: Spacing.xl,
+  paddingHorizontal: Spacing.lg,
+},
+setupRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  gap: Spacing.lg,
+},
+setupIconWrap: {
+  width: 44,
+  height: 44,
+  borderRadius: 22,
+  alignItems: "center",
+  justifyContent: "center",
+},
+setupText: {
+  fontSize: 17,
+  fontWeight: "600",
+  flex: 1,
+  lineHeight: 24,
+},
+```
+
+## SUMMARY OF CHANGES
+
+**First-time user flow (4 slides):**
+1. **YOUR DECLARATION** — "You declared yourself [IDENTITY]. Now let's build the proof."
+2. **DAY ONE** — "Today is the first day you operate at a higher standard."
+3. **HOW THIS WORKS** — Three setup steps with icons: Set 5 tasks → Complete all 5 → Win the day
+4. **DIRECTIVE** — "SET YOUR FIRST POWER LIST." + "LET'S GO" button
+
+**Returning user flow (5 slides, unchanged):**
+1. ARCANE ASSESSMENT — "You claimed to be [IDENTITY]. Prove it today."
+2. YESTERDAY'S RESULT — W/L/? with streak data
+3. PATTERN DETECTED — Win rate critique, domain neglect, avoidance call-out
+4. TODAY'S POWER LIST — Task preview or "set tasks" prompt
+5. DIRECTIVE — Context-specific marching order
+
+## FILES MODIFIED
+1. `client/lib/morningBriefLogic.ts` — Add `isFirstTimeUser()` function
+2. `client/screens/MorningBriefScreen.tsx` — Add first-time detection + 3 new slide renderers + conditional component array
+
+## DO NOT MODIFY
+- Any other screens or files
+- The existing returning-user Morning Brief behavior (slides 2-5 for non-first-time users)
+- The onboarding flow
+- Storage or navigation

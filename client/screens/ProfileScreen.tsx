@@ -164,6 +164,28 @@ export default function ProfileScreen() {
           style={[styles.valuesButton, { backgroundColor: theme.backgroundRoot, borderColor: theme.border }]}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            navigation.navigate("ProofVault");
+          }}
+        >
+          <View style={[styles.valuesIcon, { backgroundColor: "rgba(227, 24, 55, 0.12)" }]}>
+            <Feather name="lock" size={20} color={theme.accent} />
+          </View>
+          <ThemedText type="bodyBold" style={styles.valuesLabel}>
+            Proof Vault
+          </ThemedText>
+          <Feather
+            name="chevron-right"
+            size={20}
+            color={theme.textSecondary}
+          />
+        </Pressable>
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.duration(400).delay(300)}>
+        <Pressable
+          style={[styles.valuesButton, { backgroundColor: theme.backgroundRoot, borderColor: theme.border }]}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             navigation.navigate("CoreValues");
           }}
         >

@@ -12,6 +12,8 @@ const KEYS = {
   ONBOARDING: "@operator_onboarding",
   IDENTITY_CLAIMS: "@operator_identity_claims",
   MORNING_BRIEF: "@operator_morning_brief",
+  PROOF_VAULT: "@operator_proof_vault",
+  PROOF_TRIGGERS_FIRED: "@operator_proof_triggers",
 };
 
 export interface IdentityClaims {
@@ -517,5 +519,70 @@ export async function addOperatorModeHistoryEntry(entry: OperatorModeHistoryEntr
     await AsyncStorage.setItem(KEYS.OPERATOR_MODE_HISTORY, JSON.stringify(trimmedHistory));
   } catch (error) {
     console.error("Error adding operator mode history entry:", error);
+  }
+}
+
+export interface ProofEntry {
+  id: string;
+  triggerId: string;
+  triggerType: "streak_milestone" | "win_rate_threshold" | "recovery_win" | "first_week";
+  triggerLabel: string;
+  format: "voice" | "text";
+  content: string;
+  audioUri?: string;
+  streakAtCapture: number;
+  lifeScoreAtCapture: number;
+  capturedAt: string;
+  visibility: "private";
+}
+
+export interface ProofTriggerRecord {
+  triggerId: string;
+  firedAt: string;
+}
+
+export async function getProofVault(): Promise<ProofEntry[]> {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.PROOF_VAULT);
+    if (data) {
+      return JSON.parse(data);
+    }
+    return [];
+  } catch (error) {
+    console.error("Error getting proof vault:", error);
+    return [];
+  }
+}
+
+export async function addProofEntry(entry: ProofEntry): Promise<void> {
+  try {
+    const vault = await getProofVault();
+    vault.unshift(entry);
+    await AsyncStorage.setItem(KEYS.PROOF_VAULT, JSON.stringify(vault));
+  } catch (error) {
+    console.error("Error adding proof entry:", error);
+  }
+}
+
+export async function getProofTriggersFired(): Promise<ProofTriggerRecord[]> {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.PROOF_TRIGGERS_FIRED);
+    if (data) {
+      return JSON.parse(data);
+    }
+    return [];
+  } catch (error) {
+    console.error("Error getting proof triggers:", error);
+    return [];
+  }
+}
+
+export async function addProofTriggerFired(trigger: ProofTriggerRecord): Promise<void> {
+  try {
+    const triggers = await getProofTriggersFired();
+    triggers.push(trigger);
+    await AsyncStorage.setItem(KEYS.PROOF_TRIGGERS_FIRED, JSON.stringify(triggers));
+  } catch (error) {
+    console.error("Error adding proof trigger:", error);
   }
 }

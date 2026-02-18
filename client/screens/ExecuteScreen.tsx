@@ -32,6 +32,7 @@ import {
   Task,
   StreakData,
 } from "@/lib/storage";
+import { checkProofTriggers } from "@/lib/proofTriggers";
 import {
   executionChallenges,
   journalEntries,
@@ -121,9 +122,18 @@ export default function ExecuteScreen() {
     navigation.navigate("TaskCreate", { taskId: id });
   };
 
-  const handleDismissCelebration = () => {
+  const handleDismissCelebration = async () => {
     setShowCelebration(false);
     setXpEarned(0);
+    const trigger = await checkProofTriggers();
+    if (trigger && trigger.shouldTrigger) {
+      navigation.navigate("ProofCapture", {
+        triggerId: trigger.triggerId,
+        triggerType: trigger.triggerType,
+        triggerLabel: trigger.triggerLabel,
+        message: trigger.message,
+      });
+    }
   };
 
   const handleTabChange = (tab: TabType) => {

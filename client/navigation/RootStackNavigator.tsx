@@ -17,6 +17,8 @@ import OperatorModeActiveScreen from "@/screens/OperatorModeActiveScreen";
 import OperatorModeCompleteScreen from "@/screens/OperatorModeCompleteScreen";
 import OnboardingScreen from "@/screens/OnboardingScreen";
 import MorningBriefScreen from "@/screens/MorningBriefScreen";
+import ProofCaptureScreen from "@/screens/ProofCaptureScreen";
+import ProofVaultScreen from "@/screens/ProofVaultScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
 import { getOnboardingState, getMorningBriefState } from "@/lib/storage";
@@ -25,6 +27,13 @@ export type RootStackParamList = {
   Onboarding: undefined;
   MorningBrief: undefined;
   Main: undefined;
+  ProofCapture: {
+    triggerId: string;
+    triggerType: string;
+    triggerLabel: string;
+    message: string;
+  };
+  ProofVault: undefined;
   TaskCreate: { taskId?: string } | undefined;
   Profile: undefined;
   Stats: undefined;
@@ -212,6 +221,22 @@ export default function RootStackNavigator() {
           headerShown: false,
           presentation: "fullScreenModal",
           gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="ProofCapture"
+        component={ProofCaptureScreen}
+        options={{
+          headerShown: false,
+          presentation: "fullScreenModal",
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
+        name="ProofVault"
+        component={ProofVaultScreen}
+        options={{
+          headerTitle: "PROOF VAULT",
         }}
       />
     </Stack.Navigator>

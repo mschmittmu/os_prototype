@@ -1,0 +1,190 @@
+PROMPT 3: PROOF SYSTEM
+═══════════════════════════════════════════════════════════════
+CONTEXT FOR REPLIT AI
+Same codebase. After Prompts 1 and 2, the app now has:
+
+Onboarding with identity claims stored in AsyncStorage
+Morning Brief with daily gating
+Existing task/streak/user data
+
+WHAT TO BUILD
+The Proof System silently captures transformation moments at key milestones. It does NOT ask for proof — it triggers automatically when the user hits specific behavioral thresholds. The user records a voice memo in the moment. No editing. No preview. Private by default.
+The philosophy: "Proof must be byproduct of execution, not request for promotion."
+PROOF CAPTURE FLOW
+Trigger Events (checked automatically)
+When any of these conditions are met, the app shows a Proof Capture modal:
+
+Streak Milestones: 7, 14, 30, 75, 100 day streaks
+Win Rate Threshold: Win rate crosses 80% for the first time
+Recovery Win: User wins the day after 3+ consecutive losses
+First Week Complete: User completes their 7th day in the app
+
+Trigger Detection
+Add to client/lib/storage.ts:
+typescript// Add to KEYS:
+PROOF_VAULT: "@operator_proof_vault",
+PROOF_TRIGGERS_FIRED: "@operator_proof_triggers",
+
+export interface ProofEntry {
+  id: string;
+  triggerId: string;
+  triggerType: "streak_milestone" | "win_rate_threshold" | "recovery_win" | "first_week";
+  triggerLabel: string;
+  format: "voice" | "text"; // voice preferred, text as fallback
+  content: string; // transcript or text entry
+  audioUri?: string; // local URI if voice recorded
+  streakAtCapture: number;
+  lifeScoreAtCapture: number;
+  capturedAt: string;
+  visibility: "private"; // always private for now
+}
+
+export interface ProofTriggerRecord {
+  triggerId: string;
+  firedAt: string;
+}
+
+export async function getProofVault(): Promise<ProofEntry[]> { ... }
+export async function addProofEntry(entry: ProofEntry): Promise<void> { ... }
+export async function getProofTriggersFired(): Promise<ProofTriggerRecord[]> { ... }
+export async function addProofTriggerFired(trigger: ProofTriggerRecord): Promise<void> { ... }
+Create client/lib/proofTriggers.ts:
+typescript// Function that checks current state and returns any unfired triggers
+export async function checkProofTriggers(): Promise<{
+  shouldTrigger: boolean;
+  triggerId: string;
+  triggerType: string;
+  triggerLabel: string;
+  message: string;
+} | null> {
+  // Get current streak, win rate, and list of already-fired triggers
+  // Check each condition:
+  // 1. Streak milestones: [7, 14, 30, 75, 100] — check if current streak matches AND trigger hasn't fired
+  // 2. Win rate > 80% — check if win rate exceeds 80% AND "win_rate_80" trigger hasn't fired
+  // 3. Recovery win — check if yesterday was a win AND previous 3+ days were losses (check task history)
+  // 4. First week — totalDaysWon + totalDaysLost >= 7 AND "first_week" trigger hasn't fired
+  // Return the FIRST unfired trigger found, or null
+}
+Proof Capture Modal Screen
+When a trigger fires, show a full-screen modal:
+Header Section:
+
+Milestone badge icon (Feather: "award" for streaks, "trending-up" for win rate, "refresh-cw" for recovery, "flag" for first week)
+Large text: trigger-specific message:
+
+Streak 7: "7 DAYS. YOU SHOWED UP."
+Streak 14: "14 DAYS. PATTERN ESTABLISHED."
+Streak 30: "30 DAYS. THIS IS WHO YOU ARE NOW."
+Streak 75: "75 DAYS. MOST PEOPLE QUIT AT 3."
+Streak 100: "100 DAYS. LEGENDARY."
+Win rate 80%: "80% WIN RATE. CONSISTENCY IS YOUR WEAPON."
+Recovery: "YOU FELL. YOU GOT BACK UP. THAT'S THE STANDARD."
+First week: "FIRST WEEK COMPLETE. THE FOUNDATION IS SET."
+
+
+
+Capture Section:
+
+Text: "CAPTURE THIS MOMENT"
+Subtitle: "Record what you're feeling right now. No editing. No filter. Just truth."
+Large circular voice record button (red, pulsing animation when recording)
+
+Tap to start recording, tap again to stop
+Show recording duration timer while active
+Use expo-av for audio recording (add to dependencies if not present)
+
+
+Below the voice button: "Or type instead" text link that shows a text input as fallback
+The text input should have placeholder: "What does this moment mean to you?"
+
+Footer Section:
+
+"SAVE TO VAULT" button (accent red, full width) — saves the proof entry and dismisses
+"SKIP" text link — dismisses without saving, but still marks the trigger as fired
+Small text: "This is private. Only you can see it."
+
+Proof Vault Screen (View captured proofs)
+Add a new screen accessible from the Profile screen:
+Proof Vault Screen:
+
+Header: "PROOF VAULT" with lock icon
+Subtitle: "[X] moments captured"
+List of proof entries, newest first
+Each entry card shows:
+
+Trigger label (e.g., "7-Day Streak")
+Date captured
+Play button if voice entry (audio playback)
+Text preview if text entry
+Streak and Life Score at time of capture
+
+
+If vault is empty: "No proof captured yet. Keep executing. The moments will come."
+
+Integration Points
+In ExecuteScreen (client/screens/ExecuteScreen.tsx):
+After a task completion that results in ALL tasks being completed (the "Day Won" state), call checkProofTriggers(). If a trigger fires, show the ProofCaptureModal after the DayWonCelebration animation completes.
+This is the KEY integration — add this check in the existing handleToggleTask function flow, after the celebration logic.
+In ProfileScreen (client/screens/ProfileScreen.tsx):
+Add a "PROOF VAULT" button/row that navigates to the ProofVaultScreen. Place it near the top of the profile, after the user info section.
+Navigation
+Add to RootStackParamList in RootStackNavigator.tsx:
+typescriptProofCapture: {
+  triggerId: string;
+  triggerType: string;
+  triggerLabel: string;
+  message: string;
+};
+ProofVault: undefined;
+Add both screens to the Stack.Navigator:
+
+ProofCapture: presentation: "fullScreenModal", headerShown: false, gestureEnabled: false
+ProofVault: normal push screen with header title "PROOF VAULT"
+
+FILE STRUCTURE
+Create:
+
+client/screens/ProofCaptureScreen.tsx — the capture modal
+client/screens/ProofVaultScreen.tsx — vault listing screen
+client/lib/proofTriggers.ts — trigger detection logic
+
+Modify (minimally):
+
+client/lib/storage.ts — add proof-related interfaces and storage functions
+client/navigation/RootStackNavigator.tsx — add new screen routes
+client/screens/ExecuteScreen.tsx — add trigger check after day-won completion
+client/screens/ProfileScreen.tsx — add Proof Vault navigation button
+
+STYLING REQUIREMENTS
+
+ProofCapture modal: dark, dramatic, full-screen. Similar feel to the Operator Mode activation screen.
+Voice record button: large (80px), circular, accent red, with pulsing ring animation when recording
+Milestone badge: use a circular badge with the Feather icon, accent color background with 15% opacity
+Proof Vault cards: theme.backgroundSecondary with subtle border, compact layout
+Audio playback: simple play/pause button with duration indicator
+All animations use react-native-reanimated
+
+CRITICAL NOTES
+
+Proof capture must feel like a MOMENT, not a chore. The UI should make the user feel the weight of the milestone.
+Voice recording is preferred but text is always available as fallback
+Triggers only fire ONCE per milestone (tracked via ProofTriggerRecord)
+Recovery win detection needs to look at recent task completion history — you may need to add a simple daily result log to storage
+Do NOT auto-play proof recordings. User must tap play.
+The Proof Vault is private-only for this version. No sharing features.
+If expo-av is not already in package.json, install it: npx expo install expo-av
+Follow all existing import patterns and styling conventions from the codebase
+
+
+BUILD SEQUENCE
+
+Build Prompt 1 (Onboarding) first. Test it. Commit to GitHub.
+Build Prompt 2 (Morning Brief) second. It depends on onboarding data. Test. Commit.
+Build Prompt 3 (Proof System) third. It integrates with the Execute screen. Test. Commit.
+
+After each build, verify:
+
+App launches without errors
+Existing screens still work (Home, Execute, Media, Social, Crew)
+New flow integrates without breaking navigation
+Data persists in AsyncStorage between app restarts

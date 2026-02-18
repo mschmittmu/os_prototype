@@ -18,7 +18,7 @@ import { posts as initialPosts, announcements as initialAnnouncements, Announcem
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const TABS = ["Groups", "Announcements", "General", "Founders", "Saved"];
+const TABS = ["Groups", "Announcements", "General", "Founders"];
 
 const CATEGORY_ORDER: ForumGroup["category"][] = ["fitness", "business", "lifestyle", "mindset", "skills", "other"];
 const CATEGORY_LABELS: Record<string, string> = {
@@ -282,13 +282,9 @@ export default function SocialScreen() {
   };
 
   const filteredPosts =
-    selectedTab === "Saved"
-      ? posts.filter((p) => p.saved)
-      : selectedTab === "Founders"
-        ? posts.filter((p) => p.author.tier === "Founder")
-        : posts;
-
-  const savedAnnouncements = announcements.filter((a) => a.saved);
+    selectedTab === "Founders"
+      ? posts.filter((p) => p.author.tier === "Founder")
+      : posts;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
@@ -310,34 +306,28 @@ export default function SocialScreen() {
           />
         }
       >
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.tabBarScroll}
-        >
-          <Animated.View style={[styles.tabBar, { backgroundColor: theme.backgroundSecondary }]} entering={FadeInDown.duration(400)}>
-            {TABS.map((tab) => (
-              <Pressable
-                key={tab}
+        <Animated.View style={[styles.tabBar, { backgroundColor: theme.backgroundSecondary }]} entering={FadeInDown.duration(400)}>
+          {TABS.map((tab) => (
+            <Pressable
+              key={tab}
+              style={[
+                styles.tabFlex,
+                selectedTab === tab && [styles.tabActive, { backgroundColor: theme.backgroundRoot }],
+              ]}
+              onPress={() => handleTabChange(tab)}
+            >
+              <ThemedText
+                type="bodyBold"
                 style={[
-                  styles.tab,
-                  selectedTab === tab && [styles.tabActive, { backgroundColor: theme.backgroundRoot }],
+                  { color: theme.textSecondary, fontSize: 13 },
+                  selectedTab === tab && { color: theme.text },
                 ]}
-                onPress={() => handleTabChange(tab)}
               >
-                <ThemedText
-                  type="bodyBold"
-                  style={[
-                    { color: theme.textSecondary, fontSize: 13 },
-                    selectedTab === tab && { color: theme.text },
-                  ]}
-                >
-                  {tab}
-                </ThemedText>
-              </Pressable>
-            ))}
-          </Animated.View>
-        </ScrollView>
+                {tab}
+              </ThemedText>
+            </Pressable>
+          ))}
+        </Animated.View>
 
         {selectedTab === "Groups" ? (
           <GroupsDirectory />
@@ -364,30 +354,10 @@ export default function SocialScreen() {
           </View>
         ) : (
           <View style={styles.postList}>
-            {selectedTab === "Saved" && savedAnnouncements.length > 0 ? (
-              savedAnnouncements.map((announcement, index) => (
-                <Animated.View
-                  key={announcement.id}
-                  entering={FadeInDown.duration(400).delay(100 + index * 50)}
-                >
-                  <AnnouncementCard
-                    announcement={announcement}
-                    onLike={handleAnnouncementLike}
-                    onComment={(id) => {
-                      const a = announcements.find((ann) => ann.id === id);
-                      if (a) {
-                        handleComment(id, a.author.name, a.content);
-                      }
-                    }}
-                    onSave={handleAnnouncementSave}
-                  />
-                </Animated.View>
-              ))
-            ) : null}
             {filteredPosts.map((post, index) => (
               <Animated.View
                 key={post.id}
-                entering={FadeInDown.duration(400).delay(100 + index * 50 + (selectedTab === "Saved" && savedAnnouncements.length > 0 ? savedAnnouncements.length * 50 : 0))}
+                entering={FadeInDown.duration(400).delay(100 + index * 50)}
               >
                 <PostCard
                   id={post.id}
@@ -408,23 +378,23 @@ export default function SocialScreen() {
           </View>
         )}
 
-        {selectedTab !== "Announcements" && filteredPosts.length === 0 && (selectedTab !== "Saved" || savedAnnouncements.length === 0) ? (
+        {selectedTab !== "Announcements" && selectedTab !== "Groups" && filteredPosts.length === 0 ? (
           <Animated.View
             style={styles.emptyState}
             entering={FadeInDown.duration(400).delay(200)}
           >
-            <ThemedText type="body" secondary>
-              {selectedTab === "Saved" ? "No saved posts yet" : "No posts to show"}
-            </ThemedText>
+            <ThemedText type="body" secondary>No posts to show</ThemedText>
           </Animated.View>
         ) : null}
       </ScrollView>
 
-      <FAB
-        icon="edit-2"
-        onPress={() => navigation.navigate("PostCompose")}
-        style={{ bottom: tabBarHeight + Spacing.xl, right: Spacing.lg }}
-      />
+      {selectedTab !== "Groups" ? (
+        <FAB
+          icon="edit-2"
+          onPress={() => navigation.navigate("PostCompose")}
+          style={{ bottom: tabBarHeight + Spacing.xl, right: Spacing.lg }}
+        />
+      ) : null}
     </View>
   );
 }
@@ -439,8 +409,8 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingHorizontal: Spacing.lg,
   },
-  tabBarScroll: {
-    paddingBottom: Spacing.md,
+  tabBarWrap: {
+    marginBottom: Spacing.md,
   },
   tabBar: {
     flexDirection: "row",
@@ -448,9 +418,9 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.xl,
     padding: Spacing.xs,
   },
-  tab: {
+  tabFlex: {
+    flex: 1,
     paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
     alignItems: "center",
     borderRadius: BorderRadius.lg,
   },

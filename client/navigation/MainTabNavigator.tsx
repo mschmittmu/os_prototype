@@ -387,7 +387,7 @@ export default function MainTabNavigator() {
         component={SocialScreen}
         options={{
           title: "Social",
-          headerTitle: "COMMUNITY",
+          headerTitle: "SOCIAL",
           tabBarIcon: ({ color, size, focused }) => (
             <AnimatedTabIcon name="users" size={size} color={color} focused={focused} />
           ),

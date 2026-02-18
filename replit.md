@@ -73,6 +73,7 @@ client/
   lib/
     storage.ts            # AsyncStorage persistence
     mockData.ts           # Sample data for MVP
+    morningBriefLogic.ts  # Pattern detection and directive generation
   navigation/             # React Navigation setup
   screens/                # All app screens
 server/
@@ -103,6 +104,13 @@ The app runs on:
 
 ## Recent Changes
 
+- **NEW: Morning Brief** - Daily accountability screen before main app access
+  - 5 sequential components: Identity Anchor, Yesterday's Result, Pattern Call-Out, Tasks Preview, Directive
+  - Auto-advances on first component, tap-to-advance on others
+  - Pattern detection logic in morningBriefLogic.ts (deterministic, no API calls)
+  - Gates daily access - shown once per calendar day, dismissed via "BEGIN YOUR DAY"
+  - Flow: App Launch -> Onboarding Check -> Morning Brief Check -> Main Tabs
+  - Data stored in AsyncStorage (MORNING_BRIEF key with lastShownDate and dismissed)
 - **NEW: Onboarding Flow** - 6-step identity declaration system for new users
   - Step 1: Name entry ("WHO ARE YOU?")
   - Step 2: Core Identity claim (5 options)

@@ -52,6 +52,9 @@ export async function checkProofTriggers(): Promise<ProofTriggerResult | null> {
       }
     }
 
+    // NOTE: This is a simplified check for the prototype. It triggers when the user
+    // wins after having 3+ total losses, not necessarily 3 consecutive losses.
+    // A production version would need a daily result log to detect true consecutive losses.
     if (
       streak.current === 1 &&
       streak.totalDaysLost >= 3 &&

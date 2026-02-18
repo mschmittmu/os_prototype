@@ -20,12 +20,12 @@ export interface YesterdayResult {
 }
 
 const DOMAIN_TO_CATEGORY: Record<string, string[]> = {
-  "Physical Fitness": ["Health", "Physical", "Fitness", "Workout"],
-  "Business & Career": ["Business", "Work", "Career"],
-  "Mental Toughness": ["Mental", "Mindset", "Self Development", "Reading"],
-  "Financial Freedom": ["Financial", "Finance", "Money"],
-  "Relationships": ["Family", "Relationships", "Social"],
-  "Spiritual Growth": ["Spiritual", "Recovery", "Meditation"],
+  PHYSICAL: ["Health", "Physical", "Fitness", "Workout", "Health & Fitness"],
+  WORK: ["Business", "Work", "Career", "Business & Career"],
+  MENTAL: ["Mental", "Mindset", "Self Development", "Reading"],
+  FINANCIAL: ["Financial", "Finance", "Money"],
+  RELATIONSHIPS: ["Family", "Relationships", "Social", "Family & Relationships"],
+  DISCIPLINE: ["Discipline", "Consistency", "Habits"],
 };
 
 function getYesterdayDateString(): string {

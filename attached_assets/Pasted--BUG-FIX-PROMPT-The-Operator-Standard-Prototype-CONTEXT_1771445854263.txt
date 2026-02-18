@@ -1,0 +1,58 @@
+# BUG FIX PROMPT — The Operator Standard Prototype
+
+## CONTEXT
+This is a React Native Expo 54 app with TypeScript. We need to fix 3 small bugs introduced in the last build cycle.
+
+## FIX 1: Domain Mapping Mismatch in Morning Brief
+
+**File:** `client/lib/morningBriefLogic.ts`
+
+The `DOMAIN_TO_CATEGORY` object on line 22 uses display names as keys (e.g., `"Physical Fitness"`, `"Business & Career"`), but the onboarding flow stores domain IDs like `"PHYSICAL"`, `"FINANCIAL"`, `"WORK"`, `"RELATIONSHIPS"`, `"MENTAL"`, `"DISCIPLINE"`.
+
+These IDs come from `client/screens/OnboardingScreen.tsx` — the `PRIORITY_DOMAINS` array where each item has an `id` field: `"PHYSICAL"`, `"FINANCIAL"`, `"WORK"`, `"RELATIONSHIPS"`, `"MENTAL"`, `"DISCIPLINE"`.
+
+**Fix:** Replace the `DOMAIN_TO_CATEGORY` keys to match the onboarding IDs:
+
+```typescript
+const DOMAIN_TO_CATEGORY: Record<string, string[]> = {
+  PHYSICAL: ["Health", "Physical", "Fitness", "Workout", "Health & Fitness"],
+  WORK: ["Business", "Work", "Career", "Business & Career"],
+  MENTAL: ["Mental", "Mindset", "Self Development", "Reading"],
+  FINANCIAL: ["Financial", "Finance", "Money"],
+  RELATIONSHIPS: ["Family", "Relationships", "Social", "Family & Relationships"],
+  DISCIPLINE: ["Discipline", "Consistency", "Habits"],
+};
+```
+
+Note: I also added `"Health & Fitness"`, `"Business & Career"`, and `"Family & Relationships"` to the arrays because those are the actual task category strings used in the app (see `CATEGORY_ICONS` in `client/screens/ExecuteScreen.tsx` line 45).
+
+## FIX 2: Remove Unused Import in ProofVaultScreen
+
+**File:** `client/screens/ProofVaultScreen.tsx`
+
+Line 10 imports `useBottomTabBarHeight` from `@react-navigation/bottom-tabs`, but it's never used in the component. This import is dead code and could potentially crash since ProofVaultScreen is rendered as a stack screen (not inside the tab navigator).
+
+**Fix:** Remove line 10 entirely:
+```
+// DELETE this line:
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+```
+
+## FIX 3: Recovery Win Trigger — Add Context Comment
+
+**File:** `client/lib/proofTriggers.ts`
+
+The recovery win check on line 55-66 uses `streak.totalDaysLost >= 3` which doesn't confirm the losses were consecutive. This is acceptable for the prototype but should have a comment noting the limitation.
+
+**Fix:** Add a comment above the recovery win check (around line 55):
+
+```typescript
+// NOTE: This is a simplified check for the prototype. It triggers when the user
+// wins after having 3+ total losses, not necessarily 3 consecutive losses.
+// A production version would need a daily result log to detect true consecutive losses.
+```
+
+## IMPORTANT
+- These are the ONLY 3 changes. Do not modify any other files.
+- Do not refactor or restructure anything else.
+- Test that the app still launches and all screens work after changes.

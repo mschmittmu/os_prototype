@@ -111,7 +111,7 @@ export default function OnboardingScreen() {
       createdAt: new Date().toISOString(),
     });
     await saveUser({ ...defaultUser, name: userName });
-    navigation.reset({ index: 0, routes: [{ name: "Main" }] });
+    navigation.reset({ index: 0, routes: [{ name: "MorningBrief" }] });
   };
 
   const canProceed = () => {

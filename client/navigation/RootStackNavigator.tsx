@@ -16,12 +16,14 @@ import OperatorModeActivationScreen from "@/screens/OperatorModeActivationScreen
 import OperatorModeActiveScreen from "@/screens/OperatorModeActiveScreen";
 import OperatorModeCompleteScreen from "@/screens/OperatorModeCompleteScreen";
 import OnboardingScreen from "@/screens/OnboardingScreen";
+import MorningBriefScreen from "@/screens/MorningBriefScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
-import { getOnboardingState } from "@/lib/storage";
+import { getOnboardingState, getMorningBriefState } from "@/lib/storage";
 
 export type RootStackParamList = {
   Onboarding: undefined;
+  MorningBrief: undefined;
   Main: undefined;
   TaskCreate: { taskId?: string } | undefined;
   Profile: undefined;
@@ -50,15 +52,26 @@ export default function RootStackNavigator() {
   const screenOptions = useScreenOptions();
   const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const [initialRoute, setInitialRoute] = useState<keyof RootStackParamList>("Onboarding");
 
   useEffect(() => {
-    const checkOnboarding = async () => {
-      const state = await getOnboardingState();
-      setHasCompletedOnboarding(state?.isComplete === true);
+    const checkState = async () => {
+      const onboarding = await getOnboardingState();
+      if (!onboarding?.isComplete) {
+        setInitialRoute("Onboarding");
+        setIsLoading(false);
+        return;
+      }
+      const briefState = await getMorningBriefState();
+      const today = new Date().toISOString().split("T")[0];
+      if (!briefState || briefState.lastShownDate !== today || !briefState.dismissed) {
+        setInitialRoute("MorningBrief");
+      } else {
+        setInitialRoute("Main");
+      }
       setIsLoading(false);
     };
-    checkOnboarding();
+    checkState();
   }, []);
 
   if (isLoading) {
@@ -71,7 +84,7 @@ export default function RootStackNavigator() {
 
   return (
     <Stack.Navigator
-      initialRouteName={hasCompletedOnboarding ? "Main" : "Onboarding"}
+      initialRouteName={initialRoute}
       screenOptions={{
         ...screenOptions,
         headerStyle: {
@@ -86,6 +99,11 @@ export default function RootStackNavigator() {
       <Stack.Screen
         name="Onboarding"
         component={OnboardingScreen}
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
+      <Stack.Screen
+        name="MorningBrief"
+        component={MorningBriefScreen}
         options={{ headerShown: false, gestureEnabled: false }}
       />
       <Stack.Screen

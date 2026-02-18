@@ -16,6 +16,7 @@ import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useHeaderHeight } from "@react-navigation/elements";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
@@ -30,6 +31,7 @@ export default function GroupThreadScreen() {
   const { theme } = useTheme();
   const route = useRoute<RouteProp>();
   const insets = useSafeAreaInsets();
+  const headerHeight = useHeaderHeight();
   const { threadId, threadTitle } = route.params;
   const [replyText, setReplyText] = useState("");
   const [posts, setPosts] = useState(() => forumPosts.filter(p => p.threadId === threadId));
@@ -176,8 +178,8 @@ export default function GroupThreadScreen() {
   return (
     <KeyboardAvoidingView
       style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? headerHeight : 0}
     >
       <FlatList
         data={posts}

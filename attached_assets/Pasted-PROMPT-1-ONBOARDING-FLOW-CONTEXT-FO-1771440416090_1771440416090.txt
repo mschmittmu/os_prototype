@@ -1,0 +1,175 @@
+PROMPT 1: ONBOARDING FLOW
+═══════════════════════════════════════════════════════════════
+CONTEXT FOR REPLIT AI
+This is a React Native Expo 54 app with TypeScript. The codebase uses:
+
+@react-navigation/native-stack for screen navigation (see client/navigation/RootStackNavigator.tsx)
+@react-navigation/bottom-tabs for main tabs (see client/navigation/MainTabNavigator.tsx)
+AsyncStorage for all local data (see client/lib/storage.ts)
+Reanimated for animations (see any screen file for import patterns)
+Feather icons from @expo/vector-icons
+Theme system via useTheme() hook from @/hooks/useTheme (returns { theme, isDark })
+Design tokens from @/constants/theme — use Spacing, BorderRadius, Typography, Colors
+Component patterns: ThemedText for text, ThemedView for containers
+The accent color is #E31837 (patriotic red)
+Dark background root is #0A0A0A, cards are #262626
+
+WHAT TO BUILD
+Create a multi-step onboarding flow that new users go through after account creation. This is NOT a tutorial — it's an identity declaration system. The user tells the app who they claim to be, what they prioritize, and what they avoid. ARCANE (the AI system) will later audit their behavior against these claims.
+ONBOARDING SCREENS (6 steps)
+Step 1: Welcome / Identity Declaration
+
+Full-screen dark background with the accent red highlights
+Large text: "WHO ARE YOU?"
+Subtitle: "Not who you want to be. Who you are right now. ARCANE will hold you to this."
+Single text input for user's name
+"DECLARE" button to proceed
+
+Step 2: Core Identity Claim
+
+Question: "WHAT DEFINES YOU?"
+User selects ONE primary identity from options displayed as large tappable cards:
+
+"DISCIPLINED" — "I do what needs to be done regardless of how I feel"
+"BUILDER" — "I create things that generate value and legacy"
+"WARRIOR" — "I embrace discomfort and pain as fuel"
+"LEADER" — "I hold others accountable while leading by example"
+"RELENTLESS" — "I never stop. Rest is earned, not given"
+
+
+Selected card gets accent red border with subtle glow animation
+Store as identityClaim.coreIdentity
+
+Step 3: Priority Domain
+
+Question: "WHAT'S YOUR #1 FOCUS RIGHT NOW?"
+User selects ONE domain (these map to the 8 Life Score attributes):
+
+"PHYSICAL EXCELLENCE" (icon: activity) → maps to Physical domain
+"FINANCIAL GROWTH" (icon: trending-up) → maps to Financial domain
+"WORK EXECUTION" (icon: briefcase) → maps to Work domain
+"RELATIONSHIPS" (icon: heart) → maps to Relationships domain
+"MENTAL TOUGHNESS" (icon: brain/zap) → maps to Mental domain
+"DISCIPLINE" (icon: shield) → maps to Discipline domain
+
+
+Store as identityClaim.priorityDomain
+
+Step 4: Avoidance Baseline
+
+Question: "WHAT DO YOU AVOID MOST?"
+Subtitle: "Be honest. ARCANE will detect this pattern whether you admit it or not."
+User selects UP TO 3 from:
+
+"Hard conversations"
+"Physical discomfort"
+"Financial decisions"
+"Consistent follow-through"
+"Asking for help"
+"Cutting toxic people"
+"Waking up early"
+"Saying no"
+
+
+Multi-select with checkmark indicators. Selected items get red accent styling.
+Store as identityClaim.avoidancePatterns (array)
+
+Step 5: Behavioral Standard
+
+Question: "SET YOUR STANDARD"
+Subtitle: "Pick ONE non-negotiable rule. Break it and ARCANE will know."
+User types a custom behavioral standard in a text input
+Placeholder text: "e.g., I will complete my Power List every single day"
+Below the input, show 3 suggestion chips they can tap to auto-fill:
+
+"I will never miss two days in a row"
+"I will complete my Power List every day"
+"I will train my body 6 days a week"
+
+
+Store as identityClaim.behavioralStandard
+
+Step 6: Confirmation / Lock-In
+
+Full-screen dramatic summary
+Show the user's name at top
+Display their selections in a "dossier" style card:
+
+Core Identity: [their pick]
+Priority Domain: [their pick]
+Avoidance Patterns: [their picks]
+Behavioral Standard: [their text]
+
+
+Large warning text: "ARCANE WILL AUDIT EVERY DECISION AGAINST THIS DECLARATION."
+Subtitle: "You can't edit this. You can only prove it or disprove it."
+"LOCK IT IN" button (accent red, full width) → saves data and navigates to Main tabs
+"GO BACK" text link above the button
+
+STORAGE IMPLEMENTATION
+Add to client/lib/storage.ts:
+typescript// Add this key to KEYS object:
+ONBOARDING: "@operator_onboarding",
+IDENTITY_CLAIMS: "@operator_identity_claims",
+
+// Add these interfaces:
+export interface IdentityClaims {
+  coreIdentity: string;
+  priorityDomain: string;
+  avoidancePatterns: string[];
+  behavioralStandard: string;
+  createdAt: string;
+}
+
+export interface OnboardingState {
+  isComplete: boolean;
+  completedAt: string | null;
+  userName: string;
+}
+
+// Add getter/setter functions following the exact same pattern as getUser/saveUser:
+export async function getOnboardingState(): Promise<OnboardingState> { ... }
+export async function saveOnboardingState(state: OnboardingState): Promise<void> { ... }
+export async function getIdentityClaims(): Promise<IdentityClaims | null> { ... }
+export async function saveIdentityClaims(claims: IdentityClaims): Promise<void> { ... }
+NAVIGATION INTEGRATION
+In client/navigation/RootStackNavigator.tsx:
+
+Add new screen types to RootStackParamList:
+
+typescript   Onboarding: undefined;
+
+Import the new OnboardingScreen
+Add the screen to the Stack.Navigator with headerShown: false and gestureEnabled: false
+
+In client/App.tsx or a new wrapper component:
+
+On app launch, check getOnboardingState()
+If isComplete is false or null, show Onboarding screen first
+If complete, show normal Main tabs
+The simplest approach: add a state check in RootStackNavigator that conditionally renders Onboarding as the initial route
+
+FILE STRUCTURE
+Create these new files:
+
+client/screens/OnboardingScreen.tsx — single file with internal step state management (steps 1-6 as internal components, managed by a currentStep state variable). Do NOT create 6 separate screen files.
+
+STYLING REQUIREMENTS
+
+Use the existing theme system: const { theme } = useTheme()
+Dark background for all onboarding steps (theme.backgroundRoot)
+Cards use theme.backgroundSecondary with theme.border borders
+Selected states use theme.accent (#E31837) borders and subtle glow
+Text uses ThemedText component with existing type variants: h1, h2, body, caption
+Animate step transitions with FadeIn from react-native-reanimated
+Progress indicator at top showing step X of 6 (thin red progress bar)
+All buttons use haptic feedback: Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+Back button on steps 2-6 to go to previous step
+
+CRITICAL NOTES
+
+Do NOT modify any existing screens or components
+Do NOT change the tab navigator structure
+The onboarding data will be consumed later by Morning Brief and the Life Score HUD
+Follow the exact import alias pattern: @/components/..., @/hooks/..., @/lib/..., @/constants/..., @/screens/..., @/navigation/...
+The VoiceInputButton component already exists at client/components/VoiceInputButton.tsx — do NOT use it for onboarding

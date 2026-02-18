@@ -9,7 +9,65 @@ const KEYS = {
   OPERATOR_MODE_CONFIG: "@operator_mode_config",
   OPERATOR_MODE_SESSION: "@operator_mode_session",
   OPERATOR_MODE_HISTORY: "@operator_mode_history",
+  ONBOARDING: "@operator_onboarding",
+  IDENTITY_CLAIMS: "@operator_identity_claims",
 };
+
+export interface IdentityClaims {
+  coreIdentity: string;
+  priorityDomain: string;
+  avoidancePatterns: string[];
+  behavioralStandard: string;
+  createdAt: string;
+}
+
+export interface OnboardingState {
+  isComplete: boolean;
+  completedAt: string | null;
+  userName: string;
+}
+
+export async function getOnboardingState(): Promise<OnboardingState | null> {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.ONBOARDING);
+    if (data) {
+      return JSON.parse(data);
+    }
+    return null;
+  } catch (error) {
+    console.error("Error getting onboarding state:", error);
+    return null;
+  }
+}
+
+export async function saveOnboardingState(state: OnboardingState): Promise<void> {
+  try {
+    await AsyncStorage.setItem(KEYS.ONBOARDING, JSON.stringify(state));
+  } catch (error) {
+    console.error("Error saving onboarding state:", error);
+  }
+}
+
+export async function getIdentityClaims(): Promise<IdentityClaims | null> {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.IDENTITY_CLAIMS);
+    if (data) {
+      return JSON.parse(data);
+    }
+    return null;
+  } catch (error) {
+    console.error("Error getting identity claims:", error);
+    return null;
+  }
+}
+
+export async function saveIdentityClaims(claims: IdentityClaims): Promise<void> {
+  try {
+    await AsyncStorage.setItem(KEYS.IDENTITY_CLAIMS, JSON.stringify(claims));
+  } catch (error) {
+    console.error("Error saving identity claims:", error);
+  }
+}
 
 export interface Task {
   id: string;

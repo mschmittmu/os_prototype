@@ -103,6 +103,18 @@ The app runs on:
 
 ## Recent Changes
 
+- **NEW: Onboarding Flow** - 6-step identity declaration system for new users
+  - Step 1: Name entry ("WHO ARE YOU?")
+  - Step 2: Core Identity claim (5 options)
+  - Step 3: Priority Domain selection (6 life areas)
+  - Step 4: Avoidance Patterns (multi-select up to 3)
+  - Step 5: Behavioral Standard (text input with suggestions)
+  - Step 6: Dossier confirmation and lock-in
+  - Data stored in AsyncStorage (ONBOARDING, IDENTITY_CLAIMS keys)
+  - Conditional routing in RootStackNavigator based on onboarding completion
+- **Speedometer Gauges** - Life Score and Operator Attributes use car dashboard-style gauges
+  - Solid color arcs matching score thresholds (green 80+, yellow 60-79, orange 40-59, red <40)
+  - Needle points directly to score position
 - **NEW: Operator HUD Dashboard** - Replaced home screen with Life Score system
   - Life Score ring with animated progress and trend indicator
   - Vital Stats row (streak, win rate, total days)

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, StyleSheet, ScrollView, Pressable, RefreshControl } from "react-native";
+import React, { useState, useMemo } from "react";
+import { View, StyleSheet, ScrollView, Pressable, RefreshControl, TextInput, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -14,11 +14,135 @@ import { FAB } from "@/components/FAB";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
-import { posts as initialPosts, announcements as initialAnnouncements, Announcement } from "@/lib/mockData";
+import { posts as initialPosts, announcements as initialAnnouncements, Announcement, forumGroups, ForumGroup } from "@/lib/mockData";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const TABS = ["Announcements", "General", "Founders", "Saved"];
+const TABS = ["Groups", "Announcements", "General", "Founders", "Saved"];
+
+const CATEGORY_ORDER: ForumGroup["category"][] = ["fitness", "business", "lifestyle", "mindset", "skills", "other"];
+const CATEGORY_LABELS: Record<string, string> = {
+  fitness: "FITNESS",
+  business: "BUSINESS",
+  lifestyle: "LIFESTYLE",
+  mindset: "MINDSET",
+  skills: "SKILLS",
+  other: "OTHER",
+};
+
+const monoFont = Platform.select({ ios: "Menlo", default: "monospace" });
+
+function GroupsDirectory() {
+  const { theme } = useTheme();
+  const navigation = useNavigation<NavigationProp>();
+  const [search, setSearch] = useState("");
+
+  const filteredGroups = useMemo(() => {
+    if (!search.trim()) return forumGroups;
+    return forumGroups.filter(g => g.name.toLowerCase().includes(search.toLowerCase()));
+  }, [search]);
+
+  const groupedByCategory = useMemo(() => {
+    const map: Record<string, ForumGroup[]> = {};
+    for (const g of filteredGroups) {
+      if (!map[g.category]) map[g.category] = [];
+      map[g.category].push(g);
+    }
+    return map;
+  }, [filteredGroups]);
+
+  return (
+    <View>
+      <View style={styles.groupsHeader}>
+        <ThemedText type="small" style={styles.sectionHeaderText}>INTEREST GROUPS</ThemedText>
+        <Pressable
+          style={[styles.createGroupBtn, { borderColor: theme.accent }]}
+          onPress={() => {
+            if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            navigation.navigate("CreateGroup");
+          }}
+        >
+          <ThemedText type="caption" style={{ color: theme.accent, fontWeight: "700", letterSpacing: 1 }}>
+            CREATE GROUP +
+          </ThemedText>
+        </Pressable>
+      </View>
+
+      <View style={[styles.searchBar, { borderColor: theme.border, backgroundColor: theme.backgroundSecondary }]}>
+        <Feather name="search" size={16} color={theme.textSecondary} />
+        <TextInput
+          style={[styles.searchInput, { color: theme.text }]}
+          placeholder="Search groups..."
+          placeholderTextColor={theme.textSecondary}
+          value={search}
+          onChangeText={setSearch}
+        />
+      </View>
+
+      {CATEGORY_ORDER.map((cat) => {
+        const groups = groupedByCategory[cat];
+        if (!groups || groups.length === 0) return null;
+        return (
+          <View key={cat}>
+            <View style={[styles.categoryHeader, { backgroundColor: theme.backgroundTertiary }]}>
+              <ThemedText type="small" style={styles.sectionHeaderText}>
+                {CATEGORY_LABELS[cat]}
+              </ThemedText>
+            </View>
+            {groups.map((group, idx) => (
+              <Pressable
+                key={group.id}
+                onPress={() => {
+                  if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  navigation.navigate("GroupBoard", { groupId: group.id, groupName: group.name });
+                }}
+              >
+                <Animated.View
+                  entering={FadeInDown.delay(idx * 40).duration(300)}
+                  style={[styles.groupRow, { borderColor: theme.border }]}
+                >
+                  <View style={styles.groupTop}>
+                    <View style={[styles.groupIcon, { backgroundColor: group.color + "20", borderRadius: BorderRadius.sm }]}>
+                      <Feather name={group.icon as any} size={18} color={group.color} />
+                    </View>
+                    <View style={styles.groupInfo}>
+                      <View style={styles.groupNameRow}>
+                        <ThemedText type="bodyBold" numberOfLines={1} style={{ flex: 1 }}>
+                          {group.name}
+                        </ThemedText>
+                        {group.isOfficial ? (
+                          <View style={[styles.officialBadge, { borderColor: theme.accent }]}>
+                            <ThemedText type="caption" style={{ color: theme.accent, fontSize: 9, fontWeight: "700", letterSpacing: 1 }}>
+                              OFFICIAL
+                            </ThemedText>
+                          </View>
+                        ) : null}
+                      </View>
+                      <ThemedText type="caption" secondary numberOfLines={1}>
+                        {group.description}
+                      </ThemedText>
+                    </View>
+                  </View>
+                  <View style={[styles.groupStats, { borderTopColor: theme.border }]}>
+                    <ThemedText type="caption" secondary>
+                      <ThemedText type="caption" style={{ fontFamily: monoFont, color: theme.textSecondary }}>{group.threadCount.toLocaleString()}</ThemedText> threads · <ThemedText type="caption" style={{ fontFamily: monoFont, color: theme.textSecondary }}>{group.postCount.toLocaleString()}</ThemedText> posts · <ThemedText type="caption" style={{ fontFamily: monoFont, color: theme.textSecondary }}>{group.memberCount.toLocaleString()}</ThemedText> members
+                    </ThemedText>
+                  </View>
+                  <ThemedText type="caption" secondary numberOfLines={1}>
+                    Last: {group.lastPostBy} — "{group.lastThreadTitle}"
+                  </ThemedText>
+                  <ThemedText type="caption" secondary style={{ textAlign: "right", fontSize: 10 }}>
+                    {group.lastActivity}
+                  </ThemedText>
+                </Animated.View>
+              </Pressable>
+            ))}
+          </View>
+        );
+      })}
+    </View>
+  );
+}
 
 function AnnouncementCard({
   announcement,
@@ -215,7 +339,9 @@ export default function SocialScreen() {
           </Animated.View>
         </ScrollView>
 
-        {selectedTab === "Announcements" ? (
+        {selectedTab === "Groups" ? (
+          <GroupsDirectory />
+        ) : selectedTab === "Announcements" ? (
           <View style={styles.postList}>
             {announcements.map((announcement, index) => (
               <Animated.View
@@ -393,5 +519,78 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: Spacing.xs,
+  },
+  groupsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: Spacing.md,
+  },
+  sectionHeaderText: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 2,
+    textTransform: "uppercase",
+  },
+  createGroupBtn: {
+    borderWidth: 1,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    borderRadius: BorderRadius.sm,
+  },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.md,
+    gap: Spacing.sm,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: Spacing.md,
+    fontSize: 14,
+  },
+  categoryHeader: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+  },
+  groupRow: {
+    borderWidth: 1,
+    borderTopWidth: 0,
+    borderRadius: BorderRadius.sm,
+    padding: Spacing.md,
+    gap: 4,
+  },
+  groupTop: {
+    flexDirection: "row",
+    gap: Spacing.md,
+  },
+  groupIcon: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  groupInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  groupNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  officialBadge: {
+    borderWidth: 1,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: BorderRadius.sm,
+  },
+  groupStats: {
+    borderTopWidth: 1,
+    paddingTop: 4,
+    marginTop: 4,
   },
 });

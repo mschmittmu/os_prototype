@@ -19,6 +19,10 @@ import OnboardingScreen from "@/screens/OnboardingScreen";
 import MorningBriefScreen from "@/screens/MorningBriefScreen";
 import ProofCaptureScreen from "@/screens/ProofCaptureScreen";
 import ProofVaultScreen from "@/screens/ProofVaultScreen";
+import GroupBoardScreen from "@/screens/GroupBoardScreen";
+import GroupThreadScreen from "@/screens/GroupThreadScreen";
+import CreateGroupScreen from "@/screens/CreateGroupScreen";
+import CreateThreadScreen from "@/screens/CreateThreadScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
 import { getOnboardingState, getMorningBriefState } from "@/lib/storage";
@@ -34,6 +38,10 @@ export type RootStackParamList = {
     message: string;
   };
   ProofVault: undefined;
+  GroupBoard: { groupId: string; groupName: string };
+  GroupThread: { threadId: string; threadTitle: string; groupId: string };
+  CreateGroup: undefined;
+  CreateThread: { groupId: string };
   TaskCreate: { taskId?: string } | undefined;
   Profile: undefined;
   Stats: undefined;
@@ -237,6 +245,34 @@ export default function RootStackNavigator() {
         component={ProofVaultScreen}
         options={{
           headerTitle: "PROOF VAULT",
+        }}
+      />
+      <Stack.Screen
+        name="GroupBoard"
+        component={GroupBoardScreen}
+        options={({ route }) => ({
+          headerTitle: route.params.groupName.toUpperCase(),
+        })}
+      />
+      <Stack.Screen
+        name="GroupThread"
+        component={GroupThreadScreen}
+        options={{
+          headerTitle: "",
+        }}
+      />
+      <Stack.Screen
+        name="CreateGroup"
+        component={CreateGroupScreen}
+        options={{
+          headerTitle: "CREATE GROUP",
+        }}
+      />
+      <Stack.Screen
+        name="CreateThread"
+        component={CreateThreadScreen}
+        options={{
+          headerTitle: "NEW THREAD",
         }}
       />
     </Stack.Navigator>

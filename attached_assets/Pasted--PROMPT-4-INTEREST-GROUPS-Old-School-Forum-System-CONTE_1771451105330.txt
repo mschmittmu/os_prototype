@@ -1,0 +1,735 @@
+# PROMPT 4: INTEREST GROUPS — Old School Forum System
+
+## CONTEXT
+This is a React Native Expo 54 app using TypeScript, React Navigation, Reanimated, AsyncStorage, and a custom theme system. You are adding an Interest Groups feature styled after classic online forums (phpBB, vBulletin era). This is NOT a modern social feed — it should feel like an old school message board with borders, data-dense rows, reply counts, view counts, and thread listings.
+
+## EXISTING PATTERNS — FOLLOW THESE EXACTLY
+- Theme: `import { useTheme } from "@/hooks/useTheme"` → `const { theme } = useTheme()`
+- Colors: `theme.text`, `theme.textSecondary`, `theme.backgroundRoot`, `theme.backgroundSecondary`, `theme.backgroundTertiary`, `theme.accent` (#E31837), `theme.border`, `theme.success`, `theme.warning`
+- Typography: `import { ThemedText } from "@/components/ThemedText"` → types: `"h1"`, `"h2"`, `"h3"`, `"body"`, `"bodyBold"`, `"caption"`, `"small"`
+- Spacing/Radius: `import { Spacing, BorderRadius } from "@/constants/theme"`
+- Icons: `import { Feather } from "@expo/vector-icons"`
+- Haptics: `import * as Haptics from "expo-haptics"`
+- Animations: `import Animated, { FadeIn, FadeInDown } from "react-native-reanimated"`
+- Navigation: `import { useNavigation } from "@react-navigation/native"` with `NativeStackNavigationProp<RootStackParamList>`
+- Safe areas: `import { useSafeAreaInsets } from "react-native-safe-area-context"`
+
+## WHAT TO BUILD
+
+### PART 1: Mock Data — Add to `client/lib/mockData.ts`
+
+Add these interfaces and data AFTER the existing exports (do NOT modify existing data):
+
+```typescript
+// ===== INTEREST GROUPS (Forum System) =====
+
+export interface ForumGroup {
+  id: string;
+  name: string;
+  description: string;
+  icon: string; // Feather icon name
+  color: string; // hex color for icon badge
+  memberCount: number;
+  threadCount: number;
+  postCount: number;
+  lastActivity: string; // relative timestamp
+  lastPostBy: string;
+  lastThreadTitle: string;
+  isOfficial: boolean; // admin-created vs user-created
+  createdBy: string;
+  category: "lifestyle" | "business" | "fitness" | "mindset" | "skills" | "other";
+}
+
+export interface ForumThread {
+  id: string;
+  groupId: string;
+  title: string;
+  author: {
+    name: string;
+    tier: string;
+    postCount: number;
+    joinDate: string;
+  };
+  createdAt: string; // relative timestamp
+  replyCount: number;
+  viewCount: number;
+  lastReplyBy: string;
+  lastReplyAt: string; // relative timestamp
+  isPinned: boolean;
+  isLocked: boolean;
+  hasNewPosts: boolean;
+  preview: string; // first ~100 chars of OP
+}
+
+export interface ForumPost {
+  id: string;
+  threadId: string;
+  author: {
+    name: string;
+    tier: string;
+    postCount: number;
+    joinDate: string;
+    streak: number;
+  };
+  content: string;
+  createdAt: string;
+  isOP: boolean;
+  likes: number;
+  liked: boolean;
+  quoteOf?: string; // post ID being quoted
+  quotedAuthor?: string;
+  quotedContent?: string;
+}
+
+export const forumGroups: ForumGroup[] = [
+  {
+    id: "grp_1",
+    name: "75 HARD Veterans",
+    description: "For those who have completed 75 Hard. Share strategies, post-program maintenance, and what you learned about yourself.",
+    icon: "shield",
+    color: "#E31837",
+    memberCount: 12847,
+    threadCount: 342,
+    postCount: 8921,
+    lastActivity: "2m ago",
+    lastPostBy: "IronMike",
+    lastThreadTitle: "Day 75 done. Here's what nobody tells you.",
+    isOfficial: true,
+    createdBy: "Admin",
+    category: "fitness",
+  },
+  {
+    id: "grp_2",
+    name: "Entrepreneurs & Builders",
+    description: "Business owners, side hustlers, and people building something. No theory — execution only. Share wins, ask for help, post proof.",
+    icon: "briefcase",
+    color: "#2563EB",
+    memberCount: 9234,
+    threadCount: 567,
+    postCount: 15432,
+    lastActivity: "5m ago",
+    lastPostBy: "BuilderDave",
+    lastThreadTitle: "Hit $10k/mo. Took 14 months. Here's every step.",
+    isOfficial: true,
+    createdBy: "Admin",
+    category: "business",
+  },
+  {
+    id: "grp_3",
+    name: "Fatherhood",
+    description: "Being the man your kids need you to be. Real talk about raising children with standards, discipline, and love.",
+    icon: "heart",
+    color: "#059669",
+    memberCount: 6891,
+    threadCount: 213,
+    postCount: 4567,
+    lastActivity: "12m ago",
+    lastPostBy: "DadStrength",
+    lastThreadTitle: "My son asked why I wake up at 4am. Here's what I told him.",
+    isOfficial: true,
+    createdBy: "Admin",
+    category: "lifestyle",
+  },
+  {
+    id: "grp_4",
+    name: "Reading & Self Education",
+    description: "Book recommendations, reading challenges, and applying what you learn. If you're not growing, you're dying.",
+    icon: "book-open",
+    color: "#7C3AED",
+    memberCount: 5123,
+    threadCount: 189,
+    postCount: 3211,
+    lastActivity: "23m ago",
+    lastPostBy: "PageTurner",
+    lastThreadTitle: "The book that changed how I think about discipline",
+    isOfficial: true,
+    createdBy: "Admin",
+    category: "mindset",
+  },
+  {
+    id: "grp_5",
+    name: "Sobriety & Recovery",
+    description: "For operators fighting addiction. No judgment. Just accountability, proof, and people who understand the fight.",
+    icon: "anchor",
+    color: "#0891B2",
+    memberCount: 3456,
+    threadCount: 98,
+    postCount: 2134,
+    lastActivity: "34m ago",
+    lastPostBy: "CleanSlate",
+    lastThreadTitle: "1 year sober today. This app helped.",
+    isOfficial: true,
+    createdBy: "Admin",
+    category: "lifestyle",
+  },
+  {
+    id: "grp_6",
+    name: "Real Estate Operators",
+    description: "Buying, selling, investing, developing. Share deals, strategies, market analysis. Proof required for claims.",
+    icon: "home",
+    color: "#D97706",
+    memberCount: 4210,
+    threadCount: 278,
+    postCount: 6543,
+    lastActivity: "1h ago",
+    lastPostBy: "PropertyKing",
+    lastThreadTitle: "Closed on property #4. Here's my system.",
+    isOfficial: false,
+    createdBy: "PropertyKing",
+    category: "business",
+  },
+  {
+    id: "grp_7",
+    name: "Early Morning Crew",
+    description: "If you're not up before the sun, you're already behind. 4AM-5AM operators check in here.",
+    icon: "sunrise",
+    color: "#F59E0B",
+    memberCount: 8932,
+    threadCount: 156,
+    postCount: 12876,
+    lastActivity: "8m ago",
+    lastPostBy: "DawnPatrol",
+    lastThreadTitle: "4:15 AM. Coffee made. Tasks set. Let's go.",
+    isOfficial: false,
+    createdBy: "DawnPatrol",
+    category: "lifestyle",
+  },
+  {
+    id: "grp_8",
+    name: "Sales Professionals",
+    description: "Cold calls, closing techniques, pipeline management. This is where closers sharpen the blade.",
+    icon: "phone-call",
+    color: "#DC2626",
+    memberCount: 3789,
+    threadCount: 145,
+    postCount: 3890,
+    lastActivity: "45m ago",
+    lastPostBy: "CloserMike",
+    lastThreadTitle: "100 cold calls a day for 30 days. Results inside.",
+    isOfficial: false,
+    createdBy: "CloserMike",
+    category: "skills",
+  },
+];
+
+export const forumThreads: ForumThread[] = [
+  // 75 HARD Veterans threads
+  {
+    id: "thr_1",
+    groupId: "grp_1",
+    title: "📌 RULES: Read before posting. No excuses. No shortcuts.",
+    author: { name: "Admin", tier: "Founder", postCount: 1247, joinDate: "Nov 2024" },
+    createdAt: "Nov 15, 2024",
+    replyCount: 0,
+    viewCount: 12453,
+    lastReplyBy: "-",
+    lastReplyAt: "-",
+    isPinned: true,
+    isLocked: true,
+    hasNewPosts: false,
+    preview: "This is a group for operators who have COMPLETED 75 Hard. If you haven't finished, go finish it first...",
+  },
+  {
+    id: "thr_2",
+    groupId: "grp_1",
+    title: "Day 75 done. Here's what nobody tells you.",
+    author: { name: "IronMike", tier: "Operator", postCount: 89, joinDate: "Dec 2024" },
+    createdAt: "2h ago",
+    replyCount: 34,
+    viewCount: 1289,
+    lastReplyBy: "SteelWill",
+    lastReplyAt: "2m ago",
+    isPinned: false,
+    isLocked: false,
+    hasNewPosts: true,
+    preview: "Just finished day 75. Everyone talks about the physical changes. Nobody talks about the mental shift that happens around day 50...",
+  },
+  {
+    id: "thr_3",
+    groupId: "grp_1",
+    title: "Cold showers stopped being hard at day 23. Worried I'm getting soft.",
+    author: { name: "FrostBite", tier: "Operator", postCount: 156, joinDate: "Jan 2025" },
+    createdAt: "5h ago",
+    replyCount: 21,
+    viewCount: 876,
+    lastReplyBy: "IceVeins",
+    lastReplyAt: "15m ago",
+    isPinned: false,
+    isLocked: false,
+    hasNewPosts: true,
+    preview: "Week 1 they were brutal. Week 2 I was dreading them. Now? I look forward to them. Does that mean I need to find something harder?",
+  },
+  {
+    id: "thr_4",
+    groupId: "grp_1",
+    title: "What outdoor workout do you do when it's -10°F?",
+    author: { name: "NorthernGrit", tier: "Standard", postCount: 23, joinDate: "Feb 2025" },
+    createdAt: "8h ago",
+    replyCount: 45,
+    viewCount: 2134,
+    lastReplyBy: "ArcticOp",
+    lastReplyAt: "32m ago",
+    isPinned: false,
+    isLocked: false,
+    hasNewPosts: true,
+    preview: "Minnesota operator here. It's -10 this week and the outdoor workout rule doesn't care. What are you all doing when it's this cold?",
+  },
+  {
+    id: "thr_5",
+    groupId: "grp_1",
+    title: "Failed on day 63. Starting over tomorrow.",
+    author: { name: "BackAgain", tier: "Standard", postCount: 12, joinDate: "Jan 2025" },
+    createdAt: "1d ago",
+    replyCount: 67,
+    viewCount: 3456,
+    lastReplyBy: "NeverQuit",
+    lastReplyAt: "1h ago",
+    isPinned: false,
+    isLocked: false,
+    hasNewPosts: false,
+    preview: "Missed my second workout. No excuse. I was tired and I chose comfort. Day 1 again tomorrow. Just needed to say it out loud.",
+  },
+  {
+    id: "thr_6",
+    groupId: "grp_1",
+    title: "Progress pics: Day 1 vs Day 75 (warning: shirtless dude)",
+    author: { name: "TransformOp", tier: "Operator", postCount: 67, joinDate: "Dec 2024" },
+    createdAt: "2d ago",
+    replyCount: 89,
+    viewCount: 5678,
+    lastReplyBy: "FitDad",
+    lastReplyAt: "3h ago",
+    isPinned: false,
+    isLocked: false,
+    hasNewPosts: false,
+    preview: "Posting this because I promised myself I would. 31 lbs down. But the real transformation isn't visible. It's the 4am alarm that I no longer hate.",
+  },
+  // Entrepreneurs threads
+  {
+    id: "thr_7",
+    groupId: "grp_2",
+    title: "📌 How to post: Include numbers. Include proof. No vague wins.",
+    author: { name: "Admin", tier: "Founder", postCount: 1247, joinDate: "Nov 2024" },
+    createdAt: "Nov 15, 2024",
+    replyCount: 0,
+    viewCount: 9876,
+    lastReplyBy: "-",
+    lastReplyAt: "-",
+    isPinned: true,
+    isLocked: true,
+    hasNewPosts: false,
+    preview: "This board is for real operators building real businesses. When you post a win, include numbers...",
+  },
+  {
+    id: "thr_8",
+    groupId: "grp_2",
+    title: "Hit $10k/mo. Took 14 months. Here's every step.",
+    author: { name: "BuilderDave", tier: "Operator", postCount: 234, joinDate: "Dec 2024" },
+    createdAt: "5m ago",
+    replyCount: 12,
+    viewCount: 456,
+    lastReplyBy: "HustleHard",
+    lastReplyAt: "5m ago",
+    isPinned: false,
+    isLocked: false,
+    hasNewPosts: true,
+    preview: "Month 1-3: Built the product. Nobody cared. Month 4-6: Started cold outreach. 500 emails. 3 clients. Month 7-9: Refined the offer...",
+  },
+  {
+    id: "thr_9",
+    groupId: "grp_2",
+    title: "Quitting my 9-5 in 90 days. Here's my exit plan.",
+    author: { name: "ExitPlan", tier: "Standard", postCount: 45, joinDate: "Jan 2025" },
+    createdAt: "3h ago",
+    replyCount: 28,
+    viewCount: 1234,
+    lastReplyBy: "BeenThere",
+    lastReplyAt: "22m ago",
+    isPinned: false,
+    isLocked: false,
+    hasNewPosts: true,
+    preview: "I've got 6 months of expenses saved. Side business doing $3k/mo. Need to hit $7k before I pull the trigger. Here's the plan...",
+  },
+];
+
+export const forumPosts: ForumPost[] = [
+  // Thread thr_2 posts (Day 75 done)
+  {
+    id: "fp_1",
+    threadId: "thr_2",
+    author: { name: "IronMike", tier: "Operator", postCount: 89, joinDate: "Dec 2024", streak: 75 },
+    content: "Just finished day 75. Everyone talks about the physical changes. Nobody talks about the mental shift that happens around day 50.\n\nAround day 50 I stopped negotiating with myself. The alarm went off, I got up. No internal debate. No \"5 more minutes.\" The discipline became automatic.\n\nThat's the real transformation. Not the body. The death of the negotiation.\n\nHere's what else nobody tells you:\n\n1. Your tolerance for excuses from other people drops to zero\n2. You start seeing EVERYTHING as a discipline test\n3. The diet is the hardest part, not the workouts\n4. Reading 10 pages sounds easy until day 47 when you're exhausted\n5. The outdoor workout in rain/snow builds more character than any gym session\n\nTo anyone on day 10 thinking about quitting: you haven't even started the real work yet. Keep going.",
+    createdAt: "2h ago",
+    isOP: true,
+    likes: 234,
+    liked: false,
+  },
+  {
+    id: "fp_2",
+    threadId: "thr_2",
+    author: { name: "SteelWill", tier: "Operator", postCount: 312, joinDate: "Nov 2024", streak: 143 },
+    content: "The \"death of the negotiation\" — that's the best way I've ever heard it described.\n\nI'm on day 143 now (did 75 Hard, now Live Hard). The negotiation thing is real. My brain doesn't even try anymore. It knows the answer is always going to be \"do it anyway.\"\n\nCongratulations brother. The person who started on day 1 is not the person who finished on day 75.",
+    createdAt: "1h ago",
+    isOP: false,
+    likes: 89,
+    liked: false,
+  },
+  {
+    id: "fp_3",
+    threadId: "thr_2",
+    author: { name: "GrindDaily", tier: "Standard", postCount: 34, joinDate: "Jan 2025", streak: 23 },
+    content: "I'm on day 23 and the negotiation is still LOUD. Every morning my brain tries to talk me out of the 5am workout.\n\nHearing that it dies around day 50 gives me something to push toward. Thanks for posting this.",
+    createdAt: "45m ago",
+    isOP: false,
+    likes: 45,
+    liked: true,
+  },
+  {
+    id: "fp_4",
+    threadId: "thr_2",
+    author: { name: "IronMike", tier: "Operator", postCount: 89, joinDate: "Dec 2024", streak: 75 },
+    content: "Keep going. Day 23 was one of my hardest. Around week 3-4 the novelty wears off but the habit hasn't formed yet. You're in the valley. The only way out is through.",
+    createdAt: "30m ago",
+    isOP: false,
+    likes: 67,
+    liked: false,
+    quoteOf: "fp_3",
+    quotedAuthor: "GrindDaily",
+    quotedContent: "I'm on day 23 and the negotiation is still LOUD...",
+  },
+  {
+    id: "fp_5",
+    threadId: "thr_2",
+    author: { name: "FrostBite", tier: "Operator", postCount: 156, joinDate: "Jan 2025", streak: 82 },
+    content: "Point #5 is underrated. I did 75 Hard through a Minnesota winter. -15°F runs. There's something about forcing yourself outside when every cell in your body says no.\n\nThe gym is easy. The outdoor workout in bad weather is where operators are forged.",
+    createdAt: "15m ago",
+    isOP: false,
+    likes: 112,
+    liked: false,
+  },
+  {
+    id: "fp_6",
+    threadId: "thr_2",
+    author: { name: "NoExcuses", tier: "Standard", postCount: 8, joinDate: "Feb 2025", streak: 8 },
+    content: "Day 8. Reading this thread instead of sleeping. Tomorrow's workout is at 4:30am.\n\nSaved this post. Going to read it again on day 50 to see if you're right about the negotiation dying.\n\nLet's go.",
+    createdAt: "2m ago",
+    isOP: false,
+    likes: 23,
+    liked: false,
+  },
+];
+```
+
+### PART 2: Storage — Add to `client/lib/storage.ts`
+
+Add these storage keys and interfaces AFTER the existing proof system storage (do NOT modify existing storage):
+
+```typescript
+// In the KEYS object, add:
+FORUM_JOINED_GROUPS: "@operator_forum_joined_groups",
+FORUM_USER_THREADS: "@operator_forum_user_threads",
+
+// Interfaces
+export interface JoinedGroup {
+  groupId: string;
+  joinedAt: string;
+}
+
+// Storage functions
+export async function getJoinedGroups(): Promise<JoinedGroup[]> {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.FORUM_JOINED_GROUPS);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function joinGroup(groupId: string): Promise<void> {
+  try {
+    const groups = await getJoinedGroups();
+    if (!groups.find(g => g.groupId === groupId)) {
+      groups.push({ groupId, joinedAt: new Date().toISOString() });
+      await AsyncStorage.setItem(KEYS.FORUM_JOINED_GROUPS, JSON.stringify(groups));
+    }
+  } catch {}
+}
+
+export async function leaveGroup(groupId: string): Promise<void> {
+  try {
+    const groups = await getJoinedGroups();
+    const filtered = groups.filter(g => g.groupId !== groupId);
+    await AsyncStorage.setItem(KEYS.FORUM_JOINED_GROUPS, JSON.stringify(filtered));
+  } catch {}
+}
+```
+
+### PART 3: SocialScreen.tsx — Add "Groups" tab
+
+**File:** `client/screens/SocialScreen.tsx`
+
+Modify the existing TABS array from:
+```typescript
+const TABS = ["Announcements", "General", "Founders", "Saved"];
+```
+To:
+```typescript
+const TABS = ["Groups", "Announcements", "General", "Founders", "Saved"];
+```
+
+When the "Groups" tab is selected, render a `GroupsDirectory` component (defined below in the same file or imported) INSTEAD of the posts list. This directory shows all `forumGroups` from mockData in the old-school forum style.
+
+**Groups Directory Layout (rendered when Groups tab is active):**
+
+At the top: A header bar with "INTEREST GROUPS" label and a "CREATE GROUP +" button (right aligned). The create button navigates to `CreateGroup` screen.
+
+Then a search bar: Simple TextInput with magnifying glass icon, `placeholder="Search groups..."`, filters the group list by name as user types. Style: `borderWidth: 1, borderColor: theme.border, backgroundColor: theme.backgroundSecondary, borderRadius: BorderRadius.sm` (sharp corners, not pill-shaped — old school).
+
+Then the group list. Each group row should look like this (OLD SCHOOL FORUM STYLE):
+
+```
+┌──────────────────────────────────────────────────────┐
+│ [icon]  75 HARD Veterans                    ★ OFFICIAL│
+│         For those who have completed 75 Hard...       │
+│─────────────────────────────────────────────────────  │
+│ 342 threads · 8,921 posts · 12,847 members           │
+│ Last: IronMike — "Day 75 done. Here's what nobo..." │
+│                                              2m ago   │
+└──────────────────────────────────────────────────────┘
+```
+
+Key styling for old-school feel:
+- Use `borderWidth: 1` and `borderColor: theme.border` on each group row (NOT rounded cards with shadows)
+- `borderRadius: BorderRadius.sm` (4px max, sharp corners)
+- Stats row uses monospace-style numbers: `fontFamily: Platform.select({ ios: "Menlo", default: "monospace" })`
+- Separate stats with centered dots ` · ` in `theme.textSecondary`
+- "Last:" line truncated with `numberOfLines={1}`
+- Icon badge: small square (not circular) with colored background, rounded only slightly (4px)
+- Official groups get a small "OFFICIAL" badge in `theme.accent` color
+- Each row is a `Pressable` that navigates to `GroupBoard` screen with `{ groupId: group.id, groupName: group.name }`
+- Rows stacked vertically with NO gap — borders touch (like classic forum boards)
+- Category sections: Group the list by category with small header rows: "FITNESS", "BUSINESS", "LIFESTYLE", "MINDSET", "SKILLS", "OTHER" — header rows have `backgroundColor: theme.backgroundTertiary`, small text, uppercase, letterSpacing: 2
+
+### PART 4: GroupBoardScreen.tsx — Thread Listing
+
+**New file:** `client/screens/GroupBoardScreen.tsx`
+
+This is a classic forum thread listing. It receives `{ groupId, groupName }` from navigation params.
+
+**Header area:**
+- Group name as title (already handled by navigation header)
+- Below header: a bar showing "X members · Y threads · Z posts" and a "NEW THREAD" button (navigates to `CreateThread` with `{ groupId }`)
+- A "JOIN" / "JOINED ✓" toggle button. Uses `getJoinedGroups()` / `joinGroup()` / `leaveGroup()` from storage.
+
+**Thread list layout — CLASSIC FORUM STYLE:**
+
+Column header row (sticky):
+```
+TOPIC                                    REPLIES  VIEWS  LAST POST
+```
+Style: `backgroundColor: theme.backgroundTertiary`, uppercase, fontSize: 11, letterSpacing: 1, fontWeight: "700", `borderBottomWidth: 1`
+
+Then each thread row:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 📌 RULES: Read before posting. No excuses.          LOCKED 🔒  │
+│ by Admin (Founder) · Nov 15, 2024                               │
+│                                              0    12,453    -   │
+├─────────────────────────────────────────────────────────────────┤
+│ ● Day 75 done. Here's what nobody tells you.                    │
+│ by IronMike (Operator) · 2h ago                                 │
+│                                              34   1,289   2m ago│
+│                                                    SteelWill    │
+├─────────────────────────────────────────────────────────────────┤
+```
+
+Details:
+- **Pinned threads** at the top with 📌 emoji in title and faded background `rgba(227, 24, 55, 0.05)`
+- **Locked threads** show 🔒 icon
+- **New posts indicator**: A small colored dot (4px circle, `theme.accent`) to the left of the thread title if `hasNewPosts` is true
+- Thread title: `fontWeight: "700"`, full width, `numberOfLines={1}`
+- "by AuthorName (Tier) · timestamp" line in `theme.textSecondary`, fontSize: 12
+- Reply count, view count, last reply info on the right side
+- Reply count: if > 0, show in bold. If > 50, show in `theme.accent` (hot thread)
+- View count: formatted with commas (e.g., "1,289")
+- Last reply: "username · time ago" in small text
+- Each row: `borderBottomWidth: 1, borderBottomColor: theme.border`
+- Pinned rows separated from regular rows by a slightly thicker border (2px)
+- Row onPress navigates to `GroupThread` with `{ threadId, threadTitle, groupId }`
+
+**Empty state** (for groups with no threads): "No threads yet. Be the first to start a discussion."
+
+Filter threads by `groupId` from `forumThreads` mock data.
+
+### PART 5: GroupThreadScreen.tsx — Thread View with Posts
+
+**New file:** `client/screens/GroupThreadScreen.tsx`
+
+This is the classic forum thread view showing OP and all replies. Receives `{ threadId, threadTitle, groupId }` from params.
+
+**Thread header:** Thread title at top, full width, large text.
+
+**Post layout — CLASSIC FORUM POST STYLE:**
+
+Each post is a horizontal two-panel layout (like phpBB):
+
+```
+┌────────────────┬──────────────────────────────────────────────┐
+│  IronMike      │  Posted 2h ago                     [LIKE ♥]  │
+│  ──────────    │──────────────────────────────────────────────│
+│  Operator      │  Just finished day 75. Everyone talks about  │
+│  Posts: 89     │  the physical changes. Nobody talks about    │
+│  Joined: Dec   │  the mental shift that happens around        │
+│  🔥 75 streak  │  day 50...                                   │
+│                │                                              │
+│                │  [content continues]                         │
+│                │                                              │
+│                │                              234 likes       │
+└────────────────┴──────────────────────────────────────────────┘
+```
+
+On mobile, since horizontal space is limited, use this stacked adaptation:
+
+```
+┌──────────────────────────────────────────────────────┐
+│  IronMike · Operator · 🔥75           2h ago    [OP] │
+│  Posts: 89 · Joined Dec 2024                         │
+│──────────────────────────────────────────────────────│
+│                                                      │
+│  Just finished day 75. Everyone talks about the      │
+│  physical changes. Nobody talks about the mental     │
+│  shift that happens around day 50.                   │
+│                                                      │
+│  [full post content with line breaks preserved]      │
+│                                                      │
+│──────────────────────────────────────────────────────│
+│  ♥ 234   [Quote]   [Reply]                           │
+└──────────────────────────────────────────────────────┘
+```
+
+Key styling:
+- Author info bar at top with name (bold), tier badge, streak fire emoji + number, timestamp right-aligned
+- "Posts: X · Joined Y" line in caption size, `theme.textSecondary`
+- OP gets an "[OP]" badge in `theme.accent` background
+- Content area: `fontSize: 15, lineHeight: 24`, preserving `\n` line breaks
+- **Quoted posts**: If `quoteOf` exists, show a quote block above the content with left border (4px, `theme.border`), dimmed background, italic quoted author name, and truncated quoted content
+- Bottom action bar: heart/like count (left), Quote button, Reply button
+- Post separator: `borderBottomWidth: 1, borderColor: theme.border`
+- Post numbers: "#1", "#2", "#3" etc. in top-right corner, small, `theme.textSecondary`
+- All posts stacked vertically, NO gaps between them (borders touching)
+- FlatList with the thread data filtered from `forumPosts` by `threadId`
+
+**Reply input at bottom:** Sticky bottom bar with:
+- TextInput (multiline, max 3 visible lines, placeholder: "Write a reply...")
+- "POST" button (right side, `theme.accent` background)
+- This is for prototype display only — on press, show an alert "Reply posted!" and clear the input (don't actually save anything)
+
+### PART 6: CreateGroupScreen.tsx
+
+**New file:** `client/screens/CreateGroupScreen.tsx`
+
+A simple form screen for creating a new interest group. Fields:
+
+1. **Group Name** — TextInput, required, max 50 chars, character counter shown
+2. **Description** — TextInput multiline, required, max 200 chars, character counter
+3. **Category** — Horizontal chip selector: "Lifestyle", "Business", "Fitness", "Mindset", "Skills", "Other"
+4. **Icon** — Grid of 12 selectable Feather icons: `shield, briefcase, heart, book-open, anchor, home, sunrise, phone-call, target, tool, coffee, globe`. Each in a 44x44 square touchable with border. Selected state: `theme.accent` border + background tint
+
+**"CREATE GROUP" button** at bottom. On press: haptic, show Alert "Group Created!" (prototype only — no actual persistence needed), navigate back.
+
+**Style:** Same old-school feel. Use `borderWidth: 1` on all inputs, sharp corners (`BorderRadius.sm`), no floating labels. Labels above each field in uppercase, letterSpacing: 2, fontSize: 11, fontWeight: "700".
+
+### PART 7: CreateThreadScreen.tsx
+
+**New file:** `client/screens/CreateThreadScreen.tsx`
+
+Simple form for creating a new thread. Receives `{ groupId }` from params.
+
+1. **Thread Title** — TextInput, required, max 100 chars, character counter
+2. **Content** — TextInput multiline, required, min height 200, placeholder: "Share your thoughts..."
+
+**"POST THREAD" button** at bottom. On press: haptic, Alert "Thread Posted!", navigate back.
+
+**Style:** Same old-school form styling as CreateGroupScreen.
+
+### PART 8: Navigation Updates
+
+**File:** `client/navigation/RootStackNavigator.tsx`
+
+Add these imports:
+```typescript
+import GroupBoardScreen from "@/screens/GroupBoardScreen";
+import GroupThreadScreen from "@/screens/GroupThreadScreen";
+import CreateGroupScreen from "@/screens/CreateGroupScreen";
+import CreateThreadScreen from "@/screens/CreateThreadScreen";
+```
+
+Add to `RootStackParamList`:
+```typescript
+GroupBoard: { groupId: string; groupName: string };
+GroupThread: { threadId: string; threadTitle: string; groupId: string };
+CreateGroup: undefined;
+CreateThread: { groupId: string };
+```
+
+Add Stack.Screen entries (inside the existing Stack.Navigator, after the ProofVault screen):
+```tsx
+<Stack.Screen
+  name="GroupBoard"
+  component={GroupBoardScreen}
+  options={({ route }) => ({
+    headerTitle: route.params.groupName.toUpperCase(),
+  })}
+/>
+<Stack.Screen
+  name="GroupThread"
+  component={GroupThreadScreen}
+  options={({ route }) => ({
+    headerTitle: "",
+  })}
+/>
+<Stack.Screen
+  name="CreateGroup"
+  component={CreateGroupScreen}
+  options={{
+    headerTitle: "CREATE GROUP",
+  }}
+/>
+<Stack.Screen
+  name="CreateThread"
+  component={CreateThreadScreen}
+  options={{
+    headerTitle: "NEW THREAD",
+  }}
+/>
+```
+
+## CRITICAL STYLE RULES — OLD SCHOOL FORUM AESTHETIC
+
+1. **NO rounded cards with shadows.** Use `borderWidth: 1` and `borderColor: theme.border` with sharp corners (`borderRadius: 4` max, or use `BorderRadius.sm`).
+2. **Borders touching.** Thread rows, post rows, and group rows should have NO vertical gaps. The bottom border of one row IS the top border of the next (use `borderBottomWidth: 1` only).
+3. **Data-dense.** Show stats everywhere: reply counts, view counts, post counts, member counts, join dates, streaks. Forums are information-rich.
+4. **Monospace numbers.** Use `fontFamily: Platform.select({ ios: "Menlo", default: "monospace" })` for numeric stats (reply counts, view counts, post counts).
+5. **Uppercase section headers.** All section/category headers: uppercase, letterSpacing: 2, fontSize: 11, fontWeight: "700".
+6. **Muted palette.** The only color pops should be `theme.accent` (red) for hot threads, new post dots, official badges, and OP tags. Everything else uses `theme.text`, `theme.textSecondary`, and borders.
+7. **Separator lines.** Use thin 1px borders to separate content, not spacing/gaps.
+8. **No emojis in UI chrome.** The 📌 and 🔒 in thread titles are exceptions because they're in user content. UI elements (buttons, labels, badges) should use icons or text only.
+
+## DO NOT MODIFY
+- Any existing screens (HomeScreen, ExecuteScreen, MediaScreen, CrewScreen, ProfileScreen, etc.)
+- Any existing components (PostCard, FAB, HeaderTitle, etc.)
+- Any existing mock data (posts, announcements, etc.) — only ADD new data
+- The existing tab structure for General/Founders/Saved/Announcements — just add Groups tab
+
+## FILES TO CREATE
+1. `client/screens/GroupBoardScreen.tsx`
+2. `client/screens/GroupThreadScreen.tsx`
+3. `client/screens/CreateGroupScreen.tsx`
+4. `client/screens/CreateThreadScreen.tsx`
+
+## FILES TO MODIFY
+1. `client/lib/mockData.ts` — Add forum interfaces and data
+2. `client/lib/storage.ts` — Add forum storage keys and functions
+3. `client/screens/SocialScreen.tsx` — Add "Groups" tab with directory
+4. `client/navigation/RootStackNavigator.tsx` — Add 4 new screens and params

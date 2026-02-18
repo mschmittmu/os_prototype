@@ -14,6 +14,8 @@ const KEYS = {
   MORNING_BRIEF: "@operator_morning_brief",
   PROOF_VAULT: "@operator_proof_vault",
   PROOF_TRIGGERS_FIRED: "@operator_proof_triggers",
+  FORUM_JOINED_GROUPS: "@operator_forum_joined_groups",
+  FORUM_USER_THREADS: "@operator_forum_user_threads",
 };
 
 export interface IdentityClaims {
@@ -585,4 +587,36 @@ export async function addProofTriggerFired(trigger: ProofTriggerRecord): Promise
   } catch (error) {
     console.error("Error adding proof trigger:", error);
   }
+}
+
+export interface JoinedGroup {
+  groupId: string;
+  joinedAt: string;
+}
+
+export async function getJoinedGroups(): Promise<JoinedGroup[]> {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.FORUM_JOINED_GROUPS);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function joinGroup(groupId: string): Promise<void> {
+  try {
+    const groups = await getJoinedGroups();
+    if (!groups.find(g => g.groupId === groupId)) {
+      groups.push({ groupId, joinedAt: new Date().toISOString() });
+      await AsyncStorage.setItem(KEYS.FORUM_JOINED_GROUPS, JSON.stringify(groups));
+    }
+  } catch {}
+}
+
+export async function leaveGroup(groupId: string): Promise<void> {
+  try {
+    const groups = await getJoinedGroups();
+    const filtered = groups.filter(g => g.groupId !== groupId);
+    await AsyncStorage.setItem(KEYS.FORUM_JOINED_GROUPS, JSON.stringify(filtered));
+  } catch {}
 }

@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MainTabNavigator from "@/navigation/MainTabNavigator";
 import TaskCreateScreen from "@/screens/TaskCreateScreen";
@@ -14,10 +15,13 @@ import OperatorModeSetupScreen from "@/screens/OperatorModeSetupScreen";
 import OperatorModeActivationScreen from "@/screens/OperatorModeActivationScreen";
 import OperatorModeActiveScreen from "@/screens/OperatorModeActiveScreen";
 import OperatorModeCompleteScreen from "@/screens/OperatorModeCompleteScreen";
+import OnboardingScreen from "@/screens/OnboardingScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
+import { getOnboardingState } from "@/lib/storage";
 
 export type RootStackParamList = {
+  Onboarding: undefined;
   Main: undefined;
   TaskCreate: { taskId?: string } | undefined;
   Profile: undefined;
@@ -45,9 +49,29 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function RootStackNavigator() {
   const screenOptions = useScreenOptions();
   const { theme } = useTheme();
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      const state = await getOnboardingState();
+      setHasCompletedOnboarding(state?.isComplete === true);
+      setIsLoading(false);
+    };
+    checkOnboarding();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: theme.backgroundRoot }}>
+        <ActivityIndicator size="large" color={theme.accent} />
+      </View>
+    );
+  }
 
   return (
     <Stack.Navigator
+      initialRouteName={hasCompletedOnboarding ? "Main" : "Onboarding"}
       screenOptions={{
         ...screenOptions,
         headerStyle: {
@@ -59,6 +83,11 @@ export default function RootStackNavigator() {
         },
       }}
     >
+      <Stack.Screen
+        name="Onboarding"
+        component={OnboardingScreen}
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
       <Stack.Screen
         name="Main"
         component={MainTabNavigator}

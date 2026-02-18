@@ -18,7 +18,7 @@ import { posts as initialPosts, announcements as initialAnnouncements, Announcem
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const TABS = ["Groups", "Announcements", "General", "Founders"];
+const TABS = ["Groups", "Alerts", "General", "Founders"];
 
 const CATEGORY_ORDER: ForumGroup["category"][] = ["fitness", "business", "lifestyle", "mindset", "skills", "other"];
 const CATEGORY_LABELS: Record<string, string> = {
@@ -331,7 +331,7 @@ export default function SocialScreen() {
 
         {selectedTab === "Groups" ? (
           <GroupsDirectory />
-        ) : selectedTab === "Announcements" ? (
+        ) : selectedTab === "Alerts" ? (
           <View style={styles.postList}>
             {announcements.map((announcement, index) => (
               <Animated.View
@@ -378,7 +378,7 @@ export default function SocialScreen() {
           </View>
         )}
 
-        {selectedTab !== "Announcements" && selectedTab !== "Groups" && filteredPosts.length === 0 ? (
+        {selectedTab !== "Alerts" && selectedTab !== "Groups" && filteredPosts.length === 0 ? (
           <Animated.View
             style={styles.emptyState}
             entering={FadeInDown.duration(400).delay(200)}

@@ -376,7 +376,7 @@ export default function MainTabNavigator() {
         component={MediaScreen}
         options={{
           title: "Media",
-          headerTitle: "MEDIA LIBRARY",
+          headerTitle: "MEDIA",
           tabBarIcon: ({ color, size, focused }) => (
             <AnimatedTabIcon name="play-circle" size={size} color={color} focused={focused} />
           ),

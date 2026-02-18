@@ -86,6 +86,10 @@ function HeaderRightButtons() {
         onPress={() => {}} 
       />
       <HeaderIconButton 
+        icon="user" 
+        onPress={() => navigation.navigate("Profile")} 
+      />
+      <HeaderIconButton 
         icon="settings" 
         onPress={() => navigation.navigate("Settings")} 
       />

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -7,6 +7,7 @@ import {
   TextInput,
   Platform,
   KeyboardAvoidingView,
+  Keyboard,
 } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -33,7 +34,23 @@ export default function GroupThreadScreen() {
   const [replyText, setReplyText] = useState("");
   const [posts, setPosts] = useState(() => forumPosts.filter(p => p.threadId === threadId));
   const [replyingTo, setReplyingTo] = useState<{ id: string; author: string } | null>(null);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   const inputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
+      () => setKeyboardVisible(true)
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
+      () => setKeyboardVisible(false)
+    );
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const thread = forumThreads.find(t => t.id === threadId);
 
@@ -185,7 +202,7 @@ export default function GroupThreadScreen() {
         }
       />
 
-      <View style={[styles.replyBar, { backgroundColor: theme.backgroundSecondary, borderTopColor: theme.border, paddingBottom: insets.bottom > 0 ? insets.bottom : Spacing.sm }]}>
+      <View style={[styles.replyBar, { backgroundColor: theme.backgroundSecondary, borderTopColor: theme.border, paddingBottom: keyboardVisible ? Spacing.sm : (insets.bottom > 0 ? insets.bottom : Spacing.sm) }]}>
         {replyingTo ? (
           <View style={styles.replyingToBar}>
             <ThemedText type="caption" secondary style={{ flex: 1 }}>

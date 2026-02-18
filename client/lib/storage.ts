@@ -11,6 +11,7 @@ const KEYS = {
   OPERATOR_MODE_HISTORY: "@operator_mode_history",
   ONBOARDING: "@operator_onboarding",
   IDENTITY_CLAIMS: "@operator_identity_claims",
+  MORNING_BRIEF: "@operator_morning_brief",
 };
 
 export interface IdentityClaims {
@@ -66,6 +67,32 @@ export async function saveIdentityClaims(claims: IdentityClaims): Promise<void> 
     await AsyncStorage.setItem(KEYS.IDENTITY_CLAIMS, JSON.stringify(claims));
   } catch (error) {
     console.error("Error saving identity claims:", error);
+  }
+}
+
+export interface MorningBriefState {
+  lastShownDate: string;
+  dismissed: boolean;
+}
+
+export async function getMorningBriefState(): Promise<MorningBriefState | null> {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.MORNING_BRIEF);
+    if (data) {
+      return JSON.parse(data);
+    }
+    return null;
+  } catch (error) {
+    console.error("Error getting morning brief state:", error);
+    return null;
+  }
+}
+
+export async function saveMorningBriefState(state: MorningBriefState): Promise<void> {
+  try {
+    await AsyncStorage.setItem(KEYS.MORNING_BRIEF, JSON.stringify(state));
+  } catch (error) {
+    console.error("Error saving morning brief state:", error);
   }
 }
 

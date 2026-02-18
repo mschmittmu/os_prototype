@@ -1,0 +1,126 @@
+PROMPT 2: MORNING BRIEF
+═══════════════════════════════════════════════════════════════
+CONTEXT FOR REPLIT AI
+Same codebase as Prompt 1. After Prompt 1 is built, the app now has:
+
+Onboarding flow that stores IdentityClaims and OnboardingState in AsyncStorage
+User has declared: coreIdentity, priorityDomain, avoidancePatterns, behavioralStandard
+
+Existing data available in AsyncStorage:
+
+Tasks (via getTasks() from @/lib/storage) — 5 daily tasks with title, category, completed status
+Streak data (via getStreak()) — current streak, best streak, totalDaysWon, totalDaysLost
+User data (via getUser()) — name, tier, xp
+Mock HUD data in @/lib/mockData — lifeScore, attributes, arcaneDirective
+
+WHAT TO BUILD
+The Morning Brief is a daily 30-60 second accountability screen that appears when the user opens the app each day (before they can access the main tabs). It's ARCANE's daily reset — data-driven, sharp, slightly uncomfortable.
+MORNING BRIEF SCREEN
+Structure (5 Components displayed sequentially with auto-scroll or tap-to-advance)
+Component 1: Identity Anchor (2-3 seconds)
+
+Full screen, centered text
+"You claimed to be [CORE IDENTITY]."
+Subtitle: "Prove it today."
+Auto-advances after 3 seconds OR tap to advance
+
+Component 2: Yesterday's Result (Binary — Win or Loss)
+
+Large "W" or "L" with the date
+If WIN: Green accent, streak count displayed: "Day [X] of your streak"
+If LOSS: Red accent, shows: "Streak broken at [X] days" or "Day lost. [X] total losses."
+Pull yesterday's completion status from task data:
+
+Check if ALL 5 tasks were completed yesterday → WIN
+Any incomplete → LOSS
+If no data for yesterday → show "NO DATA LOGGED" with warning styling
+
+
+
+Component 3: Pattern Call-Out (The uncomfortable part)
+
+ARCANE surfaces a behavioral pattern based on available data
+Logic (implement as a simple deterministic function, not actual AI):
+
+Check task categories over recent history. If a category hasn't appeared in 7+ days while the user's priorityDomain maps to it → "You claim [PRIORITY DOMAIN] is your focus. You haven't logged a single [domain] task in [X] days."
+Check streak data: if totalDaysLost > 20% of total days → "Your win rate is [X]%. That's not discipline. That's inconsistency."
+Check avoidancePatterns from onboarding: pick one and surface it → "You admitted you avoid [PATTERN]. Are you avoiding it right now?"
+If no clear pattern, use a default: "Strong execution lately. Don't confuse momentum with transformation."
+
+
+Display with severity styling (critical = red left border, warning = amber, observation = muted)
+
+Component 4: Today's 5 Tasks Preview
+
+Show today's Power List tasks (from getTasks())
+Each task shown as a compact row with category icon and title
+If tasks haven't been created yet: "NO TASKS SET. Your day has no structure." with a "SET TASKS NOW" button that navigates to ExecuteTab
+
+Component 5: Single Directive
+
+One sentence command from ARCANE
+Based on the pattern call-out, generate a directive:
+
+If domain neglected → "Add one [DOMAIN] task to today's list."
+If streak broken → "Win today. Nothing else matters."
+If avoidance detected → "Do the thing you're avoiding first."
+Default → "Execute. No negotiation."
+
+
+"BEGIN YOUR DAY" button → dismisses Morning Brief, navigates to Home tab
+This button should be prominent, full-width, accent red
+
+Data Flow
+Add to client/lib/storage.ts:
+typescript// Add to KEYS:
+MORNING_BRIEF: "@operator_morning_brief",
+
+// Add interfaces:
+export interface MorningBriefState {
+  lastShownDate: string; // ISO date string (date only, no time)
+  dismissed: boolean;
+}
+
+export async function getMorningBriefState(): Promise<MorningBriefState | null> { ... }
+export async function saveMorningBriefState(state: MorningBriefState): Promise<void> { ... }
+Gating Logic
+In RootStackNavigator.tsx (or the onboarding check wrapper):
+
+After onboarding is complete, check if Morning Brief has been shown today
+Compare lastShownDate with today's date
+If NOT shown today → show MorningBriefScreen before Main tabs
+If already shown → go directly to Main tabs
+Flow: App Launch → Onboarding Check → Morning Brief Check → Main Tabs
+
+Navigation
+Add MorningBrief to RootStackParamList in RootStackNavigator.tsx:
+typescriptMorningBrief: undefined;
+Add screen with headerShown: false, gestureEnabled: false
+FILE STRUCTURE
+Create:
+
+client/screens/MorningBriefScreen.tsx — single file with 5 internal components managed by currentComponent state
+client/lib/morningBriefLogic.ts — pure functions for pattern detection and directive generation
+
+STYLING REQUIREMENTS
+
+Full-screen dark background for all components
+Each component transitions with a fade animation
+Identity anchor: extra large text (40pt+), centered, white on dark
+Yesterday's result: massive W or L character (80pt+), color-coded
+Pattern call-out: card with colored left border (4px) indicating severity
+Tasks preview: compact list, muted styling, no interaction except the "SET TASKS NOW" button
+Directive: bold, centered, uppercase, accent color
+Progress dots at bottom showing which component (1-5) is active
+Tap anywhere to advance to next component (except on interactive elements)
+"BEGIN YOUR DAY" button only appears on component 5
+
+CRITICAL NOTES
+
+Morning Brief must feel like a military briefing — terse, data-driven, no fluff
+The pattern detection in morningBriefLogic.ts should be deterministic functions using available AsyncStorage data, NOT API calls
+All text should be UPPERCASE for headings, mixed case for body
+Do NOT modify existing screens or the tab navigator
+The Morning Brief gates access to the app — user MUST see it before using the app each day
+After dismissal, user should not see it again until the next calendar day
+Follow exact import patterns from existing codebase

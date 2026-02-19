@@ -71,7 +71,7 @@ export default function MorningBriefScreen() {
   const [isReady, setIsReady] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(false);
   const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const TOTAL_COMPONENTS = isFirstTime ? 4 : 5;
+  const TOTAL_COMPONENTS = isFirstTime ? 4 : (yesterdayResult && yesterdayResult.outcome !== "no_data" ? 5 : 4);
 
   useEffect(() => {
     const loadData = async () => {
@@ -484,6 +484,8 @@ export default function MorningBriefScreen() {
     );
   };
 
+  const showYesterdayResult = yesterdayResult && yesterdayResult.outcome !== "no_data";
+
   const components = isFirstTime
     ? [
         renderIdentityAnchor,
@@ -493,7 +495,7 @@ export default function MorningBriefScreen() {
       ]
     : [
         renderIdentityAnchor,
-        renderYesterdayResult,
+        ...(showYesterdayResult ? [renderYesterdayResult] : []),
         renderPatternCallOut,
         renderTasksPreview,
         renderDirective,

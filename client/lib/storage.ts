@@ -16,6 +16,7 @@ const KEYS = {
   PROOF_TRIGGERS_FIRED: "@operator_proof_triggers",
   FORUM_JOINED_GROUPS: "@operator_forum_joined_groups",
   FORUM_USER_THREADS: "@operator_forum_user_threads",
+  NIGHT_REFLECTION: "@operator_night_reflection",
 };
 
 export interface IdentityClaims {
@@ -619,4 +620,39 @@ export async function leaveGroup(groupId: string): Promise<void> {
     const filtered = groups.filter(g => g.groupId !== groupId);
     await AsyncStorage.setItem(KEYS.FORUM_JOINED_GROUPS, JSON.stringify(filtered));
   } catch {}
+}
+
+export interface NightReflection {
+  date: string;
+  outcome: "win" | "loss";
+  completed: number;
+  total: number;
+  missReasons: { taskId: string; reason: string }[];
+  reflectionText: string;
+  completedAt: string;
+}
+
+export async function saveNightReflection(reflection: NightReflection): Promise<void> {
+  try {
+    const key = `${KEYS.NIGHT_REFLECTION}_${reflection.date}`;
+    await AsyncStorage.setItem(key, JSON.stringify(reflection));
+  } catch (error) {
+    console.error("Error saving night reflection:", error);
+  }
+}
+
+export async function getNightReflection(date: string): Promise<NightReflection | null> {
+  try {
+    const key = `${KEYS.NIGHT_REFLECTION}_${date}`;
+    const data = await AsyncStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+  } catch (error) {
+    console.error("Error getting night reflection:", error);
+    return null;
+  }
+}
+
+export async function hasCompletedReflection(date: string): Promise<boolean> {
+  const reflection = await getNightReflection(date);
+  return reflection !== null;
 }

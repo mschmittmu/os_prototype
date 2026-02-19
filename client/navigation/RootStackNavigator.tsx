@@ -24,6 +24,7 @@ import GroupThreadScreen from "@/screens/GroupThreadScreen";
 import CreateGroupScreen from "@/screens/CreateGroupScreen";
 import CreateThreadScreen from "@/screens/CreateThreadScreen";
 import SavedPostsScreen from "@/screens/SavedPostsScreen";
+import NightReflectionScreen from "@/screens/NightReflectionScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
 import { getOnboardingState, getMorningBriefState } from "@/lib/storage";
@@ -44,6 +45,7 @@ export type RootStackParamList = {
   CreateGroup: undefined;
   CreateThread: { groupId: string };
   SavedPosts: undefined;
+  NightReflection: undefined;
   TaskCreate: { taskId?: string } | undefined;
   Profile: undefined;
   Stats: undefined;
@@ -254,6 +256,14 @@ export default function RootStackNavigator() {
         component={SavedPostsScreen}
         options={{
           headerTitle: "SAVED",
+          headerTitleStyle: { fontWeight: "700", fontSize: 14 },
+        }}
+      />
+      <Stack.Screen
+        name="NightReflection"
+        component={NightReflectionScreen}
+        options={{
+          headerTitle: "DAILY DEBRIEF",
           headerTitleStyle: { fontWeight: "700", fontSize: 14 },
         }}
       />

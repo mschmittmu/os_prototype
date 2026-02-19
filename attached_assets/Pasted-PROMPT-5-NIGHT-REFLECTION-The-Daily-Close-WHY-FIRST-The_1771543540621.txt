@@ -1,0 +1,111 @@
+PROMPT 5: NIGHT REFLECTION (The Daily Close)
+WHY FIRST: The daily loop is broken. Morning Brief opens the day. Power List runs it. But there's no close. Night Reflection is where win/loss gets calculated, streaks update, and the data gets generated that Morning Brief needs tomorrow. Without this, everything downstream is hypothetical.
+Files to Create
+client/screens/NightReflectionScreen.tsx (~350 lines)
+Full-screen guided EOD review. NOT swipeable cards like Morning Brief — this is a single scrollable screen with sections that feel like filling out an after-action report.
+Layout (top to bottom):
+
+Header Block
+
+"DAILY DEBRIEF" title, uppercase, letterSpacing 3
+Current date formatted: "WEDNESDAY, FEBRUARY 19"
+Small clock icon with time
+
+
+Task Review Section
+
+Section header: "TASK EXECUTION"
+Each of today's 5 tasks displayed as a review row:
+
+Task text (left)
+Status indicator (right): green checkmark if completed, red X if missed
+Category tag pill underneath each task (Health, Business, etc.)
+
+
+Bottom summary line: "4 OF 5 COMPLETED" in bold
+Completion percentage bar (e.g., 80% filled, color-coded)
+
+
+Miss Analysis Section (only appears if any tasks were missed)
+
+Section header: "WHAT CAUSED THE MISS?"
+For EACH missed task, show:
+
+The task text
+Row of reason chips the user taps to select: "Time management" / "Energy" / "Avoidance" / "External factor" / "Forgot" / "Deprioritized"
+One chip selectable per missed task
+
+
+This is critical data for Avoidance Pattern AI later
+
+
+Daily Reflection Section
+
+Section header: "OPERATOR REFLECTION"
+Prompt text: "What would you do differently?" (or rotating prompts)
+Multi-line TextInput, 3-4 lines visible, 500 char max
+Character counter bottom-right
+Optional — user can skip, but the input area is always visible
+
+
+Result Declaration
+
+Large centered result: "WIN" (green, shield-check icon) or "LOSS" (red, shield-x icon)
+Rule: 5/5 = WIN, anything less = LOSS (per Andy's philosophy)
+Below result:
+
+Streak impact: "STREAK: 47 → 48" (green) or "STREAK BROKEN: 47 → 0" (red)
+Life Score preview: "LIFE SCORE IMPACT: +1 projected" or "LIFE SCORE IMPACT: -2 projected"
+
+
+These are calculated from mock logic but displayed to show cause and effect
+
+
+Submit Button
+
+"LOCK IN RESULTS" — full-width, accent color
+On press: haptic (Heavy), saves reflection data to AsyncStorage, navigates back to Home
+After submit, sets a flag so Night Reflection shows as completed for today
+
+
+
+Styling rules:
+
+Dark background (theme.backgroundRoot), NOT the black-on-black of Morning Brief
+Card sections with backgroundSecondary, subtle borders
+Status colors: green (#10B981) for completed, red (#EF4444) for missed
+Monospace numbers for stats
+No auto-advance, no timers — the user controls the pace
+
+client/lib/nightReflectionLogic.ts (~80 lines)
+
+calculateDayResult(tasks: Task[]): { outcome: "win" | "loss", completed: number, total: number, completionPct: number }
+calculateStreakImpact(currentStreak: number, outcome: "win" | "loss"): { before: number, after: number, direction: "up" | "broken" }
+calculateLifeScorePreview(currentScore: number, outcome: "win" | "loss", completionPct: number): { delta: number, projected: number }
+getMissReasonOptions(): string[] — returns the fixed list of reason chips
+getReflectionPrompt(dayOfWeek: number): string — rotating prompts by day
+
+Files to Modify
+client/lib/storage.ts
+
+Add NightReflection interface: { date: string, outcome: "win"|"loss", completed: number, total: number, missReasons: {taskId: string, reason: string}[], reflectionText: string, completedAt: string }
+Add NIGHT_REFLECTION_KEY
+Add saveNightReflection() and getNightReflection(date: string) and hasCompletedReflection(date: string)
+
+client/lib/mockData.ts
+
+Add mockNightReflection object with sample data for "yesterday" (to feed Morning Brief)
+Add MISS_REASON_OPTIONS array
+Add REFLECTION_PROMPTS array (7 prompts, one per day of week)
+
+client/navigation/RootStackNavigator.tsx
+
+Add NightReflection: undefined to params
+Register screen with "DAILY DEBRIEF" header
+
+client/screens/HomeScreen.tsx
+
+Add a "Night Reflection" prompt card that appears after 7PM (mock time check)
+Card shows: "End your day. Lock in your results." with arrow icon
+Tapping navigates to NightReflection screen
+Card disappears if reflection already completed today

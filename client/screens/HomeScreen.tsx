@@ -4,26 +4,30 @@ import {
   StyleSheet,
   ScrollView,
   RefreshControl,
+  Pressable,
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useHeaderHeight } from "@react-navigation/elements";
+import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { ThemedView } from "@/components/ThemedView";
+import { ThemedText } from "@/components/ThemedText";
 import { LifeScoreRing } from "@/components/LifeScoreRing";
 import { VitalStatsRow } from "@/components/VitalStatsRow";
 import { ArcaneDirective } from "@/components/ArcaneDirective";
 import { OperatorAttributes } from "@/components/OperatorAttributes";
 import { TodaysTasksSummary } from "@/components/TodaysTasksSummary";
-import { Spacing } from "@/constants/theme";
+import { Spacing, BorderRadius } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import {
   getTasks,
   getStreak,
+  hasCompletedReflection,
   Task,
   StreakData,
 } from "@/lib/storage";
@@ -44,6 +48,7 @@ export default function HomeScreen() {
     totalDaysLost: 0,
   });
   const [refreshing, setRefreshing] = useState(false);
+  const [showNightReflection, setShowNightReflection] = useState(false);
 
   const loadData = useCallback(async () => {
     const [tasksData, streakData] = await Promise.all([
@@ -52,6 +57,16 @@ export default function HomeScreen() {
     ]);
     setTasks(tasksData);
     setStreak(streakData);
+
+    const now = new Date();
+    const isEvening = now.getHours() >= 19;
+    if (isEvening) {
+      const today = now.toISOString().split("T")[0];
+      const done = await hasCompletedReflection(today);
+      setShowNightReflection(!done);
+    } else {
+      setShowNightReflection(false);
+    }
   }, []);
 
   useFocusEffect(
@@ -140,6 +155,29 @@ export default function HomeScreen() {
           onViewAll={handleViewTasks}
         />
       </Animated.View>
+
+      {showNightReflection ? (
+        <Animated.View entering={FadeInDown.duration(400).delay(500)} style={styles.section}>
+          <Pressable
+            style={[styles.nightReflectionCard, { backgroundColor: theme.backgroundSecondary, borderColor: theme.accent }]}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              navigation.navigate("NightReflection");
+            }}
+          >
+            <View style={[styles.nightReflectionIcon, { backgroundColor: theme.accent + "20" }]}>
+              <Feather name="moon" size={24} color={theme.accent} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <ThemedText type="bodyBold">End Your Day</ThemedText>
+              <ThemedText type="small" secondary>
+                Lock in your results.
+              </ThemedText>
+            </View>
+            <Feather name="arrow-right" size={20} color={theme.accent} />
+          </Pressable>
+        </Animated.View>
+      ) : null}
     </ScrollView>
   );
 }
@@ -153,5 +191,20 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: Spacing.lg,
+  },
+  nightReflectionCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: Spacing.lg,
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    gap: Spacing.md,
+  },
+  nightReflectionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

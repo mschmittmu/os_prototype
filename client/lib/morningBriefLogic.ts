@@ -123,7 +123,7 @@ export function getPatternCallOut(
     );
     if (!hasDomainTask && domainCategories.length > 0) {
       return {
-        message: `You claim ${claims.priorityDomain} is your focus. Your task list says otherwise.`,
+        message: `You claim ${claims.priorityDomain} is your focus. Time to see you implement daily with your task list.`,
         severity: "warning",
       };
     }

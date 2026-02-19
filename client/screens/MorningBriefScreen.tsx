@@ -360,7 +360,7 @@ export default function MorningBriefScreen() {
           <ThemedText
             style={[styles.sectionLabel, { color: theme.textSecondary }]}
           >
-            PATTERN DETECTED
+            PATTERN IMPLEMENTATION
           </ThemedText>
           <Animated.View
             entering={FadeInDown.delay(300).duration(600)}

@@ -104,6 +104,15 @@ The app runs on:
 
 ## Recent Changes
 
+- **NEW: Night Reflection (Daily Close)** - End-of-day after-action report screen
+  - Single scrollable screen with Task Execution review, Miss Analysis, Operator Reflection, and Result Declaration
+  - Each missed task requires a reason chip selection (Time management, Energy, Avoidance, External factor, Forgot, Deprioritized)
+  - WIN/LOSS calculated (5/5 = WIN, anything less = LOSS per Andy's philosophy)
+  - Shows streak impact and life score projection
+  - "LOCK IN RESULTS" saves to AsyncStorage via NightReflection interface
+  - Home screen shows prompt card after 7PM if not yet completed
+  - Logic in nightReflectionLogic.ts (calculateDayResult, calculateStreakImpact, calculateLifeScorePreview, rotating prompts)
+- **NEW: Saved Posts Screen** - Accessible from Profile, shows bookmarked posts and announcements with unsave functionality
 - **NEW: Morning Brief** - Daily accountability screen before main app access
   - 5 sequential components: Identity Anchor, Yesterday's Result, Pattern Call-Out, Tasks Preview, Directive
   - Auto-advances on first component, tap-to-advance on others

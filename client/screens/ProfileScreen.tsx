@@ -203,11 +203,33 @@ export default function ProfileScreen() {
         </Pressable>
       </Animated.View>
 
+      <Animated.View entering={FadeInDown.duration(400).delay(350)}>
+        <Pressable
+          style={[styles.valuesButton, { backgroundColor: theme.backgroundRoot, borderColor: theme.border }]}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            navigation.navigate("SavedPosts");
+          }}
+        >
+          <View style={[styles.valuesIcon, { backgroundColor: theme.backgroundSecondary }]}>
+            <Feather name="bookmark" size={20} color={theme.accent} />
+          </View>
+          <ThemedText type="bodyBold" style={styles.valuesLabel}>
+            Saved Posts
+          </ThemedText>
+          <Feather
+            name="chevron-right"
+            size={20}
+            color={theme.textSecondary}
+          />
+        </Pressable>
+      </Animated.View>
+
       {SETTINGS_SECTIONS.map((section, sectionIndex) => (
         <Animated.View
           key={section.title}
           style={styles.settingsSection}
-          entering={FadeInDown.duration(400).delay(300 + sectionIndex * 50)}
+          entering={FadeInDown.duration(400).delay(400 + sectionIndex * 50)}
         >
           <ThemedText type="caption" secondary style={styles.sectionTitle}>
             {section.title.toUpperCase()}

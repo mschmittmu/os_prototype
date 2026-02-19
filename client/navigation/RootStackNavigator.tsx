@@ -23,6 +23,7 @@ import GroupBoardScreen from "@/screens/GroupBoardScreen";
 import GroupThreadScreen from "@/screens/GroupThreadScreen";
 import CreateGroupScreen from "@/screens/CreateGroupScreen";
 import CreateThreadScreen from "@/screens/CreateThreadScreen";
+import SavedPostsScreen from "@/screens/SavedPostsScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
 import { getOnboardingState, getMorningBriefState } from "@/lib/storage";
@@ -42,6 +43,7 @@ export type RootStackParamList = {
   GroupThread: { threadId: string; threadTitle: string; groupId: string };
   CreateGroup: undefined;
   CreateThread: { groupId: string };
+  SavedPosts: undefined;
   TaskCreate: { taskId?: string } | undefined;
   Profile: undefined;
   Stats: undefined;
@@ -245,6 +247,14 @@ export default function RootStackNavigator() {
         component={ProofVaultScreen}
         options={{
           headerTitle: "PROOF VAULT",
+        }}
+      />
+      <Stack.Screen
+        name="SavedPosts"
+        component={SavedPostsScreen}
+        options={{
+          headerTitle: "SAVED",
+          headerTitleStyle: { fontWeight: "700", fontSize: 14 },
         }}
       />
       <Stack.Screen

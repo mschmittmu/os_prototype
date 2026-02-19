@@ -234,7 +234,7 @@ export const announcements: Announcement[] = [
     comments: 892,
     timestamp: "3h ago",
     liked: false,
-    saved: false,
+    saved: true,
   },
   {
     id: "a2",
@@ -293,7 +293,7 @@ export const posts: Post[] = [
     comments: 45,
     timestamp: "2h ago",
     liked: false,
-    saved: false,
+    saved: true,
   },
   {
     id: "2",
@@ -323,7 +323,7 @@ export const posts: Post[] = [
     comments: 32,
     timestamp: "8h ago",
     liked: false,
-    saved: false,
+    saved: true,
   },
 ];
 

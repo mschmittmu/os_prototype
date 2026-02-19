@@ -1,0 +1,134 @@
+# FEATURE: Move Saved Posts to Profile Tab
+
+## CONTEXT
+The "Saved" tab was removed from the Social screen. Saved content belongs on the user's Profile — it's personal, not social. Users can still tap the bookmark icon on posts and announcements in the Social feed to save them. This screen is where they VIEW their saved items.
+
+## WHAT TO BUILD
+
+### 1. New Screen: `client/screens/SavedPostsScreen.tsx`
+
+A simple screen that shows all saved posts and announcements in a single scrollable list.
+
+**Layout:**
+- Header area with bookmark icon + "SAVED ITEMS" label + count
+- List of saved items (posts and announcements mixed, sorted by most recent)
+- Empty state when nothing is saved
+
+**Data source:** Import `posts` and `announcements` from `@/lib/mockData` and filter for `saved: true`. This is a prototype — in production this would read from storage/API.
+
+**For posts**, reuse the existing `PostCard` component from `@/components/PostCard`:
+```typescript
+import { PostCard } from "@/components/PostCard";
+```
+
+PostCard accepts these props:
+```typescript
+{
+  id: string;
+  author: { name: string; avatar?: string; tier: string };
+  content: string;
+  image?: string;
+  likes: number;
+  comments: number;
+  timestamp: string;
+  liked?: boolean;
+  saved?: boolean;
+  onLike: (id: string) => void;
+  onComment: (id: string) => void;
+  onSave: (id: string) => void;
+}
+```
+
+**For announcements**, render a simplified card (since AnnouncementCard is not exported as a shared component):
+- Author row: "AF" avatar circle (accent background) + "Andy Frisella" + verified check + tier badge
+- Content text
+- Bookmark icon (filled, accent color since it's saved)
+- Timestamp
+
+**Empty state:**
+- Large bookmark icon (size 48, textSecondary color)
+- "No saved posts yet"
+- "Bookmark posts from the feed to save them here."
+
+**The save toggle should work on this screen too** — tapping bookmark removes the item from the list (with local state management). Use `useState` to manage the displayed items, and filter out unsaved ones when toggled.
+
+**Styling:** Match the existing app style. Use `FadeInDown` animations on list items. Standard padding (`Spacing.lg`). No special formatting needed — this is a utility screen.
+
+### 2. Update Mock Data: `client/lib/mockData.ts`
+
+Mark a few more items as `saved: true` so the screen isn't nearly empty. Change these:
+
+**Post id "1"** (Marcus Rivera, "Day 47 of completing my Power List..."): change `saved: false` to `saved: true`
+
+**Post id "4"** (David Carter, "First week with the Power List..."): change `saved: false` to `saved: true`
+
+**Announcement id "1"** (the first announcement): change `saved: false` to `saved: true`
+
+This gives us 4 saved items total (1 announcement + 3 posts) for a populated screen.
+
+### 3. Add Navigation: `client/navigation/RootStackNavigator.tsx`
+
+Add to `RootStackParamList`:
+```typescript
+SavedPosts: undefined;
+```
+
+Add the screen (near the other profile-related screens like CoreValues, ProofVault):
+```typescript
+<Stack.Screen
+  name="SavedPosts"
+  component={SavedPostsScreen}
+  options={{
+    headerTitle: "SAVED",
+    headerTitleStyle: { fontWeight: "700", fontSize: 14, letterSpacing: 2 },
+  }}
+/>
+```
+
+Import at the top:
+```typescript
+import SavedPostsScreen from "@/screens/SavedPostsScreen";
+```
+
+### 4. Add Profile Row: `client/screens/ProfileScreen.tsx`
+
+Add a "Saved Posts" navigation row to the Profile screen. Place it AFTER the "Core Values" button and BEFORE the settings sections. Use the same styling pattern as the existing Proof Vault and Core Values rows:
+
+```tsx
+<Animated.View entering={FadeInDown.duration(400).delay(350)}>
+  <Pressable
+    style={[styles.valuesButton, { backgroundColor: theme.backgroundRoot, borderColor: theme.border }]}
+    onPress={() => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      navigation.navigate("SavedPosts");
+    }}
+  >
+    <View style={[styles.valuesIcon, { backgroundColor: theme.backgroundSecondary }]}>
+      <Feather name="bookmark" size={20} color={theme.accent} />
+    </View>
+    <ThemedText type="bodyBold" style={styles.valuesLabel}>
+      Saved Posts
+    </ThemedText>
+    <Feather
+      name="chevron-right"
+      size={20}
+      color={theme.textSecondary}
+    />
+  </Pressable>
+</Animated.View>
+```
+
+Also update the delay values on the settings sections below it — bump each by 50ms so the stagger animation stays smooth (the existing delays start at 300, adjust to account for the new row).
+
+## FILES TO CREATE
+1. `client/screens/SavedPostsScreen.tsx`
+
+## FILES TO MODIFY
+1. `client/lib/mockData.ts` — Mark 3 more items as saved
+2. `client/navigation/RootStackNavigator.tsx` — Add SavedPosts screen + param
+3. `client/screens/ProfileScreen.tsx` — Add "Saved Posts" row after Core Values
+
+## DO NOT MODIFY
+- `client/screens/SocialScreen.tsx` — Save toggling already works there, don't touch it
+- `client/components/PostCard.tsx` — Already exports correctly
+- Any other screens

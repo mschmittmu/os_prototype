@@ -500,7 +500,9 @@ export const mockStrikes: Strike[] = [
     severity: "Pattern",
     strikeValue: 2,
     date: "Feb 16, 2026",
-    status: "active",
+    status: "cleared",
+    clearedDate: "Feb 17, 2026",
+    clearMethod: "Recovery protocol",
   },
   {
     id: "s4",

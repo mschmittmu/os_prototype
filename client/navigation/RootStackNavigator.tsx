@@ -27,6 +27,7 @@ import SavedPostsScreen from "@/screens/SavedPostsScreen";
 import NightReflectionScreen from "@/screens/NightReflectionScreen";
 import LifeScoreScreen from "@/screens/LifeScoreScreen";
 import StrikeHistoryScreen from "@/screens/StrikeHistoryScreen";
+import BehaviorHistoryScreen from "@/screens/BehaviorHistoryScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
 import { getOnboardingState, getMorningBriefState } from "@/lib/storage";
@@ -50,6 +51,7 @@ export type RootStackParamList = {
   NightReflection: undefined;
   LifeScore: undefined;
   StrikeHistory: undefined;
+  BehaviorHistory: undefined;
   TaskCreate: { taskId?: string } | undefined;
   Profile: undefined;
   Stats: undefined;
@@ -284,6 +286,14 @@ export default function RootStackNavigator() {
         component={StrikeHistoryScreen}
         options={{
           headerTitle: "STRIKE HISTORY",
+          headerTitleStyle: { fontWeight: "700", fontSize: 14 },
+        }}
+      />
+      <Stack.Screen
+        name="BehaviorHistory"
+        component={BehaviorHistoryScreen}
+        options={{
+          headerTitle: "BEHAVIOR RECORD",
           headerTitleStyle: { fontWeight: "700", fontSize: 14 },
         }}
       />

@@ -240,6 +240,28 @@ export default function ProfileScreen() {
           style={[styles.valuesButton, { backgroundColor: theme.backgroundRoot, borderColor: theme.border }]}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            navigation.navigate("BehaviorHistory");
+          }}
+        >
+          <View style={[styles.valuesIcon, { backgroundColor: theme.navy + "15" }]}>
+            <Feather name="clock" size={20} color={theme.navy} />
+          </View>
+          <ThemedText type="bodyBold" style={styles.valuesLabel}>
+            Behavior History
+          </ThemedText>
+          <Feather
+            name="chevron-right"
+            size={20}
+            color={theme.textSecondary}
+          />
+        </Pressable>
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.duration(400).delay(390)}>
+        <Pressable
+          style={[styles.valuesButton, { backgroundColor: theme.backgroundRoot, borderColor: theme.border }]}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             navigation.navigate("StrikeHistory");
           }}
         >

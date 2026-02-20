@@ -536,6 +536,96 @@ export const mockStrikes: Strike[] = [
   },
 ];
 
+// ===== BEHAVIOR HISTORY =====
+
+export interface BehaviorEvent {
+  id: string;
+  type: "win" | "loss" | "strike" | "strike_cleared" | "streak_milestone" | "proof" | "contradiction";
+  date: string;
+  title: string;
+  subtitle: string;
+  detail?: string;
+  streakCount?: number;
+  lifeScoreAtTime?: number;
+  proofThumbnail?: string;
+  milestoneTag?: string;
+  contradictionClaim?: string;
+  contradictionEvidence?: string;
+}
+
+export interface ContradictionMock {
+  id: string;
+  claim: string;
+  evidence: string;
+  domain: string;
+  domainScore: number;
+  dateDetected: string;
+  severity: "critical" | "warning";
+}
+
+export const mockContradictions: ContradictionMock[] = [
+  {
+    id: "ct1",
+    claim: "I'm becoming disciplined",
+    evidence: "4 losses in 7 days",
+    domain: "DISCIPLINE",
+    domainScore: 82,
+    dateDetected: "2026-02-18",
+    severity: "warning",
+  },
+  {
+    id: "ct2",
+    claim: "Family is my priority",
+    evidence: "Zero relationship tasks in 10 days",
+    domain: "RELATIONSHIPS",
+    domainScore: 29,
+    dateDetected: "2026-02-15",
+    severity: "critical",
+  },
+  {
+    id: "ct3",
+    claim: "I'm building financial freedom",
+    evidence: "Financial tasks avoided 6 times this month",
+    domain: "FINANCIAL",
+    domainScore: 45,
+    dateDetected: "2026-02-10",
+    severity: "warning",
+  },
+];
+
+export const behaviorHistory: BehaviorEvent[] = [
+  { id: "bh1", type: "win", date: "2026-02-20", title: "WIN", subtitle: "5/5 completed", streakCount: 47, lifeScoreAtTime: 73 },
+  { id: "bh2", type: "win", date: "2026-02-19", title: "WIN", subtitle: "5/5 completed", streakCount: 46, lifeScoreAtTime: 72 },
+  { id: "bh3", type: "contradiction", date: "2026-02-18", title: "CONTRADICTION DETECTED", subtitle: "Discipline claim vs behavior", contradictionClaim: "I'm becoming disciplined", contradictionEvidence: "4 losses in 7 days" },
+  { id: "bh4", type: "loss", date: "2026-02-18", title: "LOSS", subtitle: "3/5 completed", streakCount: 0 },
+  { id: "bh5", type: "strike", date: "2026-02-16", title: "STRIKE ASSIGNED", subtitle: "Pattern failure", detail: "Pattern" },
+  { id: "bh6", type: "win", date: "2026-02-16", title: "WIN", subtitle: "5/5 completed", streakCount: 44 },
+  { id: "bh7", type: "contradiction", date: "2026-02-15", title: "CONTRADICTION DETECTED", subtitle: "Family claim vs behavior", contradictionClaim: "Family is my priority", contradictionEvidence: "Zero relationship tasks in 10 days" },
+  { id: "bh8", type: "win", date: "2026-02-15", title: "WIN", subtitle: "5/5 completed", streakCount: 43 },
+  { id: "bh9", type: "win", date: "2026-02-14", title: "WIN", subtitle: "5/5 completed", streakCount: 42 },
+  { id: "bh10", type: "strike_cleared", date: "2026-02-13", title: "STRIKE CLEARED", subtitle: "Recovery completed", detail: "Day won" },
+  { id: "bh11", type: "win", date: "2026-02-13", title: "WIN", subtitle: "5/5 completed", streakCount: 41 },
+  { id: "bh12", type: "loss", date: "2026-02-12", title: "LOSS", subtitle: "4/5 completed", streakCount: 0 },
+  { id: "bh13", type: "strike", date: "2026-02-12", title: "STRIKE ASSIGNED", subtitle: "Daily loss", detail: "Standard" },
+  { id: "bh14", type: "contradiction", date: "2026-02-10", title: "CONTRADICTION DETECTED", subtitle: "Financial claim vs behavior", contradictionClaim: "I'm building financial freedom", contradictionEvidence: "Financial tasks avoided 6 times this month" },
+  { id: "bh15", type: "strike_cleared", date: "2026-02-11", title: "STRIKE CLEARED", subtitle: "Recovery protocol", detail: "Recovery protocol" },
+  { id: "bh16", type: "win", date: "2026-02-10", title: "WIN", subtitle: "5/5 completed", streakCount: 40 },
+  { id: "bh17", type: "streak_milestone", date: "2026-02-09", title: "30-DAY STREAK", subtitle: "Milestone achieved", streakCount: 30, lifeScoreAtTime: 68, milestoneTag: "30 Days" },
+  { id: "bh18", type: "win", date: "2026-02-09", title: "WIN", subtitle: "5/5 completed", streakCount: 30 },
+  { id: "bh19", type: "proof", date: "2026-02-08", title: "PROOF CAPTURED", subtitle: "Gym progress photo", milestoneTag: "Physical", proofThumbnail: "gym_proof" },
+  { id: "bh20", type: "win", date: "2026-02-08", title: "WIN", subtitle: "5/5 completed", streakCount: 29 },
+  { id: "bh21", type: "loss", date: "2026-02-05", title: "LOSS", subtitle: "2/5 completed", streakCount: 0 },
+  { id: "bh22", type: "strike", date: "2026-02-05", title: "STRIKE ASSIGNED", subtitle: "Streak broken", detail: "Behavioral" },
+  { id: "bh23", type: "win", date: "2026-02-04", title: "WIN", subtitle: "5/5 completed", streakCount: 26 },
+  { id: "bh24", type: "win", date: "2026-02-03", title: "WIN", subtitle: "5/5 completed", streakCount: 25 },
+  { id: "bh25", type: "proof", date: "2026-02-01", title: "PROOF CAPTURED", subtitle: "Business milestone", milestoneTag: "Work Execution", proofThumbnail: "business_proof" },
+  { id: "bh26", type: "streak_milestone", date: "2026-01-25", title: "15-DAY STREAK", subtitle: "Milestone achieved", streakCount: 15, lifeScoreAtTime: 62, milestoneTag: "15 Days" },
+  { id: "bh27", type: "loss", date: "2026-01-20", title: "LOSS", subtitle: "3/5 completed", streakCount: 0 },
+  { id: "bh28", type: "loss", date: "2026-01-18", title: "LOSS", subtitle: "1/5 completed", streakCount: 0 },
+  { id: "bh29", type: "streak_milestone", date: "2026-01-10", title: "7-DAY STREAK", subtitle: "Milestone achieved", streakCount: 7, lifeScoreAtTime: 55, milestoneTag: "7 Days" },
+  { id: "bh30", type: "win", date: "2026-01-03", title: "WIN", subtitle: "5/5 completed", streakCount: 1, lifeScoreAtTime: 48 },
+];
+
 // Social gating mock state
 // Toggle these values to test different gate screens:
 // - Set isNewUser: true and streak < 3 for "EARN YOUR ACCESS" screen

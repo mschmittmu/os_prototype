@@ -4,11 +4,12 @@ import {
   StyleSheet,
   ScrollView,
   Pressable,
-  Alert,
   Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHeaderHeight } from "@react-navigation/elements";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Feather } from "@expo/vector-icons";
 import Svg, { Path, Circle, Line } from "react-native-svg";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -17,6 +18,7 @@ import * as Haptics from "expo-haptics";
 import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
+import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import {
   hudData,
   lifeScoreHistory,
@@ -65,6 +67,7 @@ export default function LifeScoreScreen() {
   const headerHeight = useHeaderHeight();
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const score = hudData.lifeScore.current;
   const scoreColor = getScoreColor(score);
@@ -543,10 +546,7 @@ export default function LifeScoreScreen() {
             if (Platform.OS !== "web") {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             }
-            Alert.alert(
-              "Coming Soon",
-              "Full behavior history will be available in a future update."
-            );
+            navigation.navigate("BehaviorHistory");
           }}
         >
           <ThemedText

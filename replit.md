@@ -113,13 +113,16 @@ The app runs on:
   - Home screen shows prompt card after 7PM if not yet completed
   - Logic in nightReflectionLogic.ts (calculateDayResult, calculateStreakImpact, calculateLifeScorePreview, rotating prompts)
 - **NEW: Saved Posts Screen** - Accessible from Profile, shows bookmarked posts and announcements with unsave functionality
-- **NEW: Morning Brief** - Daily accountability screen before main app access
-  - 5 sequential components: Identity Anchor, Yesterday's Result, Pattern Call-Out, Tasks Preview, Directive
-  - Auto-advances on first component, tap-to-advance on others
+- **NEW: Morning Brief** - Daily intelligence briefing (scrollable document format)
+  - Single scrollable screen with numbered sections: Identity Anchor, Yesterday's Result, Pattern Intelligence, Today's Power List, Directive
+  - Section numbers (01, 02, 03...) give classified document feel
+  - No auto-advance, no swipe navigation - user scrolls at own pace
   - Pattern detection logic in morningBriefLogic.ts (deterministic, no API calls)
-  - Gates daily access - shown once per calendar day, dismissed via "BEGIN YOUR DAY"
+  - Gates daily access - shown once per calendar day, dismissed via "ACKNOWLEDGED"
   - Flow: App Launch -> Onboarding Check -> Morning Brief Check -> Main Tabs
   - Data stored in AsyncStorage (MORNING_BRIEF key with lastShownDate and dismissed)
+  - Re-accessible from Settings > ARCANE section
+  - First-time users get simplified brief with Identity + How This Works + Directive
 - **NEW: Onboarding Flow** - 6-step identity declaration system for new users
   - Step 1: Name entry ("WHO ARE YOU?")
   - Step 2: Core Identity claim (5 options)

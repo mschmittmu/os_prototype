@@ -25,6 +25,7 @@ import CreateGroupScreen from "@/screens/CreateGroupScreen";
 import CreateThreadScreen from "@/screens/CreateThreadScreen";
 import SavedPostsScreen from "@/screens/SavedPostsScreen";
 import NightReflectionScreen from "@/screens/NightReflectionScreen";
+import LifeScoreScreen from "@/screens/LifeScoreScreen";
 import { useScreenOptions } from "@/hooks/useScreenOptions";
 import { useTheme } from "@/hooks/useTheme";
 import { getOnboardingState, getMorningBriefState } from "@/lib/storage";
@@ -46,6 +47,7 @@ export type RootStackParamList = {
   CreateThread: { groupId: string };
   SavedPosts: undefined;
   NightReflection: undefined;
+  LifeScore: undefined;
   TaskCreate: { taskId?: string } | undefined;
   Profile: undefined;
   Stats: undefined;
@@ -264,6 +266,14 @@ export default function RootStackNavigator() {
         component={NightReflectionScreen}
         options={{
           headerTitle: "DAILY DEBRIEF",
+          headerTitleStyle: { fontWeight: "700", fontSize: 14 },
+        }}
+      />
+      <Stack.Screen
+        name="LifeScore"
+        component={LifeScoreScreen}
+        options={{
+          headerTitle: "LIFE SCORE",
           headerTitleStyle: { fontWeight: "700", fontSize: 14 },
         }}
       />

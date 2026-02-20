@@ -1,0 +1,95 @@
+PROMPT 7: LIFE SCORE DEEP DIVE
+WHY THIRD: The HUD already shows Life Score and 8 domains. This prompt makes them tappable and adds the detail screen that shows HOW scores are calculated and WHERE weaknesses live.
+Files to Create
+client/screens/LifeScoreScreen.tsx (~380 lines)
+Tapping the LifeScoreRing on HomeScreen navigates here. This is the "deep mode" Andy described — trends, gaps, failure patterns, actionable intel.
+Layout (scrollable):
+
+Score Header
+
+Large Life Score number (centered, 72pt, color-coded)
+Gauge arc underneath (larger version of HomeScreen ring)
+Trend line text: "+2 this week • +8 this month"
+Score tier label: "ADVANCING" (60-79) / "DOMINANT" (80-100) / "STRUGGLING" (40-59) / "CRITICAL" (<40)
+
+
+Score Breakdown Card
+
+"COMPOSITE BREAKDOWN" header
+Visual showing the formula components:
+
+Weighted Domain Average: 70% weight — show calculated value
+Consistency Bonus: 15% weight — show current bonus
+Trend Bonus: 15% weight — show current bonus
+Weakness Penalty: show subtracted amount (red) and which domain triggered it
+
+
+This demystifies the score — users see exactly why they're at 73
+
+
+Domain Grid (8 domains, 2 columns)
+
+Each domain is a tappable card showing:
+
+Domain name (uppercase)
+Score (large number, color-coded)
+Mini trend indicator (up/down arrow + delta)
+Small progress bar
+
+
+Sorted by score (lowest first — weakest link philosophy)
+Lowest domain has a red border / "WEAKEST LINK" badge
+
+
+Weekly Trend Chart
+
+Section header: "7-DAY TREND"
+Simple line chart showing Life Score for each of the last 7 days
+Mock data points: [68, 69, 71, 70, 72, 71, 73]
+Dots on each day, labeled with day abbreviation (M T W T F S S)
+Uses SVG Path for the line, Circle for dots
+
+
+Domain Insights
+
+Section header: "ARCANE ANALYSIS"
+2-3 insight cards, each with:
+
+Icon + domain name
+Insight text (from mock data)
+
+
+Examples:
+
+"RELATIONSHIPS is your weakest domain at 29. Zero relationship tasks logged in 10 days."
+"RECOVERY declining. Average 6 days to bounce back from losses."
+"DISCIPLINE is your strongest attribute. Maintain the standard."
+
+
+
+
+History Link
+
+"VIEW FULL BEHAVIOR HISTORY →" text link at bottom
+Navigates to BehaviorHistoryScreen (built in Prompt 10)
+For now, just show the link — screen doesn't exist yet, so wrap in a disabled state or Alert
+
+
+
+Files to Modify
+client/screens/HomeScreen.tsx
+
+Wrap LifeScoreRing in a Pressable
+onPress: navigation.navigate("LifeScore")
+Add subtle chevron or "tap for details" hint
+
+client/lib/mockData.ts
+
+Add lifeScoreHistory: number[] — last 7 days of scores
+Add domainInsights: { domain: string, icon: string, text: string }[] — 3 insight cards
+Add scoreBreakdown: { weightedAvg: number, consistencyBonus: number, trendBonus: number, weaknessPenalty: number, penaltyDomain: string }
+
+client/navigation/RootStackNavigator.tsx
+
+Add LifeScore: undefined to params
+Register screen with "LIFE SCORE" header

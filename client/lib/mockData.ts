@@ -466,6 +466,38 @@ export const hudData: HUDData = {
   ],
 };
 
+export const lifeScoreHistory: number[] = [68, 69, 71, 70, 72, 71, 73];
+
+export const domainInsights: {
+  domain: string;
+  icon: string;
+  text: string;
+}[] = [
+  {
+    domain: "RELATIONSHIPS",
+    icon: "heart",
+    text: "Your weakest domain at 29. Zero relationship tasks logged in 10 days.",
+  },
+  {
+    domain: "RECOVERY",
+    icon: "refresh-cw",
+    text: "Declining. Average 6 days to bounce back from losses.",
+  },
+  {
+    domain: "DISCIPLINE",
+    icon: "shield",
+    text: "Your strongest attribute. Maintain the standard.",
+  },
+];
+
+export const scoreBreakdown = {
+  weightedAvg: 54,
+  consistencyBonus: 12,
+  trendBonus: 10,
+  weaknessPenalty: 3,
+  penaltyDomain: "RELATIONSHIPS",
+};
+
 export const arcaneDirectives = [
   "Your discipline is strong, but your relationships are deteriorating. 3 weeks without a single relationship task.",
   "You win most days but collapse every weekend. Your consistency score proves it.",

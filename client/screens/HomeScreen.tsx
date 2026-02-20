@@ -121,11 +121,24 @@ export default function HomeScreen() {
       }
     >
       <Animated.View entering={FadeInDown.duration(400).delay(0)}>
-        <LifeScoreRing
-          score={hudData.lifeScore.current}
-          trend={hudData.lifeScore.trend}
-          trendDirection={hudData.lifeScore.trendDirection}
-        />
+        <Pressable
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            navigation.navigate("LifeScore");
+          }}
+        >
+          <LifeScoreRing
+            score={hudData.lifeScore.current}
+            trend={hudData.lifeScore.trend}
+            trendDirection={hudData.lifeScore.trendDirection}
+          />
+          <View style={styles.tapHint}>
+            <ThemedText type="small" secondary>
+              Tap for details
+            </ThemedText>
+            <Feather name="chevron-right" size={12} color={theme.textSecondary} />
+          </View>
+        </Pressable>
       </Animated.View>
 
       <Animated.View entering={FadeInDown.duration(400).delay(100)}>
@@ -206,5 +219,12 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     justifyContent: "center",
     alignItems: "center",
+  },
+  tapHint: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 2,
+    marginTop: Spacing.xs,
   },
 });

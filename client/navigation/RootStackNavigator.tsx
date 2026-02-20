@@ -83,12 +83,7 @@ export default function RootStackNavigator() {
 
   useEffect(() => {
     const checkState = async () => {
-      const onboarding = await getOnboardingState();
-      if (!onboarding?.isComplete) {
-        setInitialRoute("Onboarding");
-        setIsLoading(false);
-        return;
-      }
+      // BYPASS: Skip onboarding, check Morning Brief only
       const briefState = await getMorningBriefState();
       const today = new Date().toISOString().split("T")[0];
       if (!briefState || briefState.lastShownDate !== today || !briefState.dismissed) {

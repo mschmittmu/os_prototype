@@ -104,6 +104,17 @@ The app runs on:
 
 ## Recent Changes
 
+- **NEW: Identity Contradictions + Behavior Timeline** - Accountability history system
+  - Identity Contradiction detection: 6 rules comparing onboarding claims against actual behavior (discipline, relationships, financial, physical, consistency, mental control)
+  - IdentityContradictionCard.tsx displays claim vs reality with severity color-coding (red critical, orange warning)
+  - BehaviorHistoryScreen.tsx: Full timeline with vertical connector lines, colored event dots, and filterable categories
+  - Event types: wins, losses, strikes, strike clears, streak milestones, proof captures, contradictions
+  - Filter chips: All, Wins, Losses, Strikes, Milestones, Proof, Contradictions
+  - Summary card at bottom with aggregated stats (wins, losses, win rate, best streak, strikes, life score)
+  - Accessible from Profile > "Behavior History" and LifeScore > "View Full Behavior Record"
+  - Contradictions integrated into Morning Brief Pattern Intelligence section (shows top 2)
+  - Mock data in mockData.ts (behaviorHistory, mockContradictions)
+  - Logic in contradictionLogic.ts (detectContradictions function with domain score thresholds)
 - **NEW: Night Reflection (Daily Close)** - End-of-day after-action report screen
   - Single scrollable screen with Task Execution review, Miss Analysis, Operator Reflection, and Result Declaration
   - Each missed task requires a reason chip selection (Time management, Energy, Avoidance, External factor, Forgot, Deprioritized)

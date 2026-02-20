@@ -37,6 +37,8 @@ import {
   Directive,
 } from "@/lib/morningBriefLogic";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import { IdentityContradictionCard } from "@/components/IdentityContradictionCard";
+import { mockContradictions } from "@/lib/mockData";
 
 const CATEGORY_ICONS: Record<string, string> = {
   Health: "heart",
@@ -427,6 +429,25 @@ export default function MorningBriefScreen() {
                 {pattern!.message}
               </ThemedText>
             </View>
+
+            {mockContradictions.length > 0 ? (
+              <View style={{ marginTop: Spacing.md, gap: Spacing.sm }}>
+                <ThemedText
+                  type="caption"
+                  secondary
+                  style={{ letterSpacing: 1.5, fontWeight: "700" }}
+                >
+                  IDENTITY CONTRADICTIONS
+                </ThemedText>
+                {mockContradictions.slice(0, 2).map((c) => (
+                  <IdentityContradictionCard
+                    key={c.id}
+                    contradiction={c}
+                    compact
+                  />
+                ))}
+              </View>
+            ) : null}
           </Animated.View>
         ) : null}
 

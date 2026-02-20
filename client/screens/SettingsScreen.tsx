@@ -319,6 +319,63 @@ export default function SettingsScreen() {
 
       <Animated.View entering={FadeInDown.duration(400).delay(biometricAvailable ? 400 : 300)}>
         <ThemedText type="caption" secondary style={styles.sectionTitle}>
+          ARCANE
+        </ThemedText>
+        <View
+          style={[
+            styles.settingsCard,
+            {
+              backgroundColor: theme.backgroundRoot,
+              borderColor: theme.border,
+            },
+          ]}
+        >
+          <Pressable style={styles.settingsRow} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); navigation.navigate("MorningBrief"); }}>
+            <View style={styles.settingsRowContent}>
+              <View
+                style={[
+                  styles.settingsIcon,
+                  { backgroundColor: theme.accent + "20" },
+                ]}
+              >
+                <Feather name="sunrise" size={18} color={theme.accent} />
+              </View>
+              <View>
+                <ThemedText type="body">Morning Brief</ThemedText>
+                <ThemedText type="small" secondary>
+                  View today's intelligence briefing
+                </ThemedText>
+              </View>
+            </View>
+            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+          </Pressable>
+          <View
+            style={[styles.settingsDivider, { backgroundColor: theme.border }]}
+          />
+          <Pressable style={styles.settingsRow} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); navigation.navigate("NightReflection"); }}>
+            <View style={styles.settingsRowContent}>
+              <View
+                style={[
+                  styles.settingsIcon,
+                  { backgroundColor: theme.accent + "20" },
+                ]}
+              >
+                <Feather name="moon" size={18} color={theme.accent} />
+              </View>
+              <View>
+                <ThemedText type="body">Night Reflection</ThemedText>
+                <ThemedText type="small" secondary>
+                  Complete your daily debrief
+                </ThemedText>
+              </View>
+            </View>
+            <Feather name="chevron-right" size={20} color={theme.textSecondary} />
+          </Pressable>
+        </View>
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.duration(400).delay(biometricAvailable ? 500 : 400)}>
+        <ThemedText type="caption" secondary style={styles.sectionTitle}>
           NOTIFICATIONS
         </ThemedText>
         <View

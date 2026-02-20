@@ -11,10 +11,13 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { ThemedText } from "@/components/ThemedText";
 import { PostCard } from "@/components/PostCard";
 import { FAB } from "@/components/FAB";
+import { EscalationOverlay } from "@/components/EscalationOverlay";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import { posts as initialPosts, announcements as initialAnnouncements, Announcement, forumGroups, ForumGroup } from "@/lib/mockData";
+import { getStrikes, Strike } from "@/lib/storage";
+import { calculateEscalationTier, EscalationTier } from "@/lib/strikeLogic";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -223,6 +226,18 @@ export default function SocialScreen() {
   const [posts, setPosts] = useState(initialPosts);
   const [announcements, setAnnouncements] = useState(initialAnnouncements);
   const [refreshing, setRefreshing] = useState(false);
+  const [strikeTier, setStrikeTier] = useState<EscalationTier>("green");
+
+  React.useEffect(() => {
+    const loadTier = async () => {
+      const strikesData = await getStrikes();
+      const active = strikesData
+        .filter((s: Strike) => s.status === "active")
+        .reduce((sum: number, s: Strike) => sum + s.strikeValue, 0);
+      setStrikeTier(calculateEscalationTier(active));
+    };
+    loadTier();
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -286,8 +301,17 @@ export default function SocialScreen() {
       ? posts.filter((p) => p.author.tier === "Founder")
       : posts;
 
+  if (strikeTier === "red") {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
+        <EscalationOverlay tier="red" />
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { backgroundColor: theme.backgroundRoot }]}>
+      {strikeTier === "orange" ? <EscalationOverlay tier="orange" /> : null}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={[

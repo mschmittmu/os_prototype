@@ -9,10 +9,11 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { ThemedText } from "@/components/ThemedText";
 import { StreakBadge } from "@/components/StreakBadge";
+import { StrikeBadge } from "@/components/StrikeBadge";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
-import { getUser, getStreak, UserData, StreakData } from "@/lib/storage";
+import { getUser, getStreak, getStrikes, UserData, StreakData, Strike } from "@/lib/storage";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -49,16 +50,22 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const [user, setUser] = useState<UserData | null>(null);
   const [streak, setStreak] = useState<StreakData | null>(null);
+  const [activeStrikeCount, setActiveStrikeCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
       const loadData = async () => {
-        const [userData, streakData] = await Promise.all([
+        const [userData, streakData, strikesData] = await Promise.all([
           getUser(),
           getStreak(),
+          getStrikes(),
         ]);
         setUser(userData);
         setStreak(streakData);
+        const active = strikesData
+          .filter((s: Strike) => s.status === "active")
+          .reduce((sum: number, s: Strike) => sum + s.strikeValue, 0);
+        setActiveStrikeCount(active);
       };
       loadData();
     }, [])
@@ -107,7 +114,10 @@ export default function ProfileScreen() {
         <ThemedText type="small" secondary>
           Member since {user ? formatDate(user.memberSince) : "---"}
         </ThemedText>
-        <StreakBadge streak={streak?.current || 0} size="large" />
+        <View style={styles.badgeRow}>
+          <StreakBadge streak={streak?.current || 0} size="large" />
+          <StrikeBadge activeStrikes={activeStrikeCount} showLabel />
+        </View>
       </Animated.View>
 
       <Animated.View
@@ -225,6 +235,29 @@ export default function ProfileScreen() {
         </Pressable>
       </Animated.View>
 
+      <Animated.View entering={FadeInDown.duration(400).delay(370)}>
+        <Pressable
+          style={[styles.valuesButton, { backgroundColor: theme.backgroundRoot, borderColor: theme.border }]}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            navigation.navigate("StrikeHistory");
+          }}
+        >
+          <View style={[styles.valuesIcon, { backgroundColor: theme.error + "15" }]}>
+            <Feather name="shield-off" size={20} color={theme.error} />
+          </View>
+          <ThemedText type="bodyBold" style={styles.valuesLabel}>
+            Strike History
+          </ThemedText>
+          <StrikeBadge activeStrikes={activeStrikeCount} />
+          <Feather
+            name="chevron-right"
+            size={20}
+            color={theme.textSecondary}
+          />
+        </Pressable>
+      </Animated.View>
+
       {SETTINGS_SECTIONS.map((section, sectionIndex) => (
         <Animated.View
           key={section.title}
@@ -310,6 +343,11 @@ const styles = StyleSheet.create({
   },
   name: {
     marginTop: Spacing.sm,
+  },
+  badgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
   },
   statsRow: {
     flexDirection: "row",

@@ -21,17 +21,21 @@ import { VitalStatsRow } from "@/components/VitalStatsRow";
 import { ArcaneDirective } from "@/components/ArcaneDirective";
 import { OperatorAttributes } from "@/components/OperatorAttributes";
 import { TodaysTasksSummary } from "@/components/TodaysTasksSummary";
+import { StrikeBadge } from "@/components/StrikeBadge";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { useTheme } from "@/hooks/useTheme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
 import {
   getTasks,
   getStreak,
+  getStrikes,
   hasCompletedReflection,
   Task,
   StreakData,
+  Strike,
 } from "@/lib/storage";
 import { hudData } from "@/lib/mockData";
+import { calculateEscalationTier } from "@/lib/strikeLogic";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -49,14 +53,20 @@ export default function HomeScreen() {
   });
   const [refreshing, setRefreshing] = useState(false);
   const [showNightReflection, setShowNightReflection] = useState(false);
+  const [activeStrikeCount, setActiveStrikeCount] = useState(0);
 
   const loadData = useCallback(async () => {
-    const [tasksData, streakData] = await Promise.all([
+    const [tasksData, streakData, strikesData] = await Promise.all([
       getTasks(),
       getStreak(),
+      getStrikes(),
     ]);
     setTasks(tasksData);
     setStreak(streakData);
+    const active = strikesData
+      .filter((s: Strike) => s.status === "active")
+      .reduce((sum: number, s: Strike) => sum + s.strikeValue, 0);
+    setActiveStrikeCount(active);
 
     const now = new Date();
     const isEvening = now.getHours() >= 19;
@@ -142,19 +152,50 @@ export default function HomeScreen() {
       </Animated.View>
 
       <Animated.View entering={FadeInDown.duration(400).delay(100)}>
-        <VitalStatsRow
-          streak={vitalStats.streak}
-          winRate={vitalStats.winRate}
-          winRatePeriod={vitalStats.winRatePeriod}
-          totalDays={vitalStats.totalDays}
-        />
+        <View style={styles.vitalRow}>
+          <View style={{ flex: 1 }}>
+            <VitalStatsRow
+              streak={vitalStats.streak}
+              winRate={vitalStats.winRate}
+              winRatePeriod={vitalStats.winRatePeriod}
+              totalDays={vitalStats.totalDays}
+            />
+          </View>
+          {activeStrikeCount > 0 ? (
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                navigation.navigate("StrikeHistory");
+              }}
+            >
+              <StrikeBadge activeStrikes={activeStrikeCount} showLabel />
+            </Pressable>
+          ) : null}
+        </View>
       </Animated.View>
 
       <Animated.View entering={FadeInDown.duration(400).delay(200)} style={styles.section}>
         <ArcaneDirective
-          message={hudData.arcaneDirective.message}
-          focusArea={hudData.arcaneDirective.focusArea}
-          severity={hudData.arcaneDirective.severity}
+          message={
+            calculateEscalationTier(activeStrikeCount) === "yellow" ||
+            calculateEscalationTier(activeStrikeCount) === "orange" ||
+            calculateEscalationTier(activeStrikeCount) === "red"
+              ? `${activeStrikeCount} active strikes. You are in ${calculateEscalationTier(activeStrikeCount).toUpperCase()} tier. Recovery protocol required.`
+              : hudData.arcaneDirective.message
+          }
+          focusArea={
+            calculateEscalationTier(activeStrikeCount) !== "green"
+              ? "ENFORCEMENT"
+              : hudData.arcaneDirective.focusArea
+          }
+          severity={
+            calculateEscalationTier(activeStrikeCount) === "red" ||
+            calculateEscalationTier(activeStrikeCount) === "orange"
+              ? "critical"
+              : calculateEscalationTier(activeStrikeCount) === "yellow"
+                ? "warning"
+                : hudData.arcaneDirective.severity
+          }
         />
       </Animated.View>
 
@@ -204,6 +245,11 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: Spacing.lg,
+  },
+  vitalRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
   },
   nightReflectionCard: {
     flexDirection: "row",

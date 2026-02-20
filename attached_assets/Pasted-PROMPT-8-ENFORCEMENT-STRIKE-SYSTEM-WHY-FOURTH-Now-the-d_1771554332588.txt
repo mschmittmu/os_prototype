@@ -1,0 +1,95 @@
+PROMPT 8: ENFORCEMENT & STRIKE SYSTEM
+WHY FOURTH: Now the daily loop exists (Morning Brief → Execute → Night Reflection → Score) and scores are visible. Time to add consequence. This is where the prototype stops being a tool and becomes a system.
+Files to Create
+client/screens/StrikeHistoryScreen.tsx (~250 lines)
+Accessible from Profile. Shows all strikes — active and historical.
+Layout:
+
+Strike Status Header
+
+Current active strikes: large number, color-coded by tier
+Tier badge: "GREEN" / "YELLOW" / "ORANGE" / "RED" with matching color
+Tier description: "Normal operation" / "Elevated pressure" / "Restricted mode" / "Critical intervention"
+
+
+Escalation Tier Visual
+
+Horizontal tier bar showing all 4 tiers
+Current tier highlighted/filled
+Strike count thresholds labeled: 0-1 / 2-3 / 4-5 / 6+
+
+
+Active Strikes List
+
+Each strike shows:
+
+Strike reason icon + text ("Daily loss" / "Critical task missed" / "Pattern failure" / "Reflection skipped")
+Severity badge (Standard / Elevated / Pattern / Behavioral)
+Date assigned
+"CLEAR" button (tappable, for prototype demo — in production this would require recovery action)
+
+
+
+
+Strike History (scrollable)
+
+All-time strikes in reverse chronological order
+Each entry: date, reason, severity, status (active/cleared), clear method
+"Total strikes all time: 14" summary at top
+
+
+
+client/components/StrikeBadge.tsx (~60 lines)
+
+Small component showing active strike count
+Color-coded by tier (green/yellow/orange/red)
+Used on ProfileScreen and HomeScreen
+
+client/components/EscalationOverlay.tsx (~120 lines)
+
+Overlay component that renders on restricted screens when user is in Orange/Red tier
+Orange tier: Semi-transparent overlay on Social feed with message "RESTRICTED MODE — Complete recovery protocol to restore access"
+Red tier: Full lock screen with "CRITICAL INTERVENTION — Feed locked. Recovery required." and link to what they need to do
+Takes tier as prop, renders appropriate overlay
+
+client/lib/strikeLogic.ts (~100 lines)
+
+StrikeRule interface: { trigger: string, severity: string, strikeValue: number }
+STRIKE_RULES constant with all rules from ARCANE spec
+calculateEscalationTier(activeStrikes: number): "green" | "yellow" | "orange" | "red"
+getTierConfig(tier): { color: string, label: string, description: string, restrictions: string[] }
+getStrikeReasonDisplay(reason: string): { icon: string, label: string }
+
+Files to Modify
+client/lib/mockData.ts
+
+Add strikes array: Strike[] with 3 active + 5 historical
+Add Strike interface: { id, reason, severity, strikeValue, date, status: "active"|"cleared", clearedDate?, clearMethod? }
+
+client/lib/storage.ts
+
+Add STRIKES_KEY
+Add getStrikes(), addStrike(), clearStrike()
+
+client/screens/ProfileScreen.tsx
+
+Add StrikeBadge next to username/level area
+Add "Strike History" row in settings section (shield-alert icon)
+Navigate to StrikeHistoryScreen
+
+client/screens/HomeScreen.tsx
+
+Add StrikeBadge component below VitalStatsRow (or integrated into it)
+If tier is Yellow+, change ArcaneDirective tone (swap directive text)
+
+client/screens/SocialScreen.tsx
+
+Import EscalationOverlay
+Read strike tier from storage/mock
+If Orange: render overlay with restricted message (user can still scroll but overlay persists)
+If Red: render full lock overlay (no scroll, just lock message)
+
+client/navigation/RootStackNavigator.tsx
+
+Add StrikeHistory: undefined to params
+Register screen

@@ -466,6 +466,94 @@ export const hudData: HUDData = {
   ],
 };
 
+export interface Strike {
+  id: string;
+  reason: string;
+  severity: string;
+  strikeValue: number;
+  date: string;
+  status: "active" | "cleared";
+  clearedDate?: string;
+  clearMethod?: string;
+}
+
+export const mockStrikes: Strike[] = [
+  {
+    id: "s1",
+    reason: "daily_loss",
+    severity: "Standard",
+    strikeValue: 1,
+    date: "Feb 19, 2026",
+    status: "active",
+  },
+  {
+    id: "s2",
+    reason: "reflection_skipped",
+    severity: "Standard",
+    strikeValue: 1,
+    date: "Feb 18, 2026",
+    status: "active",
+  },
+  {
+    id: "s3",
+    reason: "pattern_failure",
+    severity: "Pattern",
+    strikeValue: 2,
+    date: "Feb 16, 2026",
+    status: "active",
+  },
+  {
+    id: "s4",
+    reason: "daily_loss",
+    severity: "Standard",
+    strikeValue: 1,
+    date: "Feb 12, 2026",
+    status: "cleared",
+    clearedDate: "Feb 13, 2026",
+    clearMethod: "Day won",
+  },
+  {
+    id: "s5",
+    reason: "critical_task_missed",
+    severity: "Elevated",
+    strikeValue: 1,
+    date: "Feb 10, 2026",
+    status: "cleared",
+    clearedDate: "Feb 11, 2026",
+    clearMethod: "Recovery protocol",
+  },
+  {
+    id: "s6",
+    reason: "streak_broken",
+    severity: "Behavioral",
+    strikeValue: 2,
+    date: "Feb 5, 2026",
+    status: "cleared",
+    clearedDate: "Feb 8, 2026",
+    clearMethod: "3-day recovery",
+  },
+  {
+    id: "s7",
+    reason: "operator_mode_exit",
+    severity: "Elevated",
+    strikeValue: 1,
+    date: "Jan 28, 2026",
+    status: "cleared",
+    clearedDate: "Jan 29, 2026",
+    clearMethod: "Day won",
+  },
+  {
+    id: "s8",
+    reason: "daily_loss",
+    severity: "Standard",
+    strikeValue: 1,
+    date: "Jan 22, 2026",
+    status: "cleared",
+    clearedDate: "Jan 23, 2026",
+    clearMethod: "Day won",
+  },
+];
+
 export const lifeScoreHistory: number[] = [68, 69, 71, 70, 72, 71, 73];
 
 export const domainInsights: {

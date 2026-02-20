@@ -17,6 +17,7 @@ const KEYS = {
   FORUM_JOINED_GROUPS: "@operator_forum_joined_groups",
   FORUM_USER_THREADS: "@operator_forum_user_threads",
   NIGHT_REFLECTION: "@operator_night_reflection",
+  STRIKES: "@operator_strikes",
 };
 
 export interface IdentityClaims {
@@ -655,4 +656,63 @@ export async function getNightReflection(date: string): Promise<NightReflection 
 export async function hasCompletedReflection(date: string): Promise<boolean> {
   const reflection = await getNightReflection(date);
   return reflection !== null;
+}
+
+export interface Strike {
+  id: string;
+  reason: string;
+  severity: string;
+  strikeValue: number;
+  date: string;
+  status: "active" | "cleared";
+  clearedDate?: string;
+  clearMethod?: string;
+}
+
+export async function getStrikes(): Promise<Strike[]> {
+  try {
+    const data = await AsyncStorage.getItem(KEYS.STRIKES);
+    if (data) {
+      return JSON.parse(data);
+    }
+    const { mockStrikes } = require("@/lib/mockData");
+    await AsyncStorage.setItem(KEYS.STRIKES, JSON.stringify(mockStrikes));
+    return mockStrikes;
+  } catch (error) {
+    console.error("Error getting strikes:", error);
+    return [];
+  }
+}
+
+export async function addStrike(strike: Strike): Promise<void> {
+  try {
+    const strikes = await getStrikes();
+    strikes.unshift(strike);
+    await AsyncStorage.setItem(KEYS.STRIKES, JSON.stringify(strikes));
+  } catch (error) {
+    console.error("Error adding strike:", error);
+  }
+}
+
+export async function clearStrike(strikeId: string): Promise<void> {
+  try {
+    const strikes = await getStrikes();
+    const updated = strikes.map((s) =>
+      s.id === strikeId
+        ? {
+            ...s,
+            status: "cleared" as const,
+            clearedDate: new Date().toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            }),
+            clearMethod: "Manual clear",
+          }
+        : s
+    );
+    await AsyncStorage.setItem(KEYS.STRIKES, JSON.stringify(updated));
+  } catch (error) {
+    console.error("Error clearing strike:", error);
+  }
 }

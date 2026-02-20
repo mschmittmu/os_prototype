@@ -532,29 +532,24 @@ export const mockStrikes: Strike[] = [
     date: "Feb 5, 2026",
     status: "cleared",
     clearedDate: "Feb 8, 2026",
-    clearMethod: "3-day recovery",
-  },
-  {
-    id: "s7",
-    reason: "operator_mode_exit",
-    severity: "Elevated",
-    strikeValue: 1,
-    date: "Jan 28, 2026",
-    status: "cleared",
-    clearedDate: "Jan 29, 2026",
-    clearMethod: "Day won",
-  },
-  {
-    id: "s8",
-    reason: "daily_loss",
-    severity: "Standard",
-    strikeValue: 1,
-    date: "Jan 22, 2026",
-    status: "cleared",
-    clearedDate: "Jan 23, 2026",
     clearMethod: "Day won",
   },
 ];
+
+// Social gating mock state
+// Toggle these values to test different gate screens:
+// - Set isNewUser: true and streak < 3 for "EARN YOUR ACCESS" screen
+// - Set daysSinceActivity: 3+ for "YOU'VE GONE SILENT" screen
+// - Set isBuyInMode: true and morningBriefViewed: false for "BRIEF REQUIRED" screen
+// - Set 6+ active strikes for "ACCESS REVOKED" screen
+export const gatingState = {
+  isNewUser: false,
+  daysSinceActivity: 0,
+  isBuyInMode: false,
+  daysInApp: 45,
+  morningBriefViewed: true,
+};
+
 
 export const lifeScoreHistory: number[] = [68, 69, 71, 70, 72, 71, 73];
 

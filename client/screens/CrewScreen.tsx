@@ -18,6 +18,8 @@ import { ThemedText } from "@/components/ThemedText";
 import { useTheme } from "@/hooks/useTheme";
 import { Spacing, BorderRadius } from "@/constants/theme";
 import { crewMessages as initialMessages } from "@/lib/mockData";
+import { getStreak } from "@/lib/storage";
+import { checkCrewPostGate } from "@/lib/gatingLogic";
 
 const TABS = ["Chat", "Details", "Other Crews"];
 
@@ -29,6 +31,15 @@ export default function CrewScreen() {
   const [selectedTab, setSelectedTab] = useState("Chat");
   const [messages, setMessages] = useState(initialMessages);
   const [inputText, setInputText] = useState("");
+  const [postingDisabled, setPostingDisabled] = useState(false);
+
+  React.useEffect(() => {
+    const checkGate = async () => {
+      const streak = await getStreak();
+      setPostingDisabled(checkCrewPostGate(streak.current));
+    };
+    checkGate();
+  }, []);
 
   const handleTabChange = (tab: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -293,25 +304,36 @@ export default function CrewScreen() {
               { paddingBottom: tabBarHeight + Spacing.sm, backgroundColor: theme.backgroundRoot, borderTopColor: theme.border },
             ]}
           >
-            <TextInput
-              style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text }]}
-              placeholder="Type a message..."
-              placeholderTextColor={theme.textSecondary}
-              value={inputText}
-              onChangeText={setInputText}
-              multiline
-            />
-            <Pressable
-              style={[
-                styles.sendButton,
-                { backgroundColor: theme.accent },
-                !inputText.trim() && styles.sendButtonDisabled,
-              ]}
-              onPress={handleSend}
-              disabled={!inputText.trim()}
-            >
-              <Feather name="send" size={20} color="#FFFFFF" />
-            </Pressable>
+            {postingDisabled ? (
+              <View style={styles.disabledRow}>
+                <Feather name="lock" size={14} color={theme.textSecondary} />
+                <ThemedText type="caption" secondary>
+                  Active streak required to post
+                </ThemedText>
+              </View>
+            ) : (
+              <>
+                <TextInput
+                  style={[styles.input, { backgroundColor: theme.backgroundSecondary, color: theme.text }]}
+                  placeholder="Type a message..."
+                  placeholderTextColor={theme.textSecondary}
+                  value={inputText}
+                  onChangeText={setInputText}
+                  multiline
+                />
+                <Pressable
+                  style={[
+                    styles.sendButton,
+                    { backgroundColor: theme.accent },
+                    !inputText.trim() && styles.sendButtonDisabled,
+                  ]}
+                  onPress={handleSend}
+                  disabled={!inputText.trim()}
+                >
+                  <Feather name="send" size={20} color="#FFFFFF" />
+                </Pressable>
+              </>
+            )}
           </View>
         </>
       ) : (
@@ -432,6 +454,14 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.5,
+  },
+  disabledRow: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: Spacing.sm,
+    paddingVertical: Spacing.md,
   },
   scrollView: {
     flex: 1,

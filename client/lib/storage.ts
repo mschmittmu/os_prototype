@@ -716,3 +716,45 @@ export async function clearStrike(strikeId: string): Promise<void> {
     console.error("Error clearing strike:", error);
   }
 }
+
+export async function getDaysInApp(): Promise<number> {
+  try {
+    const onboarding = await getOnboardingState();
+    if (!onboarding?.completedAt) return 0;
+    const completed = new Date(onboarding.completedAt);
+    const now = new Date();
+    const diff = Math.floor(
+      (now.getTime() - completed.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    return Math.max(0, diff);
+  } catch {
+    return 0;
+  }
+}
+
+export async function getDaysSinceLastActivity(): Promise<number> {
+  try {
+    const lastDate = await AsyncStorage.getItem(KEYS.LAST_COMPLETED_DATE);
+    if (!lastDate) return 999;
+    const last = new Date(lastDate);
+    const now = new Date();
+    const diff = Math.floor(
+      (now.getTime() - last.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    return Math.max(0, diff);
+  } catch {
+    return 0;
+  }
+}
+
+export async function isBuyInMode(): Promise<boolean> {
+  const days = await getDaysInApp();
+  return days <= 14;
+}
+
+export async function isMorningBriefViewedToday(): Promise<boolean> {
+  const state = await getMorningBriefState();
+  if (!state) return false;
+  const today = new Date().toDateString();
+  return state.lastShownDate === today && state.dismissed;
+}

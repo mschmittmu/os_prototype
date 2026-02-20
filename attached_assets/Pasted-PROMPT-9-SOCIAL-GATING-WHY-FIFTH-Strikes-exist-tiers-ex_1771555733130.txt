@@ -1,0 +1,83 @@
+PROMPT 9: SOCIAL GATING
+WHY FIFTH: Strikes exist, tiers exist. Now apply them to social access alongside the other gating rules Andy defined.
+Files to Create
+client/components/SocialGate.tsx (~200 lines)
+A wrapper component that checks gating conditions before rendering the social feed. Renders different lock screens based on the gate reason.
+Gate States (each a distinct visual):
+
+New User Lock (streak < 3)
+
+Large lock icon
+"EARN YOUR ACCESS"
+"Complete 3 consecutive wins to unlock the community feed."
+Progress indicator: "Current streak: 1/3" with 3 circles (filled/empty)
+"GO TO POWER LIST" button
+
+
+Inactive Lock (no win/loss logged for 3+ days)
+
+"YOU'VE GONE SILENT"
+"No activity logged for [N] days. Log a day to restore access."
+Days inactive counter
+"COMPLETE TODAY'S LIST" button
+
+
+Buy-In Mode Gate (first 14 days, Morning Brief not viewed)
+
+"BRIEF REQUIRED"
+"Complete your Morning Brief to access the feed today."
+"VIEW MORNING BRIEF" button
+
+
+Strike Restriction (6+ active strikes — Red tier)
+
+"ACCESS REVOKED"
+"6 active strikes. Complete recovery protocol to restore community access."
+Active strike count display
+"VIEW RECOVERY PLAN" button (navigates to StrikeHistory)
+
+
+Crew Posting Gate (streak = 0, trying to post in crew)
+
+This doesn't lock the feed — it disables the compose button in CrewScreen
+Tooltip on disabled button: "Active streak required to post"
+
+
+
+Gate Priority (check in this order):
+
+Red tier strike lock (highest priority)
+Buy-In Mode morning brief gate
+New user 3-win requirement
+Inactive user lockout
+
+client/lib/gatingLogic.ts (~80 lines)
+
+GateResult interface: { gated: boolean, reason: string, data: any }
+checkSocialGate(streak, daysInactive, strikesTier, briefViewedToday, daysInApp): GateResult
+checkCrewPostGate(streak): boolean
+
+Files to Modify
+client/screens/SocialScreen.tsx
+
+Import SocialGate
+Wrap feed content in SocialGate component
+Pass required data (streak, strikes, brief status)
+If gated, SocialGate renders lock screen INSTEAD of feed tabs
+Remove the EscalationOverlay added in Prompt 8 for Red tier (SocialGate now handles it more completely)
+
+client/screens/CrewScreen.tsx
+
+Check crew post gate before allowing compose
+If streak = 0, disable FAB / compose button
+Show tooltip/message explaining requirement
+
+client/lib/mockData.ts
+
+Add gatingState mock: { isNewUser: false, daysSinceActivity: 0, isBuyInMode: false, daysInApp: 45, morningBriefViewed: true }
+Add toggle comments so devs can flip states to test different gate screens
+
+client/lib/storage.ts
+
+Add getDaysInApp(), getDaysSinceLastActivity()
+Add isBuyInMode() — checks if onboarding was < 14 days ago

@@ -735,7 +735,18 @@ export async function getDaysInApp(): Promise<number> {
 export async function getDaysSinceLastActivity(): Promise<number> {
   try {
     const lastDate = await AsyncStorage.getItem(KEYS.LAST_COMPLETED_DATE);
-    if (!lastDate) return 999;
+    if (!lastDate) {
+      const onboarding = await getOnboardingState();
+      if (onboarding?.completedAt) {
+        const completed = new Date(onboarding.completedAt);
+        const now = new Date();
+        const diff = Math.floor(
+          (now.getTime() - completed.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        return Math.max(0, diff);
+      }
+      return 0;
+    }
     const last = new Date(lastDate);
     const now = new Date();
     const diff = Math.floor(
@@ -755,6 +766,6 @@ export async function isBuyInMode(): Promise<boolean> {
 export async function isMorningBriefViewedToday(): Promise<boolean> {
   const state = await getMorningBriefState();
   if (!state) return false;
-  const today = new Date().toDateString();
+  const today = new Date().toISOString().split("T")[0];
   return state.lastShownDate === today && state.dismissed;
 }

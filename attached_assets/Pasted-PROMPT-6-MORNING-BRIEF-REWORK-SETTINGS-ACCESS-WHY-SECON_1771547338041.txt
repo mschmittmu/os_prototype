@@ -1,0 +1,143 @@
+PROMPT 6: MORNING BRIEF REWORK + SETTINGS ACCESS
+WHY SECOND: Now that Night Reflection generates real data, Morning Brief can reference it. Also fixing the "feels like onboarding" problem.
+The Problem with Current Morning Brief
+The current Morning Brief is full-screen swipeable cards with auto-advance timers on a black background. This works for onboarding (one-time dramatic reveal) but fails as a daily tool because:
+
+Auto-advance feels rushed for a daily review
+Full-screen black cards feel like a setup wizard
+No way to re-access it after dismissal
+Swipe-to-advance is the same interaction pattern as onboarding
+
+The Rework
+Transform Morning Brief from "onboarding-style card deck" to "daily intelligence briefing" — a single scrollable screen that feels like reading a classified document, not stepping through a wizard.
+Files to Create
+client/screens/MorningBriefScreen.tsx — FULL REWRITE (~400 lines)
+Replace the swipeable card system with a single scrollable briefing document. Think: military intelligence brief, not app onboarding.
+Layout (top to bottom, single scroll):
+
+Briefing Header
+
+"MORNING BRIEF" — uppercase, letterSpacing 3, centered
+Date: "WEDNESDAY // FEB 19, 2026"
+Horizontal divider line (1px, accent color)
+
+
+Section 1: IDENTITY ANCHOR (always first)
+
+Section label: "01 // IDENTITY" — small, uppercase, accent color
+User's identity declaration from onboarding in quotes
+Italic, slightly larger font
+Subtle left border accent (3px, accent color)
+
+
+Section 2: YESTERDAY'S RESULT (skip if first day or no data)
+
+Section label: "02 // YESTERDAY"
+Result card: WIN or LOSS with completion stats
+If WIN: "5/5 COMPLETED. STREAK: 48 DAYS." — green accent
+If LOSS: "3/5 COMPLETED. STREAK BROKEN." — red accent
+Compact, data-dense — not a full dramatic slide
+
+
+Section 3: PATTERN INTELLIGENCE (skip if first time user)
+
+Section label: "03 // PATTERN DETECTED"
+The pattern call-out text from morningBriefLogic.ts
+Displayed in a bordered box with warning icon
+Examples: "You tend to lose after 3 consecutive wins." / "Financial tasks avoided 4x this week."
+
+
+Section 4: TODAY'S NON-NEGOTIABLES
+
+Section label: "04 // TODAY'S POWER LIST"
+Numbered list of today's 5 tasks (pulled from storage)
+Each task shows category tag
+If no tasks set yet: "NO TASKS SET. GO TO EXECUTION TAB." with button
+
+
+Section 5: ARCANE DIRECTIVE
+
+Section label: "05 // DIRECTIVE"
+Single commanding sentence from ARCANE
+Large font, bold, centered
+This is the "single directive" Andy described: "Your problem is not effort. It's consistency."
+
+
+Dismiss Button
+
+"ACKNOWLEDGED" — full-width button at bottom
+On press: marks brief as seen, navigates to Home
+NOT "Let's go" or "Start" — this isn't onboarding. "Acknowledged" = military/operator tone
+
+
+
+Key Differences from Current:
+
+NO auto-advance timers
+NO swipe navigation between cards
+NOT full-screen black — uses standard theme background with section cards
+Scrollable at user's pace
+Section numbers (01, 02, 03...) give it a classified document feel
+Can be re-accessed anytime from Settings
+Still shows on app launch if not yet viewed today (existing initialRoute logic stays)
+
+Files to Modify
+client/screens/SettingsScreen.tsx
+
+Add new "ARCANE" section between OPERATOR MODE and NOTIFICATIONS
+Two rows:
+
+"Morning Brief" — sunrise icon, accent background icon circle
+
+Subtitle: "View today's intelligence briefing"
+Chevron-right, navigates to MorningBrief
+
+
+"Night Reflection" — moon icon, accent background icon circle
+
+Subtitle: "Complete your daily debrief"
+Chevron-right, navigates to NightReflection
+
+
+
+
+Both use same settings row styling as existing Operator Mode row
+
+client/screens/ProfileScreen.tsx
+
+In the SETTINGS_SECTIONS constant, add to the first section's items:
+
+{ icon: "sunrise", label: "Morning Brief", screen: "MorningBrief" }
+{ icon: "moon", label: "Night Reflection", screen: "NightReflection" }
+
+
+These appear in the Profile's settings list alongside existing items
+
+client/lib/morningBriefLogic.ts
+
+Keep all existing logic (getYesterdayResult, getPatternCallOut, getDirective, isFirstTimeUser)
+These functions are still used — they just feed into a different UI layout now
+Add: getFormattedBriefDate(): string — returns "WEDNESDAY // FEB 19, 2026" format
+
+client/navigation/RootStackNavigator.tsx
+
+MorningBrief screen already registered — no change needed
+Ensure NightReflection was registered in Prompt 5
+
+client/lib/storage.ts
+
+No changes needed — saveMorningBriefState/getMorningBriefState already exist
+
+What Gets Deleted
+
+The entire swipeable card rendering system (renderIdentityAnchor, renderYesterdayResult, etc. as separate card functions)
+PagerView / ScrollView with pagingEnabled horizontal scroll
+Auto-advance timer logic (AUTO_ADVANCE_MS)
+Dot indicator / progress dots at bottom
+The first-time user card deck (renderFirstTimeWelcome, renderFirstTimeSetup, renderFirstTimeDirective)
+
+What Gets Kept (for first-time users)
+
+isFirstTimeUser() check still runs
+If first time: show a simplified brief with just Identity Anchor + "HOW THIS WORKS" section + "SET YOUR FIRST POWER LIST" button
+Same content as current first-time flow, but rendered as sections in the new scrollable layout instead of swipeable cards

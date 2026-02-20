@@ -186,3 +186,16 @@ export function isFirstTimeUser(tasks: Task[], streak: StreakData): boolean {
   const hasNoTasks = tasks.length === 0;
   return hasNoHistory && hasNoTasks;
 }
+
+export function getFormattedBriefDate(): string {
+  const now = new Date();
+  const dayName = now
+    .toLocaleDateString("en-US", { weekday: "long" })
+    .toUpperCase();
+  const month = now
+    .toLocaleDateString("en-US", { month: "short" })
+    .toUpperCase();
+  const day = now.getDate();
+  const year = now.getFullYear();
+  return `${dayName} // ${month} ${day}, ${year}`;
+}

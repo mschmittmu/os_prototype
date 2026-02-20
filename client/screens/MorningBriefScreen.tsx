@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
   Pressable,
-  Dimensions,
+  ScrollView,
   Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import Animated, { FadeIn, FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNavigation } from "@react-navigation/native";
 
@@ -31,14 +31,12 @@ import {
   getPatternCallOut,
   getDirective,
   isFirstTimeUser,
+  getFormattedBriefDate,
   YesterdayResult,
   PatternCallOut,
   Directive,
 } from "@/lib/morningBriefLogic";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
-
-const AUTO_ADVANCE_MS = 3000;
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 const CATEGORY_ICONS: Record<string, string> = {
   Health: "heart",
@@ -47,7 +45,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   Family: "users",
   Financial: "dollar-sign",
   Physical: "activity",
-  Mental: "brain",
+  Mental: "book",
   Work: "monitor",
   default: "check-square",
 };
@@ -61,17 +59,15 @@ export default function MorningBriefScreen() {
   const { theme } = useTheme();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [currentComponent, setCurrentComponent] = useState(0);
   const [claims, setClaims] = useState<IdentityClaims | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [streak, setStreak] = useState<StreakData>(defaultStreak);
-  const [yesterdayResult, setYesterdayResult] = useState<YesterdayResult | null>(null);
+  const [yesterdayResult, setYesterdayResult] =
+    useState<YesterdayResult | null>(null);
   const [pattern, setPattern] = useState<PatternCallOut | null>(null);
   const [directive, setDirective] = useState<Directive | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isFirstTime, setIsFirstTime] = useState(false);
-  const autoAdvanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const TOTAL_COMPONENTS = isFirstTime ? 4 : (yesterdayResult && yesterdayResult.outcome !== "no_data" ? 5 : 4);
 
   useEffect(() => {
     const loadData = async () => {
@@ -104,31 +100,6 @@ export default function MorningBriefScreen() {
     loadData();
   }, []);
 
-  useEffect(() => {
-    if (currentComponent === 0 && isReady) {
-      autoAdvanceTimer.current = setTimeout(() => {
-        advance();
-      }, AUTO_ADVANCE_MS);
-    }
-    return () => {
-      if (autoAdvanceTimer.current) {
-        clearTimeout(autoAdvanceTimer.current);
-      }
-    };
-  }, [currentComponent, isReady]);
-
-  const advance = useCallback(() => {
-    if (autoAdvanceTimer.current) {
-      clearTimeout(autoAdvanceTimer.current);
-    }
-    if (currentComponent < TOTAL_COMPONENTS - 1) {
-      if (Platform.OS !== "web") {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      }
-      setCurrentComponent((prev) => prev + 1);
-    }
-  }, [currentComponent]);
-
   const handleDismiss = async () => {
     if (Platform.OS !== "web") {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -147,506 +118,563 @@ export default function MorningBriefScreen() {
 
   if (!isReady) {
     return (
-      <View style={[styles.container, { backgroundColor: "#0A0A0A" }]} />
+      <View
+        style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
+      />
     );
   }
 
-  const renderProgressDots = () => (
-    <View style={styles.dotsContainer}>
-      {Array.from({ length: TOTAL_COMPONENTS }).map((_, i) => (
-        <View
-          key={i}
-          style={[
-            styles.dot,
+  const showYesterdayResult =
+    !isFirstTime && yesterdayResult && yesterdayResult.outcome !== "no_data";
+  const showPattern = !isFirstTime && pattern;
+  const briefDate = getFormattedBriefDate();
+  const todayTasks = tasks.slice(0, 5);
+  const hasTasks = todayTasks.length > 0;
+
+  let sectionNumber = 1;
+
+  if (isFirstTime) {
+    return (
+      <View
+        style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
+      >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={[
+            styles.scrollContent,
             {
-              backgroundColor:
-                i === currentComponent ? theme.accent : "rgba(255,255,255,0.25)",
+              paddingTop: insets.top + Spacing.xl,
+              paddingBottom: insets.bottom + Spacing["3xl"],
             },
           ]}
-        />
-      ))}
-    </View>
-  );
-
-  const renderFirstTimeWelcome = () => (
-    <Pressable style={styles.fullScreenComponent} onPress={advance}>
-      <Animated.View entering={FadeIn.duration(800)} style={styles.centerContent}>
-        <ThemedText
-          style={[styles.sectionLabel, { color: theme.textSecondary }]}
+          showsVerticalScrollIndicator={false}
         >
-          DAY ONE
-        </ThemedText>
-        <Animated.View entering={FadeInDown.delay(200).duration(600)}>
-          <ThemedText style={[styles.welcomeText, { color: "#FFFFFF" }]}>
-            Today is the first day you operate at a higher standard.
-          </ThemedText>
-        </Animated.View>
-        <Animated.View entering={FadeInDown.delay(600).duration(600)}>
-          <ThemedText
-            style={[styles.welcomeSubtext, { color: theme.textSecondary }]}
-          >
-            No history. No excuses. Just execution.
-          </ThemedText>
-        </Animated.View>
-      </Animated.View>
-    </Pressable>
-  );
-
-  const renderFirstTimeSetup = () => (
-    <Pressable style={styles.fullScreenComponent} onPress={advance}>
-      <Animated.View entering={FadeIn.duration(600)} style={styles.centerContent}>
-        <ThemedText
-          style={[styles.sectionLabel, { color: theme.textSecondary }]}
-        >
-          HOW THIS WORKS
-        </ThemedText>
-        <Animated.View
-          entering={FadeInDown.delay(200).duration(500)}
-          style={styles.setupList}
-        >
-          {[
-            { icon: "check-square", text: "Set 5 critical tasks for today" },
-            { icon: "target", text: "Complete all 5. No negotiation." },
-            { icon: "trending-up", text: "Win the day. Build your streak." },
-          ].map((item, index) => (
-            <Animated.View
-              key={index}
-              entering={FadeInDown.delay(400 + index * 200).duration(400)}
-              style={styles.setupRow}
+          <Animated.View entering={FadeIn.duration(600)}>
+            <ThemedText style={[styles.briefTitle, { color: theme.text }]}>
+              MORNING BRIEF
+            </ThemedText>
+            <ThemedText
+              style={[styles.briefDate, { color: theme.textSecondary }]}
             >
-              <View
-                style={[
-                  styles.setupIconWrap,
-                  { backgroundColor: "rgba(227, 24, 55, 0.15)" },
-                ]}
+              {briefDate}
+            </ThemedText>
+            <View
+              style={[styles.headerDivider, { backgroundColor: theme.accent }]}
+            />
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.delay(100).duration(500)}>
+            <ThemedText
+              style={[styles.sectionLabel, { color: theme.accent }]}
+            >
+              01 // IDENTITY
+            </ThemedText>
+            <View
+              style={[
+                styles.identityCard,
+                {
+                  borderLeftColor: theme.accent,
+                  backgroundColor: theme.backgroundSecondary,
+                },
+              ]}
+            >
+              <ThemedText
+                style={[styles.identityQuote, { color: theme.text }]}
               >
-                <Feather name={item.icon as any} size={18} color={theme.accent} />
-              </View>
-              <ThemedText style={[styles.setupText, { color: "#FFFFFF" }]}>
-                {item.text}
+                "{claims?.coreIdentity || "AN OPERATOR"}"
               </ThemedText>
-            </Animated.View>
-          ))}
-        </Animated.View>
-      </Animated.View>
-    </Pressable>
-  );
-
-  const renderFirstTimeDirective = () => (
-    <View style={styles.fullScreenComponent}>
-      <Animated.View entering={FadeIn.duration(600)} style={styles.centerContent}>
-        <ThemedText
-          style={[styles.sectionLabel, { color: theme.textSecondary }]}
-        >
-          DIRECTIVE
-        </ThemedText>
-        <Animated.View entering={FadeInDown.delay(300).duration(600)}>
-          <ThemedText style={[styles.directiveText, { color: theme.accent }]}>
-            SET YOUR FIRST{"\n"}POWER LIST.
-          </ThemedText>
-        </Animated.View>
-        <Animated.View
-          entering={FadeInUp.delay(800).duration(500)}
-          style={{ width: "100%", paddingHorizontal: Spacing["2xl"] }}
-        >
-          <Pressable
-            style={[styles.beginButton, { backgroundColor: theme.accent }]}
-            onPress={handleDismiss}
-          >
-            <ThemedText style={styles.beginButtonText}>
-              LET'S GO
-            </ThemedText>
-          </Pressable>
-        </Animated.View>
-      </Animated.View>
-    </View>
-  );
-
-  const renderIdentityAnchor = () => (
-    <Pressable style={styles.fullScreenComponent} onPress={advance}>
-      <Animated.View entering={FadeIn.duration(800)} style={styles.centerContent}>
-        <ThemedText
-          style={[styles.identityLabel, { color: theme.textSecondary }]}
-        >
-          {isFirstTime ? "YOUR DECLARATION" : "ARCANE ASSESSMENT"}
-        </ThemedText>
-        <ThemedText style={[styles.identityText, { color: "#FFFFFF" }]}>
-          {isFirstTime ? "You declared yourself" : "You claimed to be"}
-        </ThemedText>
-        <ThemedText style={[styles.identityHighlight, { color: theme.accent }]}>
-          {claims?.coreIdentity || "AN OPERATOR"}
-        </ThemedText>
-        <Animated.View entering={FadeInUp.delay(600).duration(600)}>
-          <ThemedText
-            style={[styles.identitySubtitle, { color: theme.textSecondary }]}
-          >
-            {isFirstTime ? "Now let's build the proof." : "Prove it today."}
-          </ThemedText>
-        </Animated.View>
-        <Animated.View
-          entering={FadeInUp.delay(1200).duration(400)}
-          style={styles.tapHint}
-        >
-          <ThemedText
-            style={[styles.tapHintText, { color: "rgba(255,255,255,0.3)" }]}
-          >
-            TAP TO CONTINUE
-          </ThemedText>
-        </Animated.View>
-      </Animated.View>
-    </Pressable>
-  );
-
-  const renderYesterdayResult = () => {
-    if (!yesterdayResult) return null;
-    const isWin = yesterdayResult.outcome === "win";
-    const isNoData = yesterdayResult.outcome === "no_data";
-    const accentColor = isWin
-      ? theme.success
-      : isNoData
-        ? theme.warning
-        : theme.accent;
-    const letter = isWin ? "W" : isNoData ? "?" : "L";
-    const subtitle = isWin
-      ? `Day ${yesterdayResult.streakCount} of your streak`
-      : isNoData
-        ? "NO DATA LOGGED"
-        : yesterdayResult.streakBrokenAt
-          ? `Streak broken at ${yesterdayResult.streakBrokenAt} days`
-          : `Day lost. ${yesterdayResult.totalLosses} total losses.`;
-
-    return (
-      <Pressable style={styles.fullScreenComponent} onPress={advance}>
-        <Animated.View entering={FadeIn.duration(600)} style={styles.centerContent}>
-          <ThemedText
-            style={[styles.sectionLabel, { color: theme.textSecondary }]}
-          >
-            YESTERDAY'S RESULT
-          </ThemedText>
-          <ThemedText style={[styles.resultLetter, { color: accentColor }]}>
-            {letter}
-          </ThemedText>
-          <ThemedText style={[styles.resultDate, { color: "rgba(255,255,255,0.5)" }]}>
-            {formatDate(yesterdayResult.date)}
-          </ThemedText>
-          <Animated.View entering={FadeInDown.delay(400).duration(500)}>
-            <ThemedText style={[styles.resultSubtitle, { color: accentColor }]}>
-              {subtitle}
-            </ThemedText>
+            </View>
           </Animated.View>
-        </Animated.View>
-      </Pressable>
-    );
-  };
 
-  const renderPatternCallOut = () => {
-    if (!pattern) return null;
-    const borderColor =
-      pattern.severity === "critical"
-        ? theme.accent
-        : pattern.severity === "warning"
-          ? theme.warning
-          : "rgba(255,255,255,0.3)";
-    const severityLabel =
-      pattern.severity === "critical"
-        ? "CRITICAL"
-        : pattern.severity === "warning"
-          ? "WARNING"
-          : "OBSERVATION";
-
-    return (
-      <Pressable style={styles.fullScreenComponent} onPress={advance}>
-        <Animated.View entering={FadeIn.duration(600)} style={styles.centerContent}>
-          <ThemedText
-            style={[styles.sectionLabel, { color: theme.textSecondary }]}
-          >
-            PATTERN IMPLEMENTATION
-          </ThemedText>
-          <Animated.View
-            entering={FadeInDown.delay(300).duration(600)}
-            style={[styles.patternCard, { borderLeftColor: borderColor }]}
-          >
-            <ThemedText style={[styles.severityBadge, { color: borderColor }]}>
-              {severityLabel}
-            </ThemedText>
-            <ThemedText style={[styles.patternMessage, { color: "#FFFFFF" }]}>
-              {pattern.message}
-            </ThemedText>
-          </Animated.View>
-        </Animated.View>
-      </Pressable>
-    );
-  };
-
-  const renderTasksPreview = () => {
-    const hasTasks = tasks.length > 0;
-    const todayTasks = tasks.slice(0, 5);
-
-    return (
-      <Pressable style={styles.fullScreenComponent} onPress={advance}>
-        <Animated.View entering={FadeIn.duration(600)} style={styles.centerContent}>
-          <ThemedText
-            style={[styles.sectionLabel, { color: theme.textSecondary }]}
-          >
-            TODAY'S POWER LIST
-          </ThemedText>
-          {hasTasks ? (
-            <Animated.View
-              entering={FadeInDown.delay(200).duration(500)}
-              style={styles.taskList}
+          <Animated.View entering={FadeInDown.delay(200).duration(500)}>
+            <ThemedText
+              style={[styles.sectionLabel, { color: theme.accent }]}
             >
-              {todayTasks.map((task, index) => (
-                <Animated.View
-                  key={task.id}
-                  entering={FadeInDown.delay(300 + index * 100).duration(400)}
+              02 // HOW THIS WORKS
+            </ThemedText>
+            <View
+              style={[
+                styles.howItWorksCard,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
+              {[
+                { icon: "check-square", text: "Set 5 critical tasks for today" },
+                { icon: "target", text: "Complete all 5. No negotiation." },
+                { icon: "trending-up", text: "Win the day. Build your streak." },
+              ].map((item, index) => (
+                <View key={index} style={styles.howItWorksRow}>
+                  <View
+                    style={[
+                      styles.howItWorksIcon,
+                      { backgroundColor: theme.accent + "20" },
+                    ]}
+                  >
+                    <Feather
+                      name={item.icon as any}
+                      size={16}
+                      color={theme.accent}
+                    />
+                  </View>
+                  <ThemedText style={[styles.howItWorksText, { color: theme.text }]}>
+                    {item.text}
+                  </ThemedText>
+                </View>
+              ))}
+            </View>
+          </Animated.View>
+
+          <Animated.View entering={FadeInDown.delay(300).duration(500)}>
+            <ThemedText
+              style={[styles.sectionLabel, { color: theme.accent }]}
+            >
+              03 // DIRECTIVE
+            </ThemedText>
+            <ThemedText
+              style={[styles.directiveText, { color: theme.accent }]}
+            >
+              SET YOUR FIRST POWER LIST.
+            </ThemedText>
+          </Animated.View>
+
+          <Animated.View
+            entering={FadeInDown.delay(400).duration(500)}
+            style={styles.dismissContainer}
+          >
+            <Pressable
+              style={[styles.dismissButton, { backgroundColor: theme.accent }]}
+              onPress={handleNavigateToTasks}
+            >
+              <ThemedText style={styles.dismissButtonText}>
+                ACKNOWLEDGED
+              </ThemedText>
+            </Pressable>
+          </Animated.View>
+        </ScrollView>
+      </View>
+    );
+  }
+
+  return (
+    <View
+      style={[styles.container, { backgroundColor: theme.backgroundRoot }]}
+    >
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingTop: insets.top + Spacing.xl,
+            paddingBottom: insets.bottom + Spacing["3xl"],
+          },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <Animated.View entering={FadeIn.duration(600)}>
+          <ThemedText style={[styles.briefTitle, { color: theme.text }]}>
+            MORNING BRIEF
+          </ThemedText>
+          <ThemedText
+            style={[styles.briefDate, { color: theme.textSecondary }]}
+          >
+            {briefDate}
+          </ThemedText>
+          <View
+            style={[styles.headerDivider, { backgroundColor: theme.accent }]}
+          />
+        </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(100).duration(500)}>
+          <ThemedText style={[styles.sectionLabel, { color: theme.accent }]}>
+            {String(sectionNumber++).padStart(2, "0")} // IDENTITY
+          </ThemedText>
+          <View
+            style={[
+              styles.identityCard,
+              {
+                borderLeftColor: theme.accent,
+                backgroundColor: theme.backgroundSecondary,
+              },
+            ]}
+          >
+            <ThemedText style={[styles.identityQuote, { color: theme.text }]}>
+              "{claims?.coreIdentity || "AN OPERATOR"}"
+            </ThemedText>
+          </View>
+        </Animated.View>
+
+        {showYesterdayResult ? (
+          <Animated.View entering={FadeInDown.delay(200).duration(500)}>
+            <ThemedText
+              style={[styles.sectionLabel, { color: theme.accent }]}
+            >
+              {String(sectionNumber++).padStart(2, "0")} // YESTERDAY
+            </ThemedText>
+            <View
+              style={[
+                styles.resultCard,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor:
+                    yesterdayResult!.outcome === "win"
+                      ? theme.success
+                      : theme.error,
+                  borderWidth: 1,
+                },
+              ]}
+            >
+              <View style={styles.resultRow}>
+                <View
                   style={[
-                    styles.taskRow,
+                    styles.resultBadge,
                     {
-                      borderBottomColor: "rgba(255,255,255,0.08)",
-                      borderBottomWidth: index < todayTasks.length - 1 ? 1 : 0,
+                      backgroundColor:
+                        yesterdayResult!.outcome === "win"
+                          ? theme.success + "20"
+                          : theme.error + "20",
                     },
                   ]}
                 >
-                  <View style={styles.taskIconWrap}>
-                    <Feather
-                      name={getCategoryIcon(task.category) as any}
-                      size={14}
-                      color={theme.textSecondary}
-                    />
-                  </View>
                   <ThemedText
-                    style={[styles.taskTitle, { color: "rgba(255,255,255,0.85)" }]}
+                    style={[
+                      styles.resultBadgeText,
+                      {
+                        color:
+                          yesterdayResult!.outcome === "win"
+                            ? theme.success
+                            : theme.error,
+                      },
+                    ]}
+                  >
+                    {yesterdayResult!.outcome === "win" ? "WIN" : "LOSS"}
+                  </ThemedText>
+                </View>
+                <ThemedText
+                  style={[styles.resultStats, { color: theme.text }]}
+                >
+                  {yesterdayResult!.outcome === "win"
+                    ? `5/5 COMPLETED. STREAK: ${yesterdayResult!.streakCount} DAYS.`
+                    : `${yesterdayResult!.streakBrokenAt ? `STREAK BROKEN AT ${yesterdayResult!.streakBrokenAt} DAYS.` : `${yesterdayResult!.totalLosses} TOTAL LOSSES.`}`}
+                </ThemedText>
+              </View>
+            </View>
+          </Animated.View>
+        ) : null}
+
+        {showPattern ? (
+          <Animated.View
+            entering={FadeInDown.delay(showYesterdayResult ? 300 : 200).duration(
+              500
+            )}
+          >
+            <ThemedText
+              style={[styles.sectionLabel, { color: theme.accent }]}
+            >
+              {String(sectionNumber++).padStart(2, "0")} // PATTERN DETECTED
+            </ThemedText>
+            <View
+              style={[
+                styles.patternCard,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderLeftColor:
+                    pattern!.severity === "critical"
+                      ? theme.error
+                      : pattern!.severity === "warning"
+                        ? theme.warning
+                        : theme.textSecondary,
+                },
+              ]}
+            >
+              <View style={styles.patternHeader}>
+                <Feather
+                  name="alert-triangle"
+                  size={14}
+                  color={
+                    pattern!.severity === "critical"
+                      ? theme.error
+                      : pattern!.severity === "warning"
+                        ? theme.warning
+                        : theme.textSecondary
+                  }
+                />
+                <ThemedText
+                  style={[
+                    styles.severityText,
+                    {
+                      color:
+                        pattern!.severity === "critical"
+                          ? theme.error
+                          : pattern!.severity === "warning"
+                            ? theme.warning
+                            : theme.textSecondary,
+                    },
+                  ]}
+                >
+                  {pattern!.severity === "critical"
+                    ? "CRITICAL"
+                    : pattern!.severity === "warning"
+                      ? "WARNING"
+                      : "OBSERVATION"}
+                </ThemedText>
+              </View>
+              <ThemedText
+                style={[styles.patternMessage, { color: theme.text }]}
+              >
+                {pattern!.message}
+              </ThemedText>
+            </View>
+          </Animated.View>
+        ) : null}
+
+        <Animated.View
+          entering={FadeInDown.delay(
+            showYesterdayResult && showPattern
+              ? 400
+              : showYesterdayResult || showPattern
+                ? 300
+                : 200
+          ).duration(500)}
+        >
+          <ThemedText style={[styles.sectionLabel, { color: theme.accent }]}>
+            {String(sectionNumber++).padStart(2, "0")} // TODAY'S POWER LIST
+          </ThemedText>
+          {hasTasks ? (
+            <View
+              style={[
+                styles.taskListCard,
+                {
+                  backgroundColor: theme.backgroundSecondary,
+                  borderColor: theme.border,
+                },
+              ]}
+            >
+              {todayTasks.map((task, index) => (
+                <View
+                  key={task.id}
+                  style={[
+                    styles.taskRow,
+                    index < todayTasks.length - 1
+                      ? {
+                          borderBottomWidth: 1,
+                          borderBottomColor: theme.border,
+                        }
+                      : null,
+                  ]}
+                >
+                  <ThemedText
+                    style={[styles.taskNumber, { color: theme.textSecondary }]}
+                  >
+                    {index + 1}.
+                  </ThemedText>
+                  <ThemedText
+                    style={[styles.taskTitle, { color: theme.text }]}
                     numberOfLines={1}
                   >
                     {task.title}
                   </ThemedText>
-                  <ThemedText
-                    style={[styles.taskCategory, { color: theme.textSecondary }]}
+                  <View
+                    style={[
+                      styles.taskCategoryTag,
+                      { backgroundColor: theme.accent + "15" },
+                    ]}
                   >
-                    {task.category}
-                  </ThemedText>
-                </Animated.View>
+                    <Feather
+                      name={getCategoryIcon(task.category) as any}
+                      size={10}
+                      color={theme.accent}
+                    />
+                    <ThemedText
+                      style={[styles.taskCategoryText, { color: theme.accent }]}
+                    >
+                      {task.category}
+                    </ThemedText>
+                  </View>
+                </View>
               ))}
-            </Animated.View>
+            </View>
           ) : (
-            <Animated.View
-              entering={FadeInDown.delay(300).duration(500)}
-              style={styles.noTasksContainer}
+            <View
+              style={[
+                styles.noTasksCard,
+                {
+                  backgroundColor: theme.warning + "15",
+                  borderColor: theme.warning + "40",
+                },
+              ]}
             >
-              <ThemedText style={[styles.noTasksText, { color: theme.warning }]}>
-                NO TASKS SET. YOUR DAY HAS NO STRUCTURE.
+              <Feather name="alert-circle" size={18} color={theme.warning} />
+              <ThemedText
+                style={[styles.noTasksText, { color: theme.warning }]}
+              >
+                NO TASKS SET. GO TO EXECUTION TAB.
               </ThemedText>
               <Pressable
-                style={[styles.setTasksButton, { backgroundColor: theme.accent }]}
+                style={[
+                  styles.setTasksButton,
+                  { backgroundColor: theme.accent },
+                ]}
                 onPress={handleNavigateToTasks}
               >
-                <ThemedText style={[styles.setTasksButtonText, { color: "#FFFFFF" }]}>
+                <ThemedText style={styles.setTasksButtonText}>
                   SET TASKS NOW
                 </ThemedText>
               </Pressable>
-            </Animated.View>
+            </View>
           )}
         </Animated.View>
-      </Pressable>
-    );
-  };
 
-  const renderDirective = () => {
-    if (!directive) return null;
-    return (
-      <View style={styles.fullScreenComponent}>
-        <Animated.View entering={FadeIn.duration(600)} style={styles.centerContent}>
-          <ThemedText
-            style={[styles.sectionLabel, { color: theme.textSecondary }]}
+        {directive ? (
+          <Animated.View
+            entering={FadeInDown.delay(
+              showYesterdayResult && showPattern
+                ? 500
+                : showYesterdayResult || showPattern
+                  ? 400
+                  : 300
+            ).duration(500)}
           >
-            DIRECTIVE
-          </ThemedText>
-          <Animated.View entering={FadeInDown.delay(300).duration(600)}>
-            <ThemedText style={[styles.directiveText, { color: theme.accent }]}>
+            <ThemedText
+              style={[styles.sectionLabel, { color: theme.accent }]}
+            >
+              {String(sectionNumber).padStart(2, "0")} // DIRECTIVE
+            </ThemedText>
+            <ThemedText
+              style={[styles.directiveText, { color: theme.accent }]}
+            >
               {directive.message}
             </ThemedText>
           </Animated.View>
-          <Animated.View
-            entering={FadeInUp.delay(800).duration(500)}
-            style={{ width: "100%", paddingHorizontal: Spacing["2xl"] }}
+        ) : null}
+
+        <Animated.View
+          entering={FadeInDown.delay(
+            showYesterdayResult && showPattern
+              ? 600
+              : showYesterdayResult || showPattern
+                ? 500
+                : 400
+          ).duration(500)}
+          style={styles.dismissContainer}
+        >
+          <Pressable
+            style={[styles.dismissButton, { backgroundColor: theme.accent }]}
+            onPress={handleDismiss}
           >
-            <Pressable
-              style={[styles.beginButton, { backgroundColor: theme.accent }]}
-              onPress={handleDismiss}
-            >
-              <ThemedText style={styles.beginButtonText}>
-                BEGIN YOUR DAY
-              </ThemedText>
-            </Pressable>
-          </Animated.View>
+            <ThemedText style={styles.dismissButtonText}>
+              ACKNOWLEDGED
+            </ThemedText>
+          </Pressable>
         </Animated.View>
-      </View>
-    );
-  };
-
-  const showYesterdayResult = yesterdayResult && yesterdayResult.outcome !== "no_data";
-
-  const components = isFirstTime
-    ? [
-        renderIdentityAnchor,
-        renderFirstTimeWelcome,
-        renderFirstTimeSetup,
-        renderFirstTimeDirective,
-      ]
-    : [
-        renderIdentityAnchor,
-        ...(showYesterdayResult ? [renderYesterdayResult] : []),
-        renderPatternCallOut,
-        renderTasksPreview,
-        renderDirective,
-      ];
-
-  return (
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: "#0A0A0A",
-          paddingTop: insets.top + Spacing.lg,
-          paddingBottom: insets.bottom + Spacing.lg,
-        },
-      ]}
-    >
-      {components[currentComponent]()}
-      {renderProgressDots()}
+      </ScrollView>
     </View>
   );
-}
-
-function formatDate(dateString: string): string {
-  try {
-    const parts = dateString.split("-");
-    const date = new Date(
-      parseInt(parts[0]),
-      parseInt(parts[1]) - 1,
-      parseInt(parts[2])
-    );
-    return date.toLocaleDateString("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-    });
-  } catch {
-    return dateString;
-  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  fullScreenComponent: {
+  scrollView: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
-  centerContent: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: Spacing["3xl"],
-    width: "100%",
+  scrollContent: {
+    paddingHorizontal: Spacing.xl,
   },
-  dotsContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 8,
-    paddingBottom: Spacing.lg,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  identityLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    letterSpacing: 3,
-    marginBottom: Spacing["3xl"],
-    textTransform: "uppercase",
-  },
-  identityText: {
-    fontSize: 28,
-    fontWeight: "300",
-    textAlign: "center",
-    marginBottom: Spacing.sm,
-  },
-  identityHighlight: {
-    fontSize: 42,
+  briefTitle: {
+    fontSize: 22,
     fontWeight: "800",
+    letterSpacing: 3,
     textAlign: "center",
-    letterSpacing: 2,
     textTransform: "uppercase",
+  },
+  briefDate: {
+    fontSize: 13,
+    fontWeight: "600",
+    letterSpacing: 2,
+    textAlign: "center",
+    marginTop: Spacing.sm,
+    textTransform: "uppercase",
+  },
+  headerDivider: {
+    height: 1,
+    marginTop: Spacing.xl,
     marginBottom: Spacing["2xl"],
   },
-  identitySubtitle: {
-    fontSize: 18,
-    fontWeight: "500",
-    textAlign: "center",
-    fontStyle: "italic",
-  },
-  tapHint: {
-    position: "absolute",
-    bottom: -80,
-  },
-  tapHintText: {
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 3,
-  },
   sectionLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    letterSpacing: 3,
-    marginBottom: Spacing["3xl"],
-    textTransform: "uppercase",
-  },
-  resultLetter: {
-    fontSize: 120,
-    fontWeight: "900",
-    textAlign: "center",
-    lineHeight: 130,
-  },
-  resultDate: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginTop: Spacing.sm,
-    marginBottom: Spacing.xl,
-  },
-  resultSubtitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  patternCard: {
-    borderLeftWidth: 4,
-    paddingLeft: Spacing.xl,
-    paddingVertical: Spacing.xl,
-    maxWidth: SCREEN_WIDTH - 80,
-  },
-  severityBadge: {
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 2,
+    textTransform: "uppercase",
     marginBottom: Spacing.md,
+    marginTop: Spacing.lg,
+  },
+  identityCard: {
+    borderLeftWidth: 3,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.md,
+  },
+  identityQuote: {
+    fontSize: 18,
+    fontWeight: "600",
+    fontStyle: "italic",
+    lineHeight: 26,
+  },
+  resultCard: {
+    borderRadius: BorderRadius.md,
+    padding: Spacing.lg,
+  },
+  resultRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.md,
+  },
+  resultBadge: {
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+  },
+  resultBadgeText: {
+    fontSize: 14,
+    fontWeight: "900",
+    letterSpacing: 2,
+  },
+  resultStats: {
+    fontSize: 13,
+    fontWeight: "700",
+    letterSpacing: 1,
+    flex: 1,
+  },
+  patternCard: {
+    borderLeftWidth: 3,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.lg,
+  },
+  patternHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  severityText: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 2,
     textTransform: "uppercase",
   },
   patternMessage: {
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: "500",
-    lineHeight: 30,
+    lineHeight: 22,
   },
-  taskList: {
-    width: "100%",
-    maxWidth: SCREEN_WIDTH - 60,
-    backgroundColor: "rgba(255,255,255,0.04)",
-    borderRadius: BorderRadius.lg,
-    paddingVertical: Spacing.sm,
+  taskListCard: {
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    overflow: "hidden",
   },
   taskRow: {
     flexDirection: "row",
@@ -654,105 +682,105 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.lg,
   },
-  taskIconWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: "rgba(255,255,255,0.08)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: Spacing.md,
+  taskNumber: {
+    fontSize: 13,
+    fontWeight: "700",
+    width: 22,
   },
   taskTitle: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "500",
   },
-  taskCategory: {
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 1,
-    textTransform: "uppercase",
+  taskCategoryTag: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: 3,
+    borderRadius: BorderRadius.sm,
     marginLeft: Spacing.sm,
   },
-  noTasksContainer: {
+  taskCategoryText: {
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 1,
+    textTransform: "uppercase",
+  },
+  noTasksCard: {
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    padding: Spacing.xl,
     alignItems: "center",
-    gap: Spacing.xl,
+    gap: Spacing.md,
   },
   noTasksText: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: "700",
-    textAlign: "center",
     letterSpacing: 1,
+    textAlign: "center",
   },
   setTasksButton: {
-    paddingHorizontal: Spacing["3xl"],
-    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
     borderRadius: BorderRadius.md,
+    marginTop: Spacing.sm,
   },
   setTasksButtonText: {
-    fontSize: 16,
+    color: "#FFFFFF",
+    fontSize: 14,
     fontWeight: "700",
     letterSpacing: 1,
     textTransform: "uppercase",
   },
   directiveText: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: "800",
     textAlign: "center",
     letterSpacing: 1,
-    lineHeight: 38,
-    marginBottom: Spacing["4xl"],
+    lineHeight: 32,
     textTransform: "uppercase",
+    paddingVertical: Spacing.lg,
   },
-  beginButton: {
+  dismissContainer: {
+    marginTop: Spacing["3xl"],
+    paddingHorizontal: Spacing.sm,
+  },
+  dismissButton: {
     paddingVertical: Spacing.lg,
     borderRadius: BorderRadius.md,
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
   },
-  beginButtonText: {
+  dismissButtonText: {
     color: "#FFFFFF",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "800",
     letterSpacing: 2,
     textTransform: "uppercase",
   },
-  welcomeText: {
-    fontSize: 26,
-    fontWeight: "600",
-    textAlign: "center",
-    lineHeight: 36,
-    marginBottom: Spacing.xl,
+  howItWorksCard: {
+    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    padding: Spacing.lg,
+    gap: Spacing.md,
   },
-  welcomeSubtext: {
-    fontSize: 16,
-    fontWeight: "500",
-    textAlign: "center",
-    fontStyle: "italic",
-  },
-  setupList: {
-    width: "100%",
-    gap: Spacing.xl,
-    paddingHorizontal: Spacing.lg,
-  },
-  setupRow: {
+  howItWorksRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: Spacing.lg,
+    gap: Spacing.md,
   },
-  setupIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  howItWorksIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
   },
-  setupText: {
-    fontSize: 17,
-    fontWeight: "600",
+  howItWorksText: {
+    fontSize: 14,
+    fontWeight: "500",
     flex: 1,
-    lineHeight: 24,
   },
 });

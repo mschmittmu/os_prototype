@@ -1,0 +1,109 @@
+PROMPT 10: IDENTITY CONTRADICTIONS + BEHAVIOR TIMELINE
+WHY LAST: This requires all previous data to exist — identity claims from onboarding, task completion data from Night Reflection, strike history from Enforcement, domain scores from Life Score. This is where ARCANE "feels intelligent."
+Files to Create
+client/screens/BehaviorHistoryScreen.tsx (~320 lines)
+The permanent record. Scrollable timeline of every significant behavioral event.
+Layout:
+
+Header
+
+"BEHAVIOR RECORD" — uppercase
+"Your history never resets." — subtitle, secondary text
+Total days tracked: "156 DAYS ON RECORD"
+
+
+Filter Chips (horizontal scroll)
+
+All / Wins / Losses / Strikes / Milestones / Proof
+Tappable to filter timeline
+
+
+Timeline (FlatList, reverse chronological)
+
+Each entry is a timeline node with:
+
+Left: date (compact: "Feb 19")
+Center: vertical timeline line with colored dot
+Right: event card
+
+
+Event card types:
+
+Win: Green dot, "WIN — 5/5 completed", streak count
+Loss: Red dot, "LOSS — 3/5 completed", streak impact
+Strike: Orange dot, "STRIKE ASSIGNED — Pattern failure", severity
+Strike Cleared: Blue dot, "STRIKE CLEARED — Recovery completed"
+Streak Milestone: Gold dot, "30-DAY STREAK", life score at time
+Proof Captured: Purple dot, "PROOF — [milestone tag]", thumbnail
+Identity Contradiction: Red/orange dot, "CONTRADICTION DETECTED — [claim vs behavior]"
+
+
+Each card has an expand arrow for details (optional for prototype)
+
+
+Summary Stats Footer
+
+Total wins / Total losses / Win rate
+Longest streak / Total strikes / Current Life Score
+
+
+
+client/components/IdentityContradictionCard.tsx (~120 lines)
+Reusable card component for displaying contradictions. Used in:
+
+Morning Brief (Section 3: Pattern Intelligence — if contradiction is the current pattern)
+Behavior History timeline
+Standalone notification-style card on HomeScreen (future)
+
+Card Layout:
+
+Red/orange left border (3px)
+Warning icon + "IDENTITY CONTRADICTION" label
+Claim text: "You said: '[identity claim from onboarding]'"
+Evidence text: "Reality: [behavioral evidence]"
+Domain affected + domain score
+Date detected
+
+Contradiction Examples (in mock data):
+
+Claim: "I'm becoming disciplined" → Evidence: "4 losses in 7 days"
+Claim: "Family is my priority" → Evidence: "Zero relationship tasks in 10 days"
+Claim: "I'm building financial freedom" → Evidence: "Financial tasks avoided 6 times this month"
+
+client/lib/contradictionLogic.ts (~60 lines)
+
+ContradictionRule interface: { claimPattern: string, triggerCondition: string, outputTemplate: string, domain: string }
+CONTRADICTION_RULES constant from ARCANE spec
+detectContradictions(claims: string[], behaviorData: any): Contradiction[]
+
+Files to Modify
+client/lib/mockData.ts
+
+Add behaviorHistory: BehaviorEvent[] — 20+ events spanning 2 months of mock history
+
+Mix of wins (mostly), losses, strikes, milestones, proof captures, contradictions
+Should tell a realistic story: early struggles → building streak → occasional setbacks → growth
+
+
+Add contradictions: Contradiction[] — 2-3 active contradictions
+Add BehaviorEvent interface, Contradiction interface
+
+client/screens/MorningBriefScreen.tsx (Prompt 6 version)
+
+In the Pattern Intelligence section, check if there's an active contradiction
+If yes, render IdentityContradictionCard instead of generic pattern text
+Contradictions take priority over regular patterns (they're more impactful)
+
+client/screens/ProfileScreen.tsx
+
+Add "Behavior History" row (clock icon) in profile settings
+Navigate to BehaviorHistoryScreen
+
+client/screens/LifeScoreScreen.tsx (Prompt 7)
+
+Update the "VIEW FULL BEHAVIOR HISTORY" link to actually navigate to BehaviorHistoryScreen
+
+client/navigation/RootStackNavigator.tsx
+
+Add BehaviorHistory: undefined to params
+Register screen
